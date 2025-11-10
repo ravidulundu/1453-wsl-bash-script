@@ -103,7 +103,7 @@ echo -e "${CYAN}║                           Script Bilgileri                  
 echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════╣${NC}"
 echo -e "${CYAN}║ Projeye Coken: Alper Tunga                                           ║${NC}"
 echo -e "${CYAN}║ Geliştirici: Tamer KARACA A.K.A THE KING                             ║${NC}"
-echo -e "${CYAN}║ Yardımcı: FitzGPT, Tuğser OKUR                                       ║${NC}"
+echo -e "${CYAN}║ Yardımcı: FitzGPT, Tuğser OKUR, Omer TANIR                           ║${NC}"
 echo -e "${CYAN}║ Versiyon: 1.0.1                                                      ║${NC}"
 echo -e "${CYAN}║ GitHub Repo: https://github.com/altudev/1453-wsl-bash-script         ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════╝${NC}\n"
