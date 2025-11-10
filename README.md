@@ -6,7 +6,31 @@ Comprehensive automated setup script for WSL (Windows Subsystem for Linux) envir
 
 ## 📥 Installation
 
-### Quick Start
+### 🎯 Quick Install (One Command - Recommended!)
+
+Run this single command in your WSL terminal to download and install everything:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+```
+
+Or with wget:
+```bash
+wget -qO- https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+```
+
+This will:
+- Download all script components
+- Set up everything in `~/.1453-wsl-setup`
+- Create a launcher for easy access
+- Optionally run the setup immediately
+
+After installation, run:
+```bash
+~/.1453-wsl-setup/1453-setup
+```
+
+### Alternative: Clone Repository
 ```bash
 # Clone the repository
 git clone https://github.com/altudev/1453-wsl-bash-script.git
