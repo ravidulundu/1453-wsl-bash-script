@@ -35,6 +35,9 @@ source "${SCRIPT_DIR}/modules/python.sh"
 # shellcheck source=modules/javascript.sh
 source "${SCRIPT_DIR}/modules/javascript.sh"
 
+# shellcheck source=modules/go.sh
+source "${SCRIPT_DIR}/modules/go.sh"
+
 # shellcheck source=modules/php.sh
 source "${SCRIPT_DIR}/modules/php.sh"
 
