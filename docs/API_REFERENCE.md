@@ -8,8 +8,9 @@
 4. [PHP Module Functions](#php-module-functions)
 5. [AI CLI Module Functions](#ai-cli-module-functions)
 6. [AI Frameworks Module Functions](#ai-frameworks-module-functions)
-7. [Menu Module Functions](#menu-module-functions)
-8. [Configuration Functions](#configuration-functions)
+7. [Go Module Functions](#go-module-functions)
+8. [Menu Module Functions](#menu-module-functions)
+9. [Configuration Functions](#configuration-functions)
 
 ---
 
@@ -884,6 +885,236 @@ remove_ai_frameworks_menu
 
 ---
 
+## Go Module Functions
+
+### `is_go_installed()`
+**File**: `src/modules/go.sh:7`
+
+**Purpose**: Checks if Go is already installed and available.
+
+**Returns**: Exit code 0 if installed, 1 if not installed
+
+**Usage Example**:
+```bash
+if is_go_installed; then
+    echo "Go is installed: $(go version)"
+else
+    echo "Go is not installed"
+fi
+```
+
+**Notes**:
+- Simple command availability check
+- Used by installation functions
+
+---
+
+### `configure_go_env()`
+**File**: `src/modules/go.sh:11`
+
+**Purpose**: Configures Go environment variables and PATH.
+
+**Actions**:
+1. Adds `/usr/local/go/bin` to PATH
+2. Sets `GOPATH=$HOME/go`
+3. Adds `$GOPATH/bin` to PATH
+4. Updates shell RC files (.bashrc, .zshrc, .profile)
+
+**Returns**: Exit code 0 on success
+
+**Usage Example**:
+```bash
+configure_go_env
+```
+
+**PATH Additions**:
+- `export PATH=$PATH:/usr/local/go/bin`
+- `export GOPATH=$HOME/go`
+- `export PATH=$PATH:$GOPATH/bin`
+
+**Notes**:
+- Prevents duplicate PATH entries
+- Updates all common shell configuration files
+
+---
+
+### `install_go_official()`
+**File**: `src/modules/go.sh:45`
+
+**Purpose**: Installs Go using official binary from go.dev.
+
+**Actions**:
+1. Detects system architecture (amd64, arm64)
+2. Gets latest Go version from go.dev
+3. Downloads official binary tarball
+4. Removes old installation (if exists)
+5. Extracts to `/usr/local/go`
+6. Configures environment
+7. Verifies installation
+
+**Returns**: Exit code 0 on success, 1 on failure
+
+**Usage Example**:
+```bash
+install_go_official
+go version
+```
+
+**Installation Path**: `/usr/local/go`
+
+**Download URL**: `https://go.dev/dl/go<version>.linux-<arch>.tar.gz`
+
+**Notes**:
+- Downloads latest stable version
+- Requires curl and sudo privileges
+- Handles architecture detection automatically
+
+---
+
+### `install_go_package()`
+**File**: `src/modules/go.sh:108`
+
+**Purpose**: Installs Go using system package manager.
+
+**Package Manager Support**:
+- **APT**: `golang-go`
+- **DNF**: `golang`
+- **YUM**: `golang`
+- **Pacman**: `go`
+
+**Actions**:
+1. Checks if Go is already installed
+2. Uses appropriate package manager command
+3. Configures environment
+4. Verifies installation
+
+**Returns**: Exit code 0 on success, 1 on failure
+
+**Usage Example**:
+```bash
+install_go_package
+```
+
+**Notes**:
+- Faster than official binary method
+- May not install latest version
+- Uses system package manager
+
+---
+
+### `install_go()`
+**File**: `src/modules/go.sh:168`
+
+**Purpose**: Main Go installation function with intelligent fallback.
+
+**Actions**:
+1. Checks if Go is already installed
+2. Tries package manager installation first (faster)
+3. Falls back to official binary if package manager fails
+4. Provides feedback on installation method used
+
+**Returns**: Exit code 0 on success, 1 on failure
+
+**Usage Example**:
+```bash
+install_go
+```
+
+**Installation Strategy**:
+1. Primary: Package manager (fast, may not be latest)
+2. Fallback: Official binary (latest version)
+
+**Notes**:
+- Intelligent selection of installation method
+- Recommended for most users
+- Shows which method was used
+
+---
+
+### `install_go_menu()`
+**File**: `src/modules/go.sh:191`
+
+**Purpose**: Interactive menu for Go installation method selection.
+
+**Menu Options**:
+1. Otomatik Kurulum (Önerilen) - Uses `install_go()`
+2. Resmi Binary Kurulumu - Uses `install_go_official()`
+3. Paket Yöneticisi Kurulumu - Uses `install_go_package()`
+4. Ana menüye dön - Returns to main menu
+
+**Returns**: None (interactive function)
+
+**Usage Example**:
+```bash
+install_go_menu
+# User selects: 1 (Automatic installation)
+```
+
+**Notes**:
+- User-interactive function
+- Allows method selection
+- Validates user input
+
+---
+
+### `remove_go()`
+**File**: `src/modules/go.sh:217`
+
+**Purpose**: Uninstalls Go completely from the system.
+
+**Actions**:
+1. Removes Go binary directory (`/usr/local/go`)
+2. Removes Go configuration from shell RC files
+3. Reloads shell configurations
+4. Provides removal confirmation
+
+**Returns**: Exit code 0 (no error if not installed)
+
+**Usage Example**:
+```bash
+remove_go
+```
+
+**Notes**:
+- Safe to call even if Go is not installed
+- Cleans up PATH and GOPATH configurations
+- Removes from all shell RC files
+
+---
+
+### `show_go_info()`
+**File**: `src/modules/go.sh:251`
+
+**Purpose**: Displays current Go installation information.
+
+**Information Displayed**:
+- Installed version (`go version`)
+- Go root directory (`go env GOROOT`)
+- GOPATH location (`go env GOPATH`)
+- Go binary PATH
+
+**Returns**: None (displays information)
+
+**Usage Example**:
+```bash
+show_go_info
+```
+
+**Output Example**:
+```
+Kurulu Sürüm: go version go1.21.0 linux/amd64
+Go Dizini: /usr/local/go
+GOPATH: /home/user/go
+PATH: /usr/local/go/bin
+```
+
+**Notes**:
+- Shows helpful Go configuration information
+- Called by users to verify installation
+- All output in Turkish
+
+---
+
 ## Menu Module Functions
 
 ### `configure_git()`
@@ -962,6 +1193,7 @@ prepare_and_configure_git
 11. AI CLI Tools
 12. AI Frameworks
 13. Remove AI Frameworks
+14. Go Installation
 0. Exit
 
 **Returns**: None (display only)
@@ -993,6 +1225,11 @@ show_menu
 **Input Format**:
 - Single choice: `3`
 - Multiple choices: `3,7,11`
+
+**Multi-Choice Examples**:
+- `3,14` - Install Python and Go
+- `7,8` - Install NVM and Bun.js
+- `11,12` - Install AI CLI tools and frameworks
 
 **Returns**: None (runs indefinitely until exit)
 
@@ -1053,6 +1290,7 @@ show_banner
 | PHP | `ensure_php_repository`, `install_composer`, `install_php_version`, `install_php_version_menu` | modules/php.sh |
 | AI CLI | `install_claude_code`, `install_gemini_cli`, `install_opencode_cli`, `install_qwen_cli`, `install_copilot_cli`, `install_github_cli`, `install_qoder_cli`, `install_ai_cli_tools_menu` | modules/ai-cli.sh |
 | AI Frameworks | `install_supergemini`, `install_superqwen`, `install_superclaude`, `remove_supergemini`, `remove_superqwen`, `remove_superclaude`, `install_ai_frameworks_menu`, `remove_ai_frameworks_menu` | modules/ai-frameworks.sh |
+| **Go** | **`is_go_installed`, `configure_go_env`, `install_go_official`, `install_go_package`, `install_go`, `install_go_menu`, `remove_go`, `show_go_info`** | **modules/go.sh** |
 | Menus | `configure_git`, `prepare_and_configure_git`, `show_menu`, `main` | modules/menus.sh |
 | Config | `show_banner` | config/banner.sh |
 
@@ -1078,3 +1316,17 @@ show_banner
 
 ### Export Functions
 All functions are exported using `export -f function_name` to make them available to sourced scripts.
+
+### Go Installation Recommendations
+- **For latest version**: Use `install_go_official()` or `install_go()`
+- **For quick installation**: Use `install_go_package()`
+- **For user choice**: Use `install_go_menu()`
+- **For verification**: Use `show_go_info()`
+
+### Multi-Choice Support
+The main menu supports comma-separated selections for efficiency:
+- `3,14` - Install Python and Go together
+- `7,8,14` - Install JavaScript ecosystem and Go
+- `11,12,14` - Install AI tools and Go
+
+This allows users to install multiple tools in a single session.

@@ -46,6 +46,7 @@ show_menu() {
     echo -e "  ${GREEN}11${NC}) AI CLI Araçları"
     echo -e "  ${GREEN}12${NC}) AI Framework'leri"
     echo -e "  ${GREEN}13${NC}) AI Framework'leri Kaldır"
+    echo -e "  ${GREEN}14${NC}) Go Kurulumu"
     echo -e "  ${GREEN}0${NC}) Çıkış"
     echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 }
@@ -87,6 +88,7 @@ main() {
                     install_composer
                     install_claude_code
                     install_github_cli
+                    install_go
                     echo -e "\n${GREEN}[BAŞARILI]${NC} Tam kurulum tamamlandı!"
                     ;;
                 2) prepare_and_configure_git ;;
@@ -101,6 +103,7 @@ main() {
                 11) install_ai_cli_tools_menu ;;
                 12) install_ai_frameworks_menu ;;
                 13) remove_ai_frameworks_menu ;;
+                14) install_go_menu ;;
                 0)
                     echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
                     echo -e "${YELLOW}[İPUCU]${NC} Yeni kurulumların aktif olması için terminali yeniden başlatın!"
