@@ -137,9 +137,19 @@ install_modern_tools_apt() {
     # Install vivid (using centralized version from config/tool-versions.sh)
     if ! command -v vivid &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
-        wget -q "https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/vivid_${VIVID_VERSION}_amd64.deb"
-        sudo dpkg -i "vivid_${VIVID_VERSION}_amd64.deb"
-        rm "vivid_${VIVID_VERSION}_amd64.deb"
+
+        local vivid_deb="vivid_${VIVID_VERSION}_amd64.deb"
+        local vivid_url="https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/${vivid_deb}"
+        local vivid_checksum_url="${vivid_url}.sha256"
+
+        # Download with checksum verification
+        if download_with_checksum "$vivid_url" "$vivid_deb" "$vivid_checksum_url"; then
+            sudo dpkg -i "$vivid_deb"
+            rm "$vivid_deb"
+        else
+            echo -e "${RED}[✗]${NC} Vivid kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f "$vivid_deb"
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
     fi
@@ -179,10 +189,20 @@ install_modern_tools_apt() {
     # Install lazygit (using centralized version from config/tool-versions.sh)
     if ! command -v lazygit &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Lazygit ${LAZYGIT_VERSION} kuruluyor..."
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf lazygit.tar.gz lazygit
-        sudo install lazygit /usr/local/bin
-        rm lazygit lazygit.tar.gz
+
+        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
+        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
+
+        # Download with checksum verification
+        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit lazygit.tar.gz
+        else
+            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f lazygit.tar.gz lazygit
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazygit zaten kurulu."
     fi
@@ -248,10 +268,20 @@ install_lazygit_generic() {
         if [ -z "$LAZYGIT_VERSION" ]; then
             init_tool_versions
         fi
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf lazygit.tar.gz lazygit
-        sudo install lazygit /usr/local/bin
-        rm lazygit lazygit.tar.gz
+
+        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
+        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
+
+        # Download with checksum verification
+        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit lazygit.tar.gz
+        else
+            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f lazygit.tar.gz lazygit
+        fi
     fi
 }
 

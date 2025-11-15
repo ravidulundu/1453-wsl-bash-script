@@ -224,6 +224,112 @@ run_preflight_checks() {
     fi
 }
 
+# Verify file checksum (SHA256)
+# Usage: verify_checksum "file_path" "expected_checksum" ["checksum_url"]
+# Returns: 0 if checksum matches, 1 otherwise
+verify_checksum() {
+    local file_path="$1"
+    local expected_checksum="$2"
+    local checksum_url="${3:-}"
+
+    # Check if file exists
+    if [ ! -f "$file_path" ]; then
+        echo -e "${RED}[✗]${NC} Dosya bulunamadı: $file_path"
+        return 1
+    fi
+
+    # If checksum URL provided and no expected checksum, fetch it
+    if [ -n "$checksum_url" ] && [ -z "$expected_checksum" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Checksum indiriliyor: $checksum_url"
+        expected_checksum=$(curl -sL "$checksum_url" | head -n1 | awk '{print $1}')
+
+        if [ -z "$expected_checksum" ]; then
+            echo -e "${YELLOW}[UYARI]${NC} Checksum indirilemedi, doğrulama atlanıyor"
+            return 0  # Don't fail, just skip verification
+        fi
+    fi
+
+    # Calculate actual checksum
+    local actual_checksum
+    if command -v sha256sum &>/dev/null; then
+        actual_checksum=$(sha256sum "$file_path" | awk '{print $1}')
+    elif command -v shasum &>/dev/null; then
+        actual_checksum=$(shasum -a 256 "$file_path" | awk '{print $1}')
+    else
+        echo -e "${YELLOW}[UYARI]${NC} SHA256 aracı bulunamadı, checksum doğrulaması atlanıyor"
+        return 0  # Don't fail if no checksum tool available
+    fi
+
+    # Compare checksums (case-insensitive)
+    if [ "${actual_checksum,,}" = "${expected_checksum,,}" ]; then
+        echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:16}..."
+        return 0
+    else
+        echo -e "${RED}[✗]${NC} Checksum uyuşmuyor!"
+        echo -e "${YELLOW}[!]${NC} Beklenen: ${expected_checksum:0:32}..."
+        echo -e "${YELLOW}[!]${NC} Bulunan:  ${actual_checksum:0:32}..."
+        echo -e "${RED}[!]${NC} Dosya bozuk veya güvenlik sorunu olabilir!"
+        return 1
+    fi
+}
+
+# Download file with checksum verification
+# Usage: download_with_checksum "url" "output_path" ["checksum" | "checksum_url"]
+# Returns: 0 on success, 1 on failure
+download_with_checksum() {
+    local url="$1"
+    local output_path="$2"
+    local checksum_or_url="${3:-}"
+
+    echo -e "${YELLOW}[BİLGİ]${NC} İndiriliyor: $(basename "$url")"
+
+    # Download file
+    if ! curl -fsSL -o "$output_path" "$url"; then
+        echo -e "${RED}[✗]${NC} İndirme başarısız: $url"
+        return 1
+    fi
+
+    echo -e "${GREEN}[✓]${NC} İndirme tamamlandı: $(basename "$output_path")"
+
+    # Verify checksum if provided
+    if [ -n "$checksum_or_url" ]; then
+        local expected_checksum=""
+
+        # Check if it's a URL or direct checksum
+        if [[ "$checksum_or_url" =~ ^https?:// ]]; then
+            # Download checksum file
+            local checksum_file="/tmp/checksum_$$.txt"
+            if curl -fsSL -o "$checksum_file" "$checksum_or_url" 2>/dev/null; then
+                # Extract checksum for our specific file
+                local filename
+                filename=$(basename "$url")
+
+                # Try to find checksum in the file (format: "<checksum> <filename>" or "<checksum>  <filename>")
+                expected_checksum=$(grep -i "$filename" "$checksum_file" 2>/dev/null | awk '{print $1}' | head -n1)
+
+                # If not found, assume it's a single checksum file
+                if [ -z "$expected_checksum" ]; then
+                    expected_checksum=$(head -n1 "$checksum_file" | awk '{print $1}')
+                fi
+
+                rm -f "$checksum_file"
+            fi
+
+            if [ -n "$expected_checksum" ]; then
+                verify_checksum "$output_path" "$expected_checksum" ""
+            else
+                echo -e "${YELLOW}[UYARI]${NC} Checksum indirilemedi, doğrulama atlanıyor"
+                return 0
+            fi
+        else
+            verify_checksum "$output_path" "$checksum_or_url" ""
+        fi
+    else
+        echo -e "${YELLOW}[UYARI]${NC} Checksum belirtilmedi, doğrulama atlanıyor"
+        return 0
+    fi
+}
+
 # Export functions for use in other modules
 export -f reload_shell_configs
 export -f mask_secret
@@ -233,3 +339,5 @@ export -f check_sudo_access
 export -f check_disk_space
 export -f check_apt_repositories
 export -f run_preflight_checks
+export -f verify_checksum
+export -f download_with_checksum
