@@ -780,7 +780,7 @@ GitHub'da pull request açın ve değişikliklerinizi açıklayın.
 
 - **Proje Yaratıcısı** - Alper Tunga
 - **Geliştirici** - Tamer KARACA (A.K.A THE KING)
-- **Katkıda Bulunanlar** - FitzGPT, Tuğser OKUR
+- **Katkıda Bulunanlar** - Ravi DULUNDU, FitzGPT, Tuğser OKUR
 
 ## 📄 Lisans
 
