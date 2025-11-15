@@ -729,8 +729,18 @@ test_functional() {
 
     # Test dizini oluştur
     local test_dir="/tmp/1453-test-$$"
-    mkdir -p "$test_dir"
-    cd "$test_dir" || return
+    local orig_dir="$PWD"
+
+    mkdir -p "$test_dir" || {
+        record_test "$category" "FAIL" "Test dizini oluşturulamadı"
+        return
+    }
+
+    cd "$test_dir" || {
+        rm -rf "$test_dir"
+        record_test "$category" "FAIL" "Test dizinine geçilemedi"
+        return
+    }
 
     # 1. Modern ls (eza/ll) testi
     if [ -f "$HOME/.bash_aliases" ] && grep -q "alias ll=" "$HOME/.bash_aliases" 2>/dev/null; then
@@ -848,7 +858,7 @@ test_functional() {
     fi
 
     # 8. Custom functions testi (mcd)
-    if grep -q "function mcd" "$HOME/.bashrc" 2>/dev/null || grep -q "^mcd()" "$HOME/.bashrc" 2>/dev/null; then
+    if grep -qE "^[[:space:]]*(function[[:space:]]+mcd[[:space:]]*\(\)|mcd[[:space:]]*\(\))" "$HOME/.bashrc" 2>/dev/null; then
         record_test "$category" "PASS" "Custom function 'mcd' tanımlı ✓"
 
         # mcd fonksiyonunu test et (source etmeden, sadece tanımlı mı kontrolü)
@@ -995,7 +1005,7 @@ test_functional() {
     fi
 
     # Cleanup
-    cd - > /dev/null 2>&1
+    cd "$orig_dir" 2>/dev/null || cd "$HOME"
     rm -rf "$test_dir"
 }
 
@@ -1065,7 +1075,11 @@ show_summary() {
             echo -e "  ${GREEN}${BOLD}✓ İYİ!${NC} Tüm testler geçti, bazı uyarılar var."
         fi
     else
-        local success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+        if [ $TOTAL_TESTS -eq 0 ]; then
+            local success_rate=0
+        else
+            local success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+        fi
         echo -e "  ${YELLOW}${BOLD}⚠ DİKKAT!${NC} Başarı oranı: %${success_rate}"
         echo -e "  ${RED}Bazı bileşenler kurulu değil veya hatalı yapılandırılmış.${NC}"
     fi
@@ -1079,6 +1093,12 @@ generate_json_report() {
     local end_time=$(date +%s)
     local duration=$((end_time - START_TIME))
 
+    # Calculate success rate safely
+    local success_rate=0
+    if [ $TOTAL_TESTS -gt 0 ]; then
+        success_rate=$(echo "scale=2; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
+    fi
+
     cat << EOF
 {
   "test_report": {
@@ -1090,7 +1110,7 @@ generate_json_report() {
       "passed": $PASSED_TESTS,
       "failed": $FAILED_TESTS,
       "warnings": $WARNING_TESTS,
-      "success_rate": $(echo "scale=2; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
+      "success_rate": $success_rate
     },
     "categories": {
 EOF
@@ -1314,6 +1334,11 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -l|--log)
+            if [ -z "$2" ] || [[ "$2" == -* ]]; then
+                echo -e "${RED}Error: --log requires a filename${NC}"
+                show_usage
+                exit 1
+            fi
             LOG_FILE="$2"
             shift 2
             ;;
