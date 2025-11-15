@@ -10,18 +10,10 @@ configure_git() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -ne "${YELLOW}Git kullanıcı adınızı girin: ${NC}"
-    if [ -e /dev/tty ]; then
-        read -r git_user </dev/tty
-    else
-        read -r git_user
-    fi
+    read -r git_user
 
     echo -ne "${YELLOW}Git e-posta adresinizi girin: ${NC}"
-    if [ -e /dev/tty ]; then
-        read -r git_email </dev/tty
-    else
-        read -r git_email
-    fi
+    read -r git_email
 
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
@@ -96,13 +88,7 @@ EOF
         echo ""
 
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-
-        # Read from /dev/tty if available
-        if [ -e /dev/tty ]; then
-            read -r mode_choice </dev/tty
-        else
-            read -r mode_choice
-        fi
+        read -r mode_choice
 
         # Boş input kontrolü
         if [ -z "$mode_choice" ]; then
@@ -156,7 +142,7 @@ run_advanced_mode() {
     while true; do
         show_advanced_menu
         echo -ne "\n${YELLOW}Seçiminizi yapın (virgülle ayırarak birden fazla seçebilirsiniz): ${NC}"
-        read -r choices </dev/tty
+        read -r choices
 
         # Convert choices to array
         IFS=',' read -ra choice_array <<< "$choices"

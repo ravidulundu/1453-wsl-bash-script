@@ -59,6 +59,12 @@ source "${SCRIPT_DIR}/modules/quickstart.sh"
 # shellcheck source=modules/menus.sh
 source "${SCRIPT_DIR}/modules/menus.sh"
 
-# Phase 5: Display banner and run main program
+# Phase 5: Fix stdin for interactive mode
+# If stdin is not a terminal (piped from curl), redirect to /dev/tty
+if [ ! -t 0 ] && [ -e /dev/tty ]; then
+    exec </dev/tty
+fi
+
+# Phase 6: Display banner and run main program
 show_banner
 main "$@"

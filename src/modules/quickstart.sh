@@ -34,13 +34,7 @@ EOF
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
     echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
-
-    # Read from /dev/tty if available
-    if [ -e /dev/tty ]; then
-        read -r response </dev/tty
-    else
-        read -r response
-    fi
+    read -r response
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
@@ -82,13 +76,7 @@ show_presets() {
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
     echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-
-    # Read from /dev/tty if available
-    if [ -e /dev/tty ]; then
-        read -r preset </dev/tty
-    else
-        read -r preset
-    fi
+    read -r preset
 
     case $preset in
         1) echo "web";;
