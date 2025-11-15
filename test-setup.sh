@@ -45,6 +45,7 @@ declare -a WARNING_ITEMS=()
 VERBOSE=false
 JSON_OUTPUT=false
 LOG_FILE=""
+SNAPSHOT_MODE=false
 START_TIME=$(date +%s)
 
 # ===================================================================================================
@@ -82,6 +83,7 @@ ${BOLD}Seçenekler:${NC}
     --verbose, -v       Detaylı çıktı
     --json, -j          JSON formatında rapor
     --log FILE, -l FILE Log dosyasına kaydet
+    --snapshot, -s      Snapshot/Röntgen modu (sistem durumunun tam raporu)
     --help, -h          Bu yardım mesajını göster
 
 ${BOLD}Örnekler:${NC}
@@ -89,6 +91,8 @@ ${BOLD}Örnekler:${NC}
     ./test-setup.sh --verbose                # Detaylı test
     ./test-setup.sh --json > report.json     # JSON rapor
     ./test-setup.sh --log test-results.log   # Log dosyasına kaydet
+    ./test-setup.sh --snapshot               # WSL sistem röntgeni
+    ./test-setup.sh --snapshot --log wsl-snapshot.log  # Snapshot'ı log dosyasına kaydet
 EOF
 }
 
@@ -586,6 +590,138 @@ test_installation_directory() {
     fi
 }
 
+# 13. Alias Kontrolü
+test_aliases() {
+    local category="Bash Aliases"
+    show_category "$category"
+
+    # .bash_aliases dosyası kontrolü
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local alias_count=$(grep -c "^alias" "$HOME/.bash_aliases" 2>/dev/null || echo "0")
+        record_test "$category" "PASS" ".bash_aliases dosyası mevcut ($alias_count alias tanımlı)"
+
+        # Alias bağımlılıklarını kontrol et
+        check_alias_dependency "cat" "batcat" "$category" "cat='batcat' alias"
+        check_alias_dependency "grep" "rg" "$category" "grep='rg' alias"
+        check_alias_dependency "find" "fdfind" "$category" "find='fdfind' alias"
+        check_alias_dependency "ls" "eza" "$category" "ls='eza' alias"
+        check_alias_dependency "ll" "eza" "$category" "ll='eza' alias"
+        check_alias_dependency "la" "eza" "$category" "la='eza' alias"
+        check_alias_dependency "lg" "lazygit" "$category" "lg='lazygit' alias"
+        check_alias_dependency "ld" "lazydocker" "$category" "ld='lazydocker' alias"
+
+        # Bashrc'de alias sourcing kontrolü
+        if grep -q "\.bash_aliases" "$HOME/.bashrc" 2>/dev/null; then
+            record_test "$category" "PASS" ".bashrc .bash_aliases'ı source ediyor"
+        else
+            record_test "$category" "FAIL" ".bashrc .bash_aliases'ı source etmiyor"
+        fi
+    else
+        record_test "$category" "FAIL" ".bash_aliases dosyası bulunamadı"
+    fi
+}
+
+# Alias bağımlılık kontrolü
+check_alias_dependency() {
+    local alias_name="$1"
+    local command="$2"
+    local category="$3"
+    local description="$4"
+
+    if grep -q "alias $alias_name=" "$HOME/.bash_aliases" 2>/dev/null; then
+        if command -v "$command" &> /dev/null; then
+            record_test "$category" "PASS" "$description → $command mevcut ✓"
+        else
+            record_test "$category" "FAIL" "$description → $command EKSIK! Alias çalışmayacak"
+        fi
+    fi
+}
+
+# 14. Eksik Yüklemeler - Detaylı Analiz
+test_missing_installations() {
+    local category="Eksik Yüklemeler Analizi"
+    show_category "$category"
+
+    local missing=()
+    local optional_missing=()
+
+    # Temel araçlar (kritik)
+    command -v git &> /dev/null || missing+=("git")
+    command -v curl &> /dev/null || missing+=("curl")
+    command -v wget &> /dev/null || missing+=("wget")
+
+    # Python ekosistemi
+    if ! command -v python3 &> /dev/null; then
+        missing+=("python3")
+    fi
+    if ! command -v pip3 &> /dev/null; then
+        missing+=("pip3")
+    fi
+    if ! command -v pipx &> /dev/null; then
+        optional_missing+=("pipx")
+    fi
+    if ! command -v uv &> /dev/null; then
+        optional_missing+=("uv (UV package manager)")
+    fi
+
+    # JavaScript ekosistemi
+    if [ ! -d "$HOME/.nvm" ]; then
+        optional_missing+=("NVM")
+    fi
+    if ! command -v node &> /dev/null; then
+        optional_missing+=("Node.js")
+    fi
+    if ! command -v bun &> /dev/null; then
+        optional_missing+=("Bun.js")
+    fi
+
+    # Modern CLI tools
+    if ! command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
+        optional_missing+=("bat/batcat")
+    fi
+    if ! command -v eza &> /dev/null; then
+        optional_missing+=("eza")
+    fi
+    if ! command -v starship &> /dev/null; then
+        optional_missing+=("starship")
+    fi
+    if ! command -v zoxide &> /dev/null; then
+        optional_missing+=("zoxide")
+    fi
+    if ! command -v fzf &> /dev/null; then
+        optional_missing+=("fzf")
+    fi
+    if ! command -v rg &> /dev/null; then
+        optional_missing+=("ripgrep (rg)")
+    fi
+    if ! command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
+        optional_missing+=("fd-find")
+    fi
+    if ! command -v lazygit &> /dev/null; then
+        optional_missing+=("lazygit")
+    fi
+    if ! command -v lazydocker &> /dev/null; then
+        optional_missing+=("lazydocker")
+    fi
+
+    # Sonuçlar
+    if [ ${#missing[@]} -eq 0 ]; then
+        record_test "$category" "PASS" "Tüm kritik araçlar kurulu ✓"
+    else
+        for item in "${missing[@]}"; do
+            record_test "$category" "FAIL" "KRİTİK: $item eksik!"
+        done
+    fi
+
+    if [ ${#optional_missing[@]} -eq 0 ]; then
+        record_test "$category" "PASS" "Tüm opsiyonel araçlar kurulu ✓"
+    else
+        for item in "${optional_missing[@]}"; do
+            record_test "$category" "WARNING" "Opsiyonel: $item kurulu değil"
+        done
+    fi
+}
+
 # ===================================================================================================
 # Rapor Oluşturma
 # ===================================================================================================
@@ -761,6 +897,134 @@ EOF
 # Ana Program
 # ===================================================================================================
 
+# Snapshot/Röntgen Fonksiyonu
+generate_snapshot() {
+    echo -e "${CYAN}${BOLD}"
+    echo "════════════════════════════════════════════════════════════════"
+    echo "   WSL SİSTEM RÖNTGEN RAPORU - $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "════════════════════════════════════════════════════════════════"
+    echo -e "${NC}"
+
+    echo -e "${BOLD}[SİSTEM BİLGİLERİ]${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    [ -f /etc/os-release ] && source /etc/os-release && echo "İşletim Sistemi: $PRETTY_NAME"
+    echo "Kernel: $(uname -r)"
+    echo "Hostname: $(hostname)"
+    echo "Kullanıcı: $USER"
+    echo "Home: $HOME"
+    grep -qi microsoft /proc/version 2>/dev/null && echo "WSL: Tespit edildi ✓" || echo "WSL: Tespit edilemedi"
+    echo ""
+
+    echo -e "${BOLD}[DONANIM BİLGİLERİ]${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "CPU: $(lscpu | grep "Model name" | cut -d ':' -f2 | xargs)"
+    echo "CPU Çekirdek: $(nproc)"
+    echo "RAM: $(free -h | awk '/^Mem:/ {print $2}')"
+    echo "Disk Kullanımı:"
+    df -h / | tail -n1 | awk '{print "  Toplam: "$2" | Kullanılan: "$3" | Boş: "$4" | Kullanım: "$5}'
+    echo ""
+
+    echo -e "${BOLD}[KURULU ARAÇLAR - VERSIYONLAR]${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    echo -e "${CYAN}Temel Araçlar:${NC}"
+    command -v git &>/dev/null && echo "  git: $(git --version | awk '{print $3}')" || echo "  git: KURULU DEĞİL"
+    command -v curl &>/dev/null && echo "  curl: $(curl --version | head -n1 | awk '{print $2}')" || echo "  curl: KURULU DEĞİL"
+    command -v wget &>/dev/null && echo "  wget: $(wget --version | head -n1 | awk '{print $3}')" || echo "  wget: KURULU DEĞİL"
+    command -v jq &>/dev/null && echo "  jq: $(jq --version)" || echo "  jq: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}Python Ekosistemi:${NC}"
+    command -v python3 &>/dev/null && echo "  Python: $(python3 --version | awk '{print $2}')" || echo "  Python: KURULU DEĞİL"
+    command -v pip3 &>/dev/null && echo "  pip: $(pip3 --version | awk '{print $2}')" || echo "  pip: KURULU DEĞİL"
+    command -v pipx &>/dev/null && echo "  pipx: $(pipx --version)" || echo "  pipx: KURULU DEĞİL"
+    command -v uv &>/dev/null && echo "  uv: $(uv --version | awk '{print $2}')" || echo "  uv: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}JavaScript Ekosistemi:${NC}"
+    if [ -d "$HOME/.nvm" ]; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        command -v nvm &>/dev/null && echo "  NVM: $(nvm --version)" || echo "  NVM: Kurulu ama yüklenemedi"
+    else
+        echo "  NVM: KURULU DEĞİL"
+    fi
+    command -v node &>/dev/null && echo "  Node.js: $(node --version)" || echo "  Node.js: KURULU DEĞİL"
+    command -v npm &>/dev/null && echo "  npm: $(npm --version)" || echo "  npm: KURULU DEĞİL"
+    command -v bun &>/dev/null && echo "  Bun: $(bun --version)" || echo "  Bun: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}PHP Ekosistemi:${NC}"
+    command -v php &>/dev/null && echo "  PHP: $(php --version | head -n1 | awk '{print $2}')" || echo "  PHP: KURULU DEĞİL"
+    command -v composer &>/dev/null && echo "  Composer: $(composer --version 2>/dev/null | awk '{print $3}')" || echo "  Composer: KURULU DEĞİL"
+    if command -v update-alternatives &>/dev/null && command -v php &>/dev/null; then
+        local php_count=$(update-alternatives --list php 2>/dev/null | wc -l)
+        [ "$php_count" -gt 0 ] && echo "  PHP Versiyonları: $php_count adet"
+    fi
+    echo ""
+
+    echo -e "${CYAN}Go Language:${NC}"
+    command -v go &>/dev/null && echo "  Go: $(go version | awk '{print $3}' | sed 's/go//')" || echo "  Go: KURULU DEĞİL"
+    [ -n "$GOPATH" ] && echo "  GOPATH: $GOPATH"
+    [ -n "$GOROOT" ] && echo "  GOROOT: $GOROOT"
+    echo ""
+
+    echo -e "${CYAN}Modern CLI Araçları:${NC}"
+    command -v batcat &>/dev/null && echo "  bat: $(batcat --version | awk '{print $2}')" || echo "  bat: KURULU DEĞİL"
+    command -v eza &>/dev/null && echo "  eza: $(eza --version | head -n1 | awk '{print $2}')" || echo "  eza: KURULU DEĞİL"
+    command -v rg &>/dev/null && echo "  ripgrep: $(rg --version | head -n1 | awk '{print $2}')" || echo "  ripgrep: KURULU DEĞİL"
+    command -v fdfind &>/dev/null && echo "  fd: $(fdfind --version | awk '{print $2}')" || echo "  fd: KURULU DEĞİL"
+    command -v starship &>/dev/null && echo "  starship: $(starship --version | awk '{print $2}')" || echo "  starship: KURULU DEĞİL"
+    command -v zoxide &>/dev/null && echo "  zoxide: $(zoxide --version | awk '{print $2}')" || echo "  zoxide: KURULU DEĞİL"
+    command -v fzf &>/dev/null && echo "  fzf: $(fzf --version | awk '{print $1}')" || echo "  fzf: KURULU DEĞİL"
+    command -v lazygit &>/dev/null && echo "  lazygit: $(lazygit --version | grep version | awk '{print $6}' | tr -d ',')" || echo "  lazygit: KURULU DEĞİL"
+    command -v lazydocker &>/dev/null && echo "  lazydocker: $(lazydocker --version | grep Version | awk '{print $2}')" || echo "  lazydocker: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}AI CLI Araçları:${NC}"
+    command -v claude &>/dev/null && echo "  Claude Code: KURULU ✓" || echo "  Claude Code: KURULU DEĞİL"
+    command -v gh &>/dev/null && echo "  GitHub CLI: $(gh --version | head -n1 | awk '{print $3}')" || echo "  GitHub CLI: KURULU DEĞİL"
+    command -v gemini-cli &>/dev/null && echo "  Gemini CLI: KURULU ✓" || echo "  Gemini CLI: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}AI Frameworks:${NC}"
+    [ -d "$HOME/SuperGemini" ] && echo "  SuperGemini: KURULU ✓" || echo "  SuperGemini: KURULU DEĞİL"
+    [ -d "$HOME/SuperQwen" ] && echo "  SuperQwen: KURULU ✓" || echo "  SuperQwen: KURULU DEĞİL"
+    [ -d "$HOME/SuperClaude" ] && echo "  SuperClaude: KURULU ✓" || echo "  SuperClaude: KURULU DEĞİL"
+    echo ""
+
+    echo -e "${CYAN}Docker:${NC}"
+    command -v docker &>/dev/null && echo "  Docker: $(docker --version | awk '{print $3}' | tr -d ',')" || echo "  Docker: KURULU DEĞİL"
+    if command -v docker &>/dev/null; then
+        docker ps &>/dev/null && echo "  Docker Daemon: ÇALIŞIYOR ✓" || echo "  Docker Daemon: DURDURULMUŞ"
+        groups | grep -q docker && echo "  Docker Group: KULLANICI EKLENMIŞ ✓" || echo "  Docker Group: KULLANICI EKLENMEMİŞ"
+    fi
+    echo ""
+
+    echo -e "${BOLD}[SHELL ORTAMI]${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Shell: $SHELL"
+    [ -f "$HOME/.bash_aliases" ] && echo ".bash_aliases: MEVCUT ($(grep -c '^alias' "$HOME/.bash_aliases") alias)" || echo ".bash_aliases: BULUNAMADI"
+    [ -f "$HOME/.bashrc" ] && echo ".bashrc: MEVCUT" || echo ".bashrc: BULUNAMADI"
+    grep -q "1453" "$HOME/.bashrc" 2>/dev/null && echo "1453 WSL Setup Config: AKTIF ✓" || echo "1453 WSL Setup Config: BULUNAMADI"
+    grep -q "starship" "$HOME/.bashrc" 2>/dev/null && echo "Starship Prompt: AKTIF ✓" || echo "Starship Prompt: PASIF"
+    grep -q "zoxide" "$HOME/.bashrc" 2>/dev/null && echo "Zoxide: AKTIF ✓" || echo "Zoxide: PASIF"
+    grep -q "FZF" "$HOME/.bashrc" 2>/dev/null && echo "FZF Integration: AKTIF ✓" || echo "FZF Integration: PASIF"
+    echo ""
+
+    echo -e "${BOLD}[DİZİNLER]${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    [ -d "$HOME/.1453-wsl-setup" ] && echo "1453 Setup: $HOME/.1453-wsl-setup ✓" || echo "1453 Setup: BULUNAMADI"
+    [ -d "$HOME/.nvm" ] && echo "NVM: $HOME/.nvm ✓" || echo "NVM: BULUNAMADI"
+    [ -d "$HOME/.config" ] && echo "Config: $HOME/.config ✓" || echo "Config: BULUNAMADI"
+    [ -d "$HOME/go" ] && echo "Go Workspace: $HOME/go ✓" || echo "Go Workspace: BULUNAMADI"
+    echo ""
+
+    echo -e "${CYAN}${BOLD}════════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}Snapshot raporu tamamlandı!${NC}"
+    echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+}
+
 # Argüman işleme
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -775,6 +1039,10 @@ while [[ $# -gt 0 ]]; do
         -l|--log)
             LOG_FILE="$2"
             shift 2
+            ;;
+        -s|--snapshot)
+            SNAPSHOT_MODE=true
+            shift
             ;;
         -h|--help)
             show_usage
@@ -793,6 +1061,17 @@ if [ -n "$LOG_FILE" ]; then
     echo "1453 WSL Setup Test - $(date)" > "$LOG_FILE"
     echo "======================================" >> "$LOG_FILE"
     add_log "Test başlatıldı"
+fi
+
+# Snapshot modu kontrolü
+if [ "$SNAPSHOT_MODE" = true ]; then
+    # Snapshot modunda sadece röntgen raporu göster
+    if [ -n "$LOG_FILE" ]; then
+        generate_snapshot | tee -a "$LOG_FILE"
+    else
+        generate_snapshot
+    fi
+    exit 0
 fi
 
 # JSON output değilse banner göster
@@ -816,6 +1095,8 @@ test_ai_cli_tools
 test_ai_frameworks
 test_docker
 test_installation_directory
+test_aliases
+test_missing_installations
 
 # Rapor göster
 if [ "$JSON_OUTPUT" = true ]; then
