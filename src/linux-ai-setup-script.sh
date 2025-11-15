@@ -65,10 +65,18 @@ source "${SCRIPT_DIR}/modules/menus.sh"
 
 echo "[DEBUG] Fixing stdin..." >&2
 
-# Fix nonblocking stdin issue (if perl is available)
+# Fix nonblocking stdin issue - try multiple methods
 if command -v perl &>/dev/null; then
     echo "[DEBUG] Setting stdin to blocking mode with perl..." >&2
     perl -MFcntl -e 'fcntl STDIN, F_SETFL, fcntl(STDIN, F_GETFL, 0) & ~O_NONBLOCK' 2>&1 | head -1 >&2
+elif command -v python3 &>/dev/null; then
+    echo "[DEBUG] Setting stdin to blocking mode with python3..." >&2
+    python3 -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>&1 | head -1 >&2
+elif command -v python &>/dev/null; then
+    echo "[DEBUG] Setting stdin to blocking mode with python..." >&2
+    python -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>&1 | head -1 >&2
+else
+    echo "[DEBUG] WARNING: Neither perl nor python available, cannot fix nonblocking stdin" >&2
 fi
 
 # Redirect stdin to /dev/tty
