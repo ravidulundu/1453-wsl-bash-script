@@ -258,33 +258,85 @@ cleanup_modern_tools() {
     echo -e "${BLUE}║    Modern CLI Tools Temizleniyor       ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    local tools=("bat" "eza" "ripgrep" "fd-find" "starship" "zoxide" "vivid" "fastfetch" "lazygit" "lazydocker")
+    # Tool name mapping (command name -> package name)
+    declare -A tool_packages=(
+        ["bat"]="bat"
+        ["batcat"]="bat"
+        ["eza"]="eza"
+        ["rg"]="ripgrep"
+        ["ripgrep"]="ripgrep"
+        ["fd"]="fd-find"
+        ["fd-find"]="fd-find"
+        ["fzf"]="fzf"
+        ["vivid"]="vivid"
+        ["fastfetch"]="fastfetch"
+        ["lazygit"]="lazygit"
+        ["lazydocker"]="lazydocker"
+    )
 
-    for tool in "${tools[@]}"; do
-        if command -v "$tool" &>/dev/null; then
-            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor..."
+    # Special handling for each tool
 
-            # Try apt remove first
-            sudo apt remove -y "$tool" 2>/dev/null || {
-                # If not an apt package, try snap
-                sudo snap remove "$tool" 2>/dev/null || {
-                    # Manual installation cleanup
-                    sudo rm -f "/usr/local/bin/$tool"
-                    rm -f "$HOME/.local/bin/$tool"
-                }
-            }
+    # Starship (manual install)
+    if command -v starship &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Starship kaldırılıyor..."
+        sudo rm -f /usr/local/bin/starship
+        rm -f ~/.config/starship.toml
+        echo -e "${GREEN}[BAŞARILI]${NC} Starship kaldırıldı"
+    fi
 
-            echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı"
+    # Zoxide (manual install)
+    if command -v zoxide &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kaldırılıyor..."
+        rm -f ~/.local/bin/zoxide
+        sudo rm -f /usr/local/bin/zoxide
+        sudo rm -f /usr/bin/zoxide
+        echo -e "${GREEN}[BAŞARILI]${NC} Zoxide kaldırıldı"
+    fi
+
+    # APT packages
+    for cmd in "${!tool_packages[@]}"; do
+        if command -v "$cmd" &>/dev/null; then
+            local pkg="${tool_packages[$cmd]}"
+            echo -e "${YELLOW}[BİLGİ]${NC} $pkg kaldırılıyor..."
+
+            # Try apt remove
+            if sudo apt remove -y "$pkg" 2>/dev/null; then
+                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (apt) kaldırıldı"
+            elif sudo snap remove "$pkg" 2>/dev/null; then
+                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (snap) kaldırıldı"
+            else
+                # Manual cleanup
+                sudo rm -f "/usr/local/bin/$cmd"
+                sudo rm -f "/usr/bin/$cmd"
+                rm -f "$HOME/.local/bin/$cmd"
+                echo -e "${GREEN}[BAŞARILI]${NC} $cmd (manuel) kaldırıldı"
+            fi
         fi
     done
 
-    # Starship config
-    if [ -f ~/.config/starship.toml ]; then
-        mv ~/.config/starship.toml ~/.config/starship.toml.removed
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship config kaldırıldı"
+    # Lazydocker (GitHub release)
+    if command -v lazydocker &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazydocker
+        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI tools temizlendi"
+    # Lazygit (PPA)
+    if command -v lazygit &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} lazygit kaldırılıyor..."
+        sudo apt remove -y lazygit 2>/dev/null || sudo rm -f /usr/local/bin/lazygit
+        echo -e "${GREEN}[BAŞARILI]${NC} lazygit kaldırıldı"
+    fi
+
+    # Clean up eza repository
+    if [ -f /etc/apt/sources.list.d/gierens.list ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} eza repository kaldırılıyor..."
+        sudo rm -f /etc/apt/sources.list.d/gierens.list
+        sudo rm -f /etc/apt/keyrings/gierens.gpg
+        echo -e "${GREEN}[BAŞARILI]${NC} eza repository kaldırıldı"
+    fi
+
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
 }
 
 # Cleanup Shell Configs
@@ -299,32 +351,85 @@ cleanup_shell_configs() {
         echo -e "${GREEN}[BAŞARILI]${NC} .bashrc yedeklendi"
     fi
 
-    # Remove .bash_aliases
+    # Remove .bash_aliases completely
     if [ -f ~/.bash_aliases ]; then
-        mv ~/.bash_aliases ~/.bash_aliases.removed
-        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases kaldırıldı (yedek: .bash_aliases.removed)"
+        rm -f ~/.bash_aliases
+        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi"
     fi
 
-    # Remove 1453 Setup lines from .bashrc
+    # Remove 1453 Setup related lines from .bashrc - SAFE CLEANUP
     if [ -f ~/.bashrc ]; then
-        sed -i '/# Custom Functions - 1453 WSL Setup/,/^$/d' ~/.bashrc
-        sed -i '/# Enhanced Bash Config - 1453 WSL Setup/,/^$/d' ~/.bashrc
-        sed -i '/# Source bash aliases/d' ~/.bashrc
-        sed -i '/source ~\/.bash_aliases/d' ~/.bashrc
-        sed -i '/starship init/d' ~/.bashrc
-        sed -i '/zoxide init/d' ~/.bashrc
-        echo -e "${GREEN}[BAŞARILI]${NC} .bashrc temizlendi"
+        # Create a temp file for safe editing
+        local temp_bashrc=$(mktemp)
+        local in_1453_block=0
+        local line_num=0
+
+        while IFS= read -r line; do
+            ((line_num++))
+            local skip_line=0
+
+            # Skip 1453 WSL Setup comment blocks
+            if [[ "$line" =~ "# Custom Functions - 1453 WSL Setup" ]] || \
+               [[ "$line" =~ "# Enhanced Bash Config - 1453 WSL Setup" ]] || \
+               [[ "$line" =~ "# 1453 WSL Setup" ]]; then
+                in_1453_block=1
+                skip_line=1
+            fi
+
+            # If in 1453 block, skip until empty line
+            if [ $in_1453_block -eq 1 ]; then
+                skip_line=1
+                if [[ -z "$line" ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                    in_1453_block=0
+                fi
+            fi
+
+            # Skip specific lines we added (exact matches only)
+            if [[ "$line" == *'eval "$(starship init bash)"'* ]] || \
+               [[ "$line" == *'eval "$(zoxide init bash)"'* ]] || \
+               [[ "$line" == 'export NVM_DIR="$HOME/.nvm"' ]] || \
+               [[ "$line" == *'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'* ]] || \
+               [[ "$line" == *'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"'* ]] || \
+               [[ "$line" == 'export BUN_INSTALL="$HOME/.bun"' ]] || \
+               [[ "$line" == *'export PATH="$BUN_INSTALL/bin:$PATH"'* ]] || \
+               [[ "$line" == *'export LS_COLORS="$(vivid generate'* ]] || \
+               [[ "$line" == *'[ -f ~/.fzf.bash ] && source ~/.fzf.bash'* ]] || \
+               [[ "$line" == *'source ~/.bash_aliases'* && "$line" == *'# 1453'* ]]; then
+                skip_line=1
+            fi
+
+            # Keep the line if not skipping
+            if [ $skip_line -eq 0 ]; then
+                echo "$line" >> "$temp_bashrc"
+            fi
+        done < ~/.bashrc
+
+        # Replace bashrc with cleaned version
+        mv "$temp_bashrc" ~/.bashrc
+        echo -e "${GREEN}[BAŞARILI]${NC} .bashrc güvenli bir şekilde temizlendi"
     fi
 
     # Remove starship config
     if [ -f ~/.config/starship.toml ]; then
-        mv ~/.config/starship.toml ~/.config/starship.toml.removed
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship config kaldırıldı"
+        rm -f ~/.config/starship.toml
+        echo -e "${GREEN}[BAŞARILI]${NC} Starship config silindi"
+    fi
+
+    # Remove fzf
+    if [ -d ~/.fzf ]; then
+        rm -rf ~/.fzf
+        echo -e "${GREEN}[BAŞARILI]${NC} FZF dizini silindi"
+    fi
+
+    if [ -f ~/.fzf.bash ]; then
+        rm -f ~/.fzf.bash
+        echo -e "${GREEN}[BAŞARILI]${NC} FZF bash config silindi"
     fi
 
     echo -e "\n${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için:"
     echo -e "  ${CYAN}source ~/.bashrc${NC}"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell config temizlendi"
+    echo -e "  ${YELLOW}veya terminali yeniden başlatın${NC}"
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell config tamamen temizlendi"
 }
 
 # Cleanup AI CLI Tools
@@ -402,28 +507,33 @@ cleanup_full_reset() {
     clear
     echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${RED}║                  🔴 TAM SIFIRLAMA 🔴                         ║${NC}"
+    echo -e "${RED}║              WSL'i İLK HALİNE GETİR                          ║${NC}"
     echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
 
     echo -e "${RED}⚠️  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
     echo -e "${YELLOW}Silinecekler:${NC}"
-    echo -e "  • Tüm kurulumlar (Python, Node, PHP, Go, etc.)"
-    echo -e "  • Tüm modern CLI tools"
-    echo -e "  • Shell config değişiklikleri"
-    echo -e "  • AI tools ve frameworks"
-    echo -e "  • Kurulum dizini (~/.1453-wsl-setup)"
+    echo -e "  • ${RED}Tüm kurulumlar${NC} (Python, Node, PHP, Go, Docker, etc.)"
+    echo -e "  • ${RED}Tüm modern CLI tools${NC} (bat, eza, starship, zoxide, fzf, etc.)"
+    echo -e "  • ${RED}Shell config değişiklikleri${NC} (.bashrc, .bash_aliases)"
+    echo -e "  • ${RED}AI tools ve frameworks${NC}"
+    echo -e "  • ${RED}Kurulum dizini${NC} (~/.1453-wsl-setup)"
+    echo -e "  • ${RED}Kaynak kod dizini${NC} (~/1453-wsl-bash-script - eğer varsa)"
+    echo -e "  • ${RED}Config dosyaları${NC} (starship, fzf, zoxide)"
+    echo ""
+    echo -e "${YELLOW}WSL ilk kurulduğu haline gelecek!${NC}"
     echo ""
 
-    if ! confirm_cleanup "HER ŞEY"; then
+    if ! confirm_cleanup "HER ŞEY (WSL İLK HALİNE GELECEK)"; then
         return 1
     fi
 
-    # Cleanup everything
+    # Cleanup everything - AGGRESSIVE MODE
     cleanup_python
     cleanup_nodejs
     cleanup_php
     cleanup_go
     cleanup_modern_tools
-    cleanup_shell_configs
+    cleanup_shell_configs  # Now much more aggressive
     cleanup_ai_tools
     cleanup_ai_frameworks
 
@@ -434,10 +544,44 @@ cleanup_full_reset() {
         echo -e "${GREEN}[BAŞARILI]${NC} Kurulum dizini kaldırıldı"
     fi
 
+    # Remove source code directory if exists
+    echo -e "\n${YELLOW}[BİLGİ]${NC} Kaynak kod dizini kontrol ediliyor..."
+    local source_dirs=(
+        "$HOME/1453-wsl-bash-script"
+        "$HOME/Downloads/1453-wsl-bash-script"
+        "$HOME/projects/1453-wsl-bash-script"
+    )
+
+    for dir in "${source_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            echo -e "${YELLOW}[BİLGİ]${NC} Kaynak kod dizini bulundu: $dir"
+            echo -ne "${RED}Bu dizini de silmek ister misiniz? (e/h): ${NC}"
+            read -r remove_source </dev/tty
+            if [[ "$remove_source" =~ ^[Ee]$ ]]; then
+                rm -rf "$dir"
+                echo -e "${GREEN}[BAŞARILI]${NC} Kaynak kod dizini silindi: $dir"
+            else
+                echo -e "${CYAN}[BİLGİ]${NC} Kaynak kod dizini korundu: $dir"
+            fi
+        fi
+    done
+
+    # Force reload shell to default state
+    echo -e "\n${YELLOW}[BİLGİ]${NC} Shell sıfırlanıyor..."
+    if [ -f ~/.bashrc ]; then
+        # Source the cleaned bashrc
+        source ~/.bashrc 2>/dev/null || true
+    fi
+
     echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║                  ✅ TAM SIFIRLAMA TAMAMLANDI                 ║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}\n"
-    echo -e "${CYAN}[BİLGİ]${NC} Sistem temiz bir duruma getirildi."
+    echo -e "${CYAN}[BİLGİ]${NC} WSL ilk kurulum haline getirildi."
+    echo -e "${YELLOW}[ÖNEMLİ]${NC} Değişikliklerin tam aktif olması için:"
+    echo -e "  ${RED}1. Tüm terminal pencerelerini kapatın${NC}"
+    echo -e "  ${RED}2. WSL'i yeniden başlatın: ${CYAN}wsl --shutdown${NC}"
+    echo -e "  ${RED}3. Yeni terminal açın${NC}"
+    echo ""
     echo -e "${CYAN}[BİLGİ]${NC} Script'i tekrar çalıştırarak yeniden kurulum yapabilirsiniz."
 }
 

@@ -96,6 +96,7 @@ main() {
         "src/modules/javascript.sh:JavaScript ekosistemi"
         "src/modules/php.sh:PHP ekosistemi"
         "src/modules/go.sh:Go kurulum modülü"
+        "src/modules/docker.sh:Docker kurulum modülü"
         "src/modules/modern-tools.sh:Modern CLI araçları"
         "src/modules/shell-setup.sh:Shell ortamı yapılandırma"
         "src/modules/ai-cli.sh:AI CLI araçları"

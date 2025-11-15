@@ -38,6 +38,9 @@ source "${SCRIPT_DIR}/modules/javascript.sh"
 # shellcheck source=modules/go.sh
 source "${SCRIPT_DIR}/modules/go.sh"
 
+# shellcheck source=modules/docker.sh
+source "${SCRIPT_DIR}/modules/docker.sh"
+
 # shellcheck source=modules/php.sh
 source "${SCRIPT_DIR}/modules/php.sh"
 

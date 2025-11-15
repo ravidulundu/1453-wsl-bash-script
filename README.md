@@ -112,7 +112,271 @@ All presets automatically include:
 15. Modern CLI Araçları
 16. Shell Ortamı Kurulumu
 17. 🗑️ Temizleme ve Sıfırlama
+18. 🐳 Docker (Docker Engine + lazydocker)
 0. Çıkış
+
+## 🛠️ Modern CLI Araçları Kullanımı
+
+Script ile kurulan modern CLI araçları ve kullanımları:
+
+### 📁 Dosya Yönetimi
+
+#### **bat** - Syntax Highlighted Cat
+`cat` komutunun gelişmiş versiyonu, syntax highlighting ile dosya görüntüleme.
+
+```bash
+# Dosya içeriğini renkli göster
+bat dosya.py
+
+# Satır numaraları ile
+bat -n dosya.js
+
+# Birden fazla dosya
+bat dosya1.txt dosya2.txt
+
+# Alias olarak zaten tanımlı:
+cat dosya.py  # otomatik bat kullanır
+```
+
+#### **eza** - Modern ls
+Gelişmiş `ls` komutu, renkli ve detaylı listeleme.
+
+```bash
+# Temel kullanım (alias: ll)
+ll
+
+# Dosyaları listele
+eza -la
+
+# Ağaç görünümü
+eza --tree
+
+# Git durumu ile
+eza -la --git
+
+# Zaten tanımlı aliaslar:
+ls   # eza kullanır
+ll   # eza -lah
+la   # eza -a
+lt   # eza --tree
+```
+
+#### **fd** - Modern Find
+Hızlı dosya arama.
+
+```bash
+# Dosya ara
+fd dosya_adi
+
+# Belirli uzantıda ara
+fd -e js
+
+# Dizin ara
+fd -t d klasor_adi
+
+# Ignore edilenleri dahil et
+fd -H gizli_dosya
+```
+
+#### **ripgrep (rg)** - Süper Hızlı Grep
+Çok hızlı içerik arama.
+
+```bash
+# Tüm dosyalarda ara
+rg "aranan_kelime"
+
+# Sadece .py dosyalarında ara
+rg "fonksiyon" -t py
+
+# Case insensitive
+rg -i "KELIME"
+
+# Satır numarası ile
+rg -n "kod"
+```
+
+### 🎨 Terminal Güzelleştirme
+
+#### **starship** - Modern Shell Prompt
+Otomatik olarak aktif. Git durumu, Python/Node versiyonu, vs. gösterir.
+
+```bash
+# Starship config dosyası
+~/.config/starship.toml
+
+# Yeni terminal açtığınızda otomatik çalışır
+# Git repo'sunda → branch ve değişiklikler gösterir
+# Python projede → Python versiyonu gösterir
+# Node projede → Node versiyonu gösterir
+```
+
+#### **vivid** - LS_COLORS Generator
+`eza` ve `ls` için renk şemaları. Otomatik yapılandırılmış.
+
+### 🚀 Navigasyon
+
+#### **zoxide** - Akıllı cd
+Sık kullandığınız dizinleri hatırlar, hızlı erişim sağlar.
+
+```bash
+# Bir dizine git (ilk seferde normal cd kullan)
+cd ~/projeler/proje1
+
+# Sonra sadece isim yeter
+z proje1  # ~/projeler/proje1'e gider
+
+# Kısmi eşleşme
+z pro1    # ~/projeler/proje1'e gider
+
+# Liste
+zi        # interaktif seçim
+```
+
+#### **fzf** - Fuzzy Finder
+İnteraktif bulanık arama.
+
+```bash
+# Komut geçmişinde ara (Ctrl+R)
+# Terminalde Ctrl+R'ye bas, yazmaya başla
+
+# Dosya ara ve aç
+vim $(fzf)
+
+# Dizin seç ve git
+cd $(fd -t d | fzf)
+
+# Kill process
+kill -9 $(ps aux | fzf | awk '{print $2}')
+```
+
+### 🐙 Git Araçları
+
+#### **lazygit** - Terminal Git UI
+İnteraktif git arayüzü.
+
+```bash
+# Git repo'sunda çalıştır
+lazygit
+
+# Kullanımı:
+# ↑↓ : Hareket
+# Enter: Seç
+# Space: Stage/Unstage
+# c: Commit
+# P: Push
+# p: Pull
+# q: Çıkış
+```
+
+#### **lazydocker** - Terminal Docker UI
+İnteraktif Docker yönetimi.
+
+```bash
+# Docker çalışırken lazydocker kullan
+lazydocker
+
+# Kullanımı:
+# ↑↓ : Hareket
+# Enter: Seç/Aç
+# m: Menüler
+# x: Container exec
+# l: Loglar
+# s: Stats
+# q: Çıkış
+```
+
+### 🐳 Docker Kurulumu
+
+**Script ile Otomatik Kurulum (Önerilen):**
+
+```bash
+# Advanced Mode → Seçenek 18 (Docker)
+
+1) Docker Engine Kurulumu
+   - Docker CE + CLI
+   - containerd
+   - docker-compose plugin
+   - Kullanıcıyı docker grubuna ekler
+
+2) lazydocker Kurulumu
+   - Terminal UI
+   - Docker Engine kontrolü yapar
+
+3) Tümünü Kur
+   - Docker Engine + lazydocker
+```
+
+**Manuel Kurulum:**
+```bash
+# Docker Engine
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Docker grubuna kullanıcı ekle
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Lazydocker (script ile veya manuel)
+# Script'ten: Advanced Mode → 18 → 2
+```
+
+### 📊 Sistem Bilgisi
+
+#### **fastfetch** - Sistem Bilgisi
+Renkli sistem bilgisi gösterimi.
+
+```bash
+# Hızlı sistem bilgisi
+fastfetch
+
+# Özel logo ile
+fastfetch -l arch
+
+# Sadece belirli bilgiler
+fastfetch --structure Title:Separator:OS:Host:Kernel:Uptime
+```
+
+### 🎯 Özel Aliaslar (62+)
+
+Script 62'den fazla alias yükler. İşte en kullanışlı olanlar:
+
+```bash
+# Git aliasları
+g         # git
+gs        # git status
+ga        # git add
+gc        # git commit -m
+gp        # git push
+gl        # git pull
+glog      # git log (renkli)
+
+# Navigasyon
+..        # cd ..
+...       # cd ../..
+~         # cd ~
+
+# Dosya operasyonları
+ll        # eza -lah (detaylı liste)
+la        # eza -a (tümünü göster)
+lt        # eza --tree (ağaç görünüm)
+
+# Güvenlik
+rm        # rm -i (onay iste)
+cp        # cp -i (onay iste)
+mv        # mv -i (onay iste)
+
+# Diğerleri
+grep      # grep --color=auto
+ports     # netstat -tulanp (port listesi)
+myip      # curl ifconfig.me (public IP)
+```
+
+### 💡 İpuçları
+
+1. **Tab Completion**: Çoğu araç tab completion destekler
+2. **Help**: Her araç için `komut --help` çalıştırın
+3. **Man Pages**: `man komut` ile detaylı dokümantasyon
+4. **Alias Listesi**: `alias` komutu ile tüm aliasları görebilirsiniz
 
 ## 🗑️ Temizleme ve Sıfırlama Özellikleri
 
@@ -159,6 +423,28 @@ Kurulumlarınızı yönetmek ve sıfırlamak için kapsamlı araçlar sunar:
 - **Zaman Damgalı Yedekler**: `~/.1453-backup-YYYYMMDD_HHMMSS/` dizinine kaydedilir
 - **Sistem Koruması**: Sistem paketlerini korur, sadece kullanıcı alanı kurulumlarını kaldırır
 - **Geri Alınabilir İşlemler**: Config dosyaları silinmek yerine `.removed` uzantısıyla taşınır
+- **Kaynak Kod Koruması**: Git clone'lanmış kaynak kod dizinini silmez (sadece `~/.1453-wsl-setup` silinir)
+
+### ⚠️ Önemli Notlar
+
+**Cleanup neleri SİLER:**
+- `~/.1453-wsl-setup` (kurulum dizini)
+- Kurulu araçlar (Python, Node, PHP, Go, vb.)
+- Config dosyaları (.bashrc değişiklikleri, .bash_aliases, vb.)
+
+**Cleanup neleri SİLMEZ:**
+- Kaynak kod repository'si (eğer `git clone` yaptıysanız)
+- Sistem paketleri
+- Kişisel dosyalarınız
+
+**Manuel temizlik için:**
+```bash
+# Kaynak kod dizinini bulmak
+find ~ -name "1453-wsl-bash-script" -type d
+
+# Manuel silmek (DİKKATLİ!)
+rm -rf ~/1453-wsl-bash-script  # veya bulduğunuz dizin
+```
 
 ### Kullanım Örneği
 

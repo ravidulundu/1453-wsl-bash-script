@@ -51,6 +51,7 @@ show_menu() {
     echo -e "  ${GREEN}15${NC}) Modern CLI Araçları (bat, eza, starship, zoxide, fzf, lazygit)"
     echo -e "  ${GREEN}16${NC}) Shell Ortamı Kurulumu (aliases, functions, bashrc)"
     echo -e "  ${RED}17${NC}) 🗑️  Temizleme ve Sıfırlama"
+    echo -e "  ${GREEN}18${NC}) 🐳 Docker (Docker Engine + lazydocker)"
     echo -e "  ${GREEN}0${NC}) Çıkış"
     echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 }
@@ -190,6 +191,7 @@ run_advanced_mode() {
                 15) install_modern_cli_tools ;;
                 16) setup_custom_shell ;;
                 17) show_cleanup_menu ;;
+                18) install_docker_menu ;;
                 0)
                     echo -e "\n${GREEN}[BİLGİ]${NC} Ana menüye dönülüyor..."
                     sleep 1
