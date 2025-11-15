@@ -239,9 +239,6 @@ execute_installation_plan() {
                 echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
                 install_superclaude
                 ;;
-            "github_cli")
-                install_github_cli
-                ;;
             "git_config")
                 # Already configured
                 ;;

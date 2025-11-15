@@ -72,7 +72,7 @@ fix_bat_fd_symlinks() {
         echo -e "${YELLOW}[BİLGİ]${NC} ~/.local/bin PATH'e ekleniyor..."
 
         # Add to .bashrc if not already there
-        if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
+        if ! grep -qF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
             echo '' >> "$HOME/.bashrc"
             echo '# Add ~/.local/bin to PATH for user binaries' >> "$HOME/.bashrc"
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
