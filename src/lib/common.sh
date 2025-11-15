@@ -83,6 +83,9 @@ check_internet_connection() {
 # Start sudo keepalive in background
 # Keeps sudo cache fresh throughout script execution
 start_sudo_keepalive() {
+    # Store parent PID before launching subshell
+    local parent_pid=$$
+
     # Background process that refreshes sudo cache every 60 seconds
     (
         while true; do
@@ -92,7 +95,7 @@ start_sudo_keepalive() {
 
             # Check if parent process still exists
             # If parent died, exit gracefully
-            kill -0 $$ 2>/dev/null || exit 0
+            kill -0 $parent_pid 2>/dev/null || exit 0
         done
     ) &
 
@@ -157,16 +160,32 @@ check_apt_repositories() {
 
     echo -e "${CYAN}[✓]${NC} APT repository erişimi kontrol ediliyor..."
 
-    if timeout 10 sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
-        echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
-        return 0
-    elif timeout 10 sudo apt-get update -qq &>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
-        return 0
+    # Check if timeout command is available
+    if command -v timeout &>/dev/null; then
+        if timeout 10 sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
+            echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            return 0
+        elif timeout 10 sudo apt-get update -qq &>/dev/null; then
+            echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
+            return 0
+        else
+            echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
+            echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            return 1
+        fi
     else
-        echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
-        echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
-        return 1
+        # Fallback without timeout command
+        if sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
+            echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            return 0
+        elif sudo apt-get update -qq &>/dev/null; then
+            echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
+            return 0
+        else
+            echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
+            echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            return 1
+        fi
     fi
 }
 

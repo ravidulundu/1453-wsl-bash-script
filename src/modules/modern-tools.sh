@@ -57,14 +57,22 @@ fix_bat_fd_symlinks() {
 
     # Create bat symlink if batcat exists but bat doesn't
     if command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
-        ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
-        echo -e "${GREEN}[BAŞARILI]${NC} bat symlink oluşturuldu: batcat → bat"
+        local batcat_path
+        batcat_path="$(which batcat)"
+        if [ -n "$batcat_path" ]; then
+            ln -sf "$batcat_path" "$HOME/.local/bin/bat"
+            echo -e "${GREEN}[BAŞARILI]${NC} bat symlink oluşturuldu: batcat → bat"
+        fi
     fi
 
     # Create fd symlink if fdfind exists but fd doesn't
     if command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
-        ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
-        echo -e "${GREEN}[BAŞARILI]${NC} fd symlink oluşturuldu: fdfind → fd"
+        local fdfind_path
+        fdfind_path="$(which fdfind)"
+        if [ -n "$fdfind_path" ]; then
+            ln -sf "$fdfind_path" "$HOME/.local/bin/fd"
+            echo -e "${GREEN}[BAŞARILI]${NC} fd symlink oluşturuldu: fdfind → fd"
+        fi
     fi
 
     # Ensure ~/.local/bin is in PATH

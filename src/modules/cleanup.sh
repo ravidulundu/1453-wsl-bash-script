@@ -295,9 +295,13 @@ cleanup_php() {
     # Remove PHP packages installed via APT
     if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
-        # Remove all php packages (php7.4, php8.0, php8.1, php8.2, php8.3, etc.)
-        sudo apt remove -y 'php*' 2>/dev/null
-        sudo apt autoremove -y 2>/dev/null
+        # Get list of installed PHP packages safely using dpkg
+        local php_packages
+        php_packages=$(dpkg -l | grep '^ii' | grep -E 'php[0-9]' | awk '{print $2}')
+        if [ -n "$php_packages" ]; then
+            sudo apt remove -y $php_packages 2>/dev/null
+            sudo apt autoremove -y 2>/dev/null
+        fi
 
         # Remove Ondřej Surý PPA
         if grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
@@ -401,14 +405,8 @@ cleanup_modern_tools() {
 
     # Clean up symlinks created by this script
     echo -e "${YELLOW}[BİLGİ]${NC} Script symlink'leri temizleniyor..."
-    if [ -L ~/.local/bin/bat ]; then
-        rm -f ~/.local/bin/bat
-        echo -e "${GREEN}[BAŞARILI]${NC} bat symlink kaldırıldı"
-    fi
-    if [ -L ~/.local/bin/fd ]; then
-        rm -f ~/.local/bin/fd
-        echo -e "${GREEN}[BAŞARILI]${NC} fd symlink kaldırıldı"
-    fi
+    rm -f ~/.local/bin/bat ~/.local/bin/fd
+    echo -e "${GREEN}[BAŞARILI]${NC} Symlink'ler temizlendi"
 
     echo ""
     echo -e "${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
@@ -612,9 +610,9 @@ cleanup_docker() {
     fi
 
     # Remove user from docker group
-    if groups $USER | grep -q docker; then
+    if id -nG "$USER" | grep -qw docker; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kullanıcı docker grubundan çıkarılıyor..."
-        sudo deluser $USER docker 2>/dev/null
+        sudo deluser "$USER" docker 2>/dev/null
         echo -e "${GREEN}[BAŞARILI]${NC} Docker grup üyeliği kaldırıldı"
     fi
 
@@ -630,7 +628,15 @@ cleanup_docker() {
     echo -e "${YELLOW}[!]${NC} Docker imajları ve volume'leri de silinsin mi?"
     echo -e "${YELLOW}[!]${NC} Bu işlem GERİ ALINAMAZ! Tüm container, image, volume, network silinecek."
     echo -ne "${YELLOW}Docker verilerini de sil? (e/h): ${NC}"
-    read -r delete_data </dev/tty
+
+    # Check if running in interactive mode
+    if [ -t 0 ]; then
+        read -r delete_data </dev/tty
+    else
+        # Default to 'no' in non-interactive mode (CI/CD, scripts)
+        delete_data="h"
+        echo -e "\n${CYAN}[BİLGİ]${NC} Non-interactive mod: Docker verileri korunuyor"
+    fi
 
     if [[ "$delete_data" =~ ^[Ee]$ ]]; then
         echo -e "${RED}[UYARI]${NC} Docker verileri siliniyor..."

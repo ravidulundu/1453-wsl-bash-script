@@ -227,7 +227,10 @@ execute_installation_plan() {
             "php")
                 # Quick Start: Install PHP 8.3 (stable) automatically without menu
                 echo -e "${YELLOW}[QUICK START]${NC} PHP 8.3 otomatik kuruluyor..."
-                install_php_version "8.3"
+                if ! install_php_version "8.3"; then
+                    echo -e "${RED}[✗]${NC} PHP 8.3 kurulumu başarısız!"
+                    return 1
+                fi
                 ;;
             "composer")
                 install_composer
@@ -238,8 +241,9 @@ execute_installation_plan() {
             "ai_cli")
                 # Quick Start: Install essential AI CLI tools automatically
                 echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
-                install_claude_code
-                install_github_cli
+                if ! install_claude_code || ! install_github_cli; then
+                    echo -e "${YELLOW}[!]${NC} Bazı AI CLI araçları kurulamadı"
+                fi
                 ;;
             "ai_frameworks")
                 # Quick Start: Install SuperClaude framework automatically

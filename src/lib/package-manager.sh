@@ -48,7 +48,10 @@ install_package_with_retry() {
             sleep 2
         fi
 
-        if eval "$INSTALL_CMD" $packages; then
+        # Use array to safely execute INSTALL_CMD without eval
+        local cmd_array
+        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+        if "${cmd_array[@]}" $packages; then
             return 0
         fi
 
