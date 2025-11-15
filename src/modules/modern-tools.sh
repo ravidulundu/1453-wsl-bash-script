@@ -48,12 +48,51 @@ install_modern_cli_tools() {
     echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı!"
 }
 
+# Generic function to fix bat/fd symlinks (works across all distros)
+fix_bat_fd_symlinks() {
+    echo -e "${YELLOW}[BİLGİ]${NC} bat ve fd symlink'leri kontrol ediliyor..."
+
+    # Create ~/.local/bin if it doesn't exist
+    mkdir -p "$HOME/.local/bin"
+
+    # Create bat symlink if batcat exists but bat doesn't
+    if command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
+        ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+        echo -e "${GREEN}[BAŞARILI]${NC} bat symlink oluşturuldu: batcat → bat"
+    fi
+
+    # Create fd symlink if fdfind exists but fd doesn't
+    if command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
+        ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
+        echo -e "${GREEN}[BAŞARILI]${NC} fd symlink oluşturuldu: fdfind → fd"
+    fi
+
+    # Ensure ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} ~/.local/bin PATH'e ekleniyor..."
+
+        # Add to .bashrc if not already there
+        if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
+            echo '' >> "$HOME/.bashrc"
+            echo '# Add ~/.local/bin to PATH for user binaries' >> "$HOME/.bashrc"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+            echo -e "${GREEN}[BAŞARILI]${NC} ~/.local/bin bashrc'ye eklendi"
+        fi
+
+        # Export for current session
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+}
+
 # Install modern tools for APT (Debian/Ubuntu)
 install_modern_tools_apt() {
     echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
 
     # Core tools available in repos
     sudo apt install -y bat ripgrep fd-find fzf
+
+    # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
+    fix_bat_fd_symlinks
 
     # Install eza (modern ls replacement)
     if ! command -v eza &> /dev/null; then
@@ -156,6 +195,9 @@ install_modern_tools_dnf() {
     # Core tools
     sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf
 
+    # Fix bat/fd symlinks
+    fix_bat_fd_symlinks
+
     # Install remaining tools using generic methods
     install_starship_generic
     install_zoxide_generic
@@ -210,6 +252,7 @@ install_lazydocker_generic() {
 
 # Export functions
 export -f install_modern_cli_tools
+export -f fix_bat_fd_symlinks
 export -f install_modern_tools_apt
 export -f install_modern_tools_dnf
 export -f install_modern_tools_pacman

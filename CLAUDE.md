@@ -188,10 +188,12 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 
 ### Modern CLI Tools Functions (modules/modern-tools.sh)
 - `install_modern_cli_tools()` - Installs all modern CLI tools
-- `install_modern_tools_apt()` - APT-specific installation
-- `install_modern_tools_dnf()` - DNF/YUM-specific installation
+- `fix_bat_fd_symlinks()` - Creates bat/fd symlinks for batcat/fdfind (Ubuntu compatibility)
+- `install_modern_tools_apt()` - APT-specific installation with bat/fd symlink fix
+- `install_modern_tools_dnf()` - DNF/YUM-specific installation with bat/fd symlink fix
 - `install_modern_tools_pacman()` - Pacman-specific installation
 - Tools installed: bat, ripgrep, fd-find, eza, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker
+- **Important**: Ubuntu installs `batcat` and `fdfind`, symlinks to `bat` and `fd` are auto-created in `~/.local/bin`
 
 ### Shell Environment Functions (modules/shell-setup.sh)
 - `setup_custom_shell()` - Main shell configuration function
@@ -216,7 +218,10 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 - `run_quickstart_mode()` - Main Quick Start flow
 - `show_presets()` - Display installation presets
 - `generate_installation_plan()` - Build tool list based on preset
-- `execute_installation_plan()` - Install tools automatically
+- `execute_installation_plan()` - Install tools automatically (non-interactive)
+  - **PHP**: Installs PHP 8.3 automatically (stable version)
+  - **AI CLI**: Installs Claude Code + GitHub CLI automatically
+  - **AI Frameworks**: Installs SuperClaude automatically
 
 ### Menu System (modules/menus.sh)
 - `configure_git()` - Interactive Git configuration
@@ -360,6 +365,10 @@ docker run -it ubuntu:latest /bin/bash
 4. **Missing Dependencies**: Script installs prerequisites automatically
 5. **Shell Not Reloading**: Script calls `reload_shell_configs()` automatically
 6. **Interactive Prompt in Pipe**: Fixed with `/dev/tty` redirection in installer
+7. **bat/fd commands not found**: Ubuntu installs as `batcat`/`fdfind` - script auto-creates symlinks in `~/.local/bin`
+   - Symlinks: `bat` → `batcat`, `fd` → `fdfind`
+   - `~/.local/bin` automatically added to PATH
+   - Run `source ~/.bashrc` or restart terminal to apply
 
 ## Version History
 
