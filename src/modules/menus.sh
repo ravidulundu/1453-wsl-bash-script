@@ -88,6 +88,10 @@ EOF
         echo ""
 
         echo "[DEBUG] Mode seçimi bekleniyor..." >&2
+
+        # CRITICAL FIX: Flush stdin buffer before reading
+        while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
         read -r mode_choice
         echo "[DEBUG] Mode seçildi: '$mode_choice'" >&2

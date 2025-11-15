@@ -50,8 +50,12 @@ EOF
     echo ""
 
     echo "[DEBUG] read komutu çalıştırılıyor..." >&2
-    echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
 
+    # CRITICAL FIX: Flush stdin buffer before reading
+    # Clear any pending input that might cause read to return immediately
+    while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+
+    echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
     read -r response
     echo "[DEBUG] read tamamlandı, yanıt: '$response'" >&2
 
@@ -95,6 +99,10 @@ show_presets() {
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
     echo "[DEBUG] Preset seçimi bekleniyor..." >&2
+
+    # CRITICAL FIX: Flush stdin buffer before reading
+    while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+
     echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
     read -r preset
     echo "[DEBUG] Preset seçildi: '$preset'" >&2
