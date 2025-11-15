@@ -258,85 +258,85 @@ cleanup_modern_tools() {
     echo -e "${BLUE}║    Modern CLI Tools Temizleniyor       ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    # Tool name mapping (command name -> package name)
-    declare -A tool_packages=(
-        ["bat"]="bat"
-        ["batcat"]="bat"
-        ["eza"]="eza"
-        ["rg"]="ripgrep"
-        ["ripgrep"]="ripgrep"
-        ["fd"]="fd-find"
-        ["fd-find"]="fd-find"
-        ["fzf"]="fzf"
-        ["vivid"]="vivid"
-        ["fastfetch"]="fastfetch"
-        ["lazygit"]="lazygit"
-        ["lazydocker"]="lazydocker"
-    )
+    echo -e "${CYAN}[BİLGİ]${NC} Sadece 1453 WSL Setup'ın kurduğu araçlar kaldırılacak"
+    echo -e "${CYAN}[BİLGİ]${NC} APT paket yöneticisinden kurulan araçlar korunacak"
+    echo ""
 
-    # Special handling for each tool
-
-    # Starship (manual install)
-    if command -v starship &>/dev/null; then
+    # Starship (manual install via curl)
+    if command -v starship &>/dev/null && [ -f /usr/local/bin/starship ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kaldırılıyor..."
         sudo rm -f /usr/local/bin/starship
         rm -f ~/.config/starship.toml
         echo -e "${GREEN}[BAŞARILI]${NC} Starship kaldırıldı"
     fi
 
-    # Zoxide (manual install)
-    if command -v zoxide &>/dev/null; then
+    # Zoxide (manual install via curl)
+    if [ -f ~/.local/bin/zoxide ] || [ -f /usr/local/bin/zoxide ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kaldırılıyor..."
         rm -f ~/.local/bin/zoxide
         sudo rm -f /usr/local/bin/zoxide
-        sudo rm -f /usr/bin/zoxide
         echo -e "${GREEN}[BAŞARILI]${NC} Zoxide kaldırıldı"
     fi
 
-    # APT packages
-    for cmd in "${!tool_packages[@]}"; do
-        if command -v "$cmd" &>/dev/null; then
-            local pkg="${tool_packages[$cmd]}"
-            echo -e "${YELLOW}[BİLGİ]${NC} $pkg kaldırılıyor..."
-
-            # Try apt remove
-            if sudo apt remove -y "$pkg" 2>/dev/null; then
-                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (apt) kaldırıldı"
-            elif sudo snap remove "$pkg" 2>/dev/null; then
-                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (snap) kaldırıldı"
-            else
-                # Manual cleanup
-                sudo rm -f "/usr/local/bin/$cmd"
-                sudo rm -f "/usr/bin/$cmd"
-                rm -f "$HOME/.local/bin/$cmd"
-                echo -e "${GREEN}[BAŞARILI]${NC} $cmd (manuel) kaldırıldı"
-            fi
-        fi
-    done
-
-    # Lazydocker (GitHub release)
-    if command -v lazydocker &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
-        sudo rm -f /usr/local/bin/lazydocker
-        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
-    fi
-
-    # Lazygit (PPA)
-    if command -v lazygit &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} lazygit kaldırılıyor..."
-        sudo apt remove -y lazygit 2>/dev/null || sudo rm -f /usr/local/bin/lazygit
-        echo -e "${GREEN}[BAŞARILI]${NC} lazygit kaldırıldı"
-    fi
-
-    # Clean up eza repository
-    if [ -f /etc/apt/sources.list.d/gierens.list ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} eza repository kaldırılıyor..."
+    # Eza (manual install via repository)
+    if command -v eza &>/dev/null && [ -f /etc/apt/sources.list.d/gierens.list ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Eza kaldırılıyor..."
+        sudo apt remove -y eza 2>/dev/null
         sudo rm -f /etc/apt/sources.list.d/gierens.list
         sudo rm -f /etc/apt/keyrings/gierens.gpg
-        echo -e "${GREEN}[BAŞARILI]${NC} eza repository kaldırıldı"
+        echo -e "${GREEN}[BAŞARILI]${NC} Eza kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
+    # Vivid (manual .deb install)
+    if command -v vivid &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Vivid kaldırılıyor..."
+        sudo apt remove -y vivid 2>/dev/null || sudo rm -f /usr/bin/vivid
+        echo -e "${GREEN}[BAŞARILI]${NC} Vivid kaldırıldı"
+    fi
+
+    # Fastfetch (manual install via snap or GitHub)
+    if command -v fastfetch &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kaldırılıyor..."
+        if snap list | grep -q fastfetch 2>/dev/null; then
+            sudo snap remove fastfetch
+            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch (snap) kaldırıldı"
+        else
+            sudo apt remove -y fastfetch 2>/dev/null
+            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch kaldırıldı"
+        fi
+    fi
+
+    # Lazygit (manual install via GitHub)
+    if [ -f /usr/local/bin/lazygit ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazygit
+        echo -e "${GREEN}[BAŞARILI]${NC} Lazygit kaldırıldı"
+    fi
+
+    # Lazydocker (manual install via GitHub)
+    if [ -f /usr/local/bin/lazydocker ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Lazydocker kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazydocker
+        echo -e "${GREEN}[BAŞARILI]${NC} Lazydocker kaldırıldı"
+    fi
+
+    # Clean up symlinks created by this script
+    echo -e "${YELLOW}[BİLGİ]${NC} Script symlink'leri temizleniyor..."
+    if [ -L ~/.local/bin/bat ]; then
+        rm -f ~/.local/bin/bat
+        echo -e "${GREEN}[BAŞARILI]${NC} bat symlink kaldırıldı"
+    fi
+    if [ -L ~/.local/bin/fd ]; then
+        rm -f ~/.local/bin/fd
+        echo -e "${GREEN}[BAŞARILI]${NC} fd symlink kaldırıldı"
+    fi
+
+    echo ""
+    echo -e "${CYAN}[BİLGİ]${NC} ${YELLOW}NOT:${NC} APT paketleri (bat, ripgrep, fd-find, fzf) korundu"
+    echo -e "${CYAN}[BİLGİ]${NC} Bu paketler script öncesinde de kurulu olmuş olabilir"
+    echo -e "${CYAN}[BİLGİ]${NC} Manuel silmek için: ${YELLOW}sudo apt remove bat ripgrep fd-find fzf${NC}"
+    echo ""
+    echo -e "${GREEN}[BAŞARILI]${NC} 1453 WSL Setup'ın kurduğu modern tools kaldırıldı"
 }
 
 # Cleanup Shell Configs
