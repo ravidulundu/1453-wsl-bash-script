@@ -38,35 +38,63 @@ detect_package_manager() {
 # Update system packages and install essential tools
 update_system() {
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
-    eval "$UPDATE_CMD"
+    if ! eval "$UPDATE_CMD"; then
+        echo -e "${RED}[HATA]${NC} Sistem güncellemesi başarısız!"
+        echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor ama bazı paketler eksik olabilir."
+    fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler, sıkıştırma ve geliştirme araçları kuruluyor..."
 
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip-full"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip-full
+        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip-full; then
+            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (build-essential) kuruluyor..."
-        eval "$INSTALL_CMD" build-essential
+        if ! eval "$INSTALL_CMD" build-essential; then
+            echo -e "${RED}[HATA]${NC} build-essential kurulamadı (make, gcc eksik olabilir)!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
 
     elif [ "$PKG_MANAGER" = "dnf" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
+            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        sudo dnf groupinstall "Development Tools" -y
+        if ! sudo dnf groupinstall "Development Tools" -y; then
+            echo -e "${RED}[HATA]${NC} Development Tools kurulamadı (make, gcc eksik olabilir)!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
+            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (base-devel) kuruluyor..."
-        sudo pacman -S base-devel --noconfirm
+        if ! sudo pacman -S base-devel --noconfirm; then
+            echo -e "${RED}[HATA]${NC} base-devel kurulamadı (make, gcc eksik olabilir)!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
 
     elif [ "$PKG_MANAGER" = "yum" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
+            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        sudo yum groupinstall "Development Tools" -y
+        if ! sudo yum groupinstall "Development Tools" -y; then
+            echo -e "${RED}[HATA]${NC} Development Tools kurulamadı (make, gcc eksik olabilir)!"
+            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        fi
     fi
 
     echo -e "${GREEN}[BAŞARILI]${NC} Sistem güncelleme ve temel paket kurulumu tamamlandı!"
+    echo -e "${CYAN}[BİLGİ]${NC} Eksik paketler varsa yukarıdaki hata mesajlarını kontrol edin."
 }
 
 # Export functions

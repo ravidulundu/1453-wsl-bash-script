@@ -45,8 +45,18 @@ install_bun() {
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v bun &> /dev/null; then
+        echo -e "${GREEN}[BAŞARILI]${NC} Bun.js zaten kurulu: $(bun --version)"
+        return 0
+    fi
+
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js (curl) ile kuruluyor..."
-    curl -fsSL https://bun.sh/install | bash
+    if ! curl -fsSL https://bun.sh/install | bash; then
+        echo -e "${RED}[HATA]${NC} Bun.js indirme/kurulum başarısız!"
+        echo -e "${YELLOW}[UYARI]${NC} Network bağlantısını ve https://bun.sh erişilebilirliğini kontrol edin."
+        return 1
+    fi
 
     # Set up Bun environment
     export BUN_INSTALL="$HOME/.bun"
