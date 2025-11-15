@@ -95,16 +95,34 @@ show_presets() {
     echo ""
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
+    echo "[DEBUG] Preset seçimi bekleniyor..." >&2
     echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-    read -r preset
+    read -r preset </dev/tty
+    echo "[DEBUG] Preset seçildi: '$preset'" >&2
 
     case $preset in
-        1) echo "web";;
-        2) echo "ai";;
-        3) echo "backend";;
-        4) echo "everything";;
-        5) echo "mobile";;
+        1)
+            echo "[DEBUG] Web Development seçildi, dönüyor: 'web'" >&2
+            echo "web"
+            ;;
+        2)
+            echo "[DEBUG] AI Development seçildi, dönüyor: 'ai'" >&2
+            echo "ai"
+            ;;
+        3)
+            echo "[DEBUG] Backend Development seçildi, dönüyor: 'backend'" >&2
+            echo "backend"
+            ;;
+        4)
+            echo "[DEBUG] Everything seçildi, dönüyor: 'everything'" >&2
+            echo "everything"
+            ;;
+        5)
+            echo "[DEBUG] Mobile + Web seçildi, dönüyor: 'mobile'" >&2
+            echo "mobile"
+            ;;
         *)
+            echo "[DEBUG] Geçersiz seçim: '$preset', tekrar soruluyor..." >&2
             echo -e "\n${RED}[HATA]${NC} 1-5 arası seç, toy! 😄"
             sleep 1
             show_presets
@@ -258,25 +276,36 @@ execute_installation_plan() {
 
 # Main Quick Start flow
 run_quickstart_mode() {
+    echo "[DEBUG] run_quickstart_mode başladı" >&2
+
     # Show welcome
+    echo "[DEBUG] show_quickstart_welcome çağrılıyor..." >&2
     if ! show_quickstart_welcome; then
+        echo "[DEBUG] Kullanıcı 'n' dedi, geri dönüyor" >&2
         return 1
     fi
+    echo "[DEBUG] show_quickstart_welcome başarılı, devam ediliyor" >&2
 
     # Show preset selection
+    echo "[DEBUG] show_presets çağrılıyor..." >&2
     local preset=$(show_presets)
+    echo "[DEBUG] Seçilen preset: '$preset'" >&2
 
     echo -e "\n${CYAN}⚡ Bir saniye, başlıyorum...${NC}"
     sleep 1
 
     # Generate and show plan
+    echo "[DEBUG] generate_installation_plan çağrılıyor..." >&2
     local -a tools=($(generate_installation_plan "$preset"))
+    echo "[DEBUG] Araçlar: ${tools[*]}" >&2
 
     # Execute installation immediately
+    echo "[DEBUG] execute_installation_plan çağrılıyor..." >&2
     execute_installation_plan "${tools[@]}"
 
+    echo "[DEBUG] Kurulum tamamlandı, kullanıcıya soruluyor..." >&2
     echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
-    read -r more
+    read -r more </dev/tty
     if [[ ! "$more" =~ ^[yY]$ ]]; then
         exit 0
     fi
