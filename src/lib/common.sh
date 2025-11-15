@@ -80,6 +80,30 @@ check_internet_connection() {
     fi
 }
 
+# Start sudo keepalive in background
+# Keeps sudo cache fresh throughout script execution
+start_sudo_keepalive() {
+    # Background process that refreshes sudo cache every 60 seconds
+    (
+        while true; do
+            # Refresh sudo timestamp (non-interactive)
+            sudo -n true 2>/dev/null
+            sleep 60
+
+            # Check if parent process still exists
+            # If parent died, exit gracefully
+            kill -0 $$ 2>/dev/null || exit 0
+        done
+    ) &
+
+    # Store PID for cleanup
+    SUDO_REFRESH_PID=$!
+    export SUDO_REFRESH_PID
+
+    # Setup trap to kill background process on script exit
+    trap 'kill $SUDO_REFRESH_PID 2>/dev/null' EXIT INT TERM
+}
+
 # Check sudo access
 check_sudo_access() {
     echo -e "${CYAN}[✓]${NC} Sudo yetkisi kontrol ediliyor..."
@@ -91,6 +115,11 @@ check_sudo_access() {
         echo -e "${YELLOW}[!]${NC} Sudo şifresi gerekiyor..."
         if sudo true; then
             echo -e "${GREEN}[✓]${NC} Sudo yetkisi: OK"
+
+            # Start background sudo keepalive
+            start_sudo_keepalive
+            echo -e "${CYAN}[ℹ]${NC} Sudo cache aktif tutulacak (script boyunca şifre sormayacak)"
+
             return 0
         else
             echo -e "${RED}[✗]${NC} Sudo yetkisi alınamadı!"
@@ -180,6 +209,7 @@ run_preflight_checks() {
 export -f reload_shell_configs
 export -f mask_secret
 export -f check_internet_connection
+export -f start_sudo_keepalive
 export -f check_sudo_access
 export -f check_disk_space
 export -f check_apt_repositories
