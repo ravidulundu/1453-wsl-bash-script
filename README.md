@@ -11,12 +11,12 @@ Comprehensive automated setup script for WSL (Windows Subsystem for Linux) envir
 WSL terminalinizde bu tek komutu çalıştırarak her şeyi indirip kurabilirsiniz:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 Veya wget ile:
 ```bash
-wget -qO- https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 Bu komut:
@@ -33,7 +33,7 @@ Kurulumdan sonra çalıştırmak için:
 ### Alternatif: Depoyu Klonlama
 ```bash
 # Depoyu klonla
-git clone https://github.com/altudev/1453-wsl-bash-script.git
+git clone https://github.com/ravidulundu/1453-wsl-bash-script.git
 cd 1453-wsl-bash-script
 
 # Kurulum betiğini çalıştır
@@ -69,15 +69,32 @@ bash src/linux-ai-setup-script.sh
 ## 🛠️ Features
 
 - **Multi-Distribution Support**: Debian/Ubuntu, Fedora/RHEL, CentOS, Arch Linux
-- **Programming Languages**: Python 3.x, Node.js (via NVM), PHP (7.4-8.5), Bun.js
+- **Programming Languages**: Python 3.x, Node.js (via NVM), PHP (7.4-8.5), Bun.js, Go
+- **Modern CLI Tools**: bat, eza, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker
+- **Shell Environment**: 62+ custom aliases, enhanced bash configuration, history optimization
 - **AI CLI Tools**: Claude Code, Google Gemini, Qwen, OpenCode, GitHub Copilot, Codex
 - **AI Frameworks**: SuperGemini, SuperQwen, SuperClaude with MCP server support
 - **Automatic Configuration**: Git setup, shell configuration, package manager detection
+- **Two Modes**: Quick Start (presets for beginners) and Advanced (detailed control)
 - **Interactive Menu**: User-friendly interface with multi-choice support
 
-## 📋 Main Menu Options
+## 📋 Installation Modes
 
-1. Install everything (full setup)
+### 🚀 Quick Start Mode (Recommended for Beginners)
+Choose from pre-configured presets:
+1. **Web Development** - Python + Node.js + PHP + Composer
+2. **AI Development** - Python + AI CLI Tools + AI Frameworks
+3. **Backend Development** - Python + Go + PHP + Composer
+4. **Everything** - Full stack + AI + Backend
+5. **Mobile + Web** - Python + Node.js + PHP + Flutter tools
+
+All presets automatically include:
+- Modern CLI tools (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)
+- Shell environment setup (62+ aliases, custom functions, enhanced bashrc)
+- Python + pip + pipx + UV
+
+### ⚙️ Advanced Mode (Detailed Control)
+1. Full installation (all tools)
 2. Setup preparation (system update + Git)
 3. Install Python
 4. Install pip
@@ -86,13 +103,13 @@ bash src/linux-ai-setup-script.sh
 7. Install NVM (Node Version Manager)
 8. Install Bun.js
 9. Install PHP (multiple versions)
-10. Switch PHP version
+10. Install Composer
 11. Install AI CLI tools
 12. Install AI frameworks
 13. Remove AI frameworks
-14. Install GitHub CLI
-15. Configure Claude Code with GLM-4.6
-16. MCP server management
+14. Install Go
+15. Install Modern CLI tools
+16. Setup Shell environment
 0. Exit
 
 ## 👨‍💻 Credits
@@ -123,4 +140,4 @@ bash -n src/linux-ai-setup-script.sh
 
 ## 🤝 Contributing
 
-Feel free to submit issues and pull requests at https://github.com/altudev/1453-wsl-bash-script
+Feel free to submit issues and pull requests at https://github.com/ravidulundu/1453-wsl-bash-script

@@ -21,10 +21,10 @@ One-line installation that downloads all components and sets up everything:
 
 ```bash
 # Using curl
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 
 # Or using wget
-wget -qO- https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 This installer:
@@ -42,7 +42,7 @@ After installation, run:
 Clone repository and run directly:
 ```bash
 # Clone repository
-git clone https://github.com/altudev/1453-wsl-bash-script.git
+git clone https://github.com/ravidulundu/1453-wsl-bash-script.git
 cd 1453-wsl-bash-script
 
 # Make executable and run
@@ -91,8 +91,12 @@ The project has been refactored from a 2,331-line monolithic script into a clean
         ├── python.sh                  # Python ecosystem (Python, pip, pipx, UV)
         ├── javascript.sh              # JavaScript ecosystem (NVM, Bun.js)
         ├── php.sh                     # PHP ecosystem (PHP versions, Composer, Laravel)
+        ├── go.sh                      # Go language installation
+        ├── modern-tools.sh            # Modern CLI tools (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)
+        ├── shell-setup.sh             # Shell environment setup (aliases, functions, bashrc enhancements)
         ├── ai-cli.sh                  # AI CLI tools (Claude Code, Gemini, Qwen, etc.)
         ├── ai-frameworks.sh           # AI frameworks (SuperGemini, SuperQwen, SuperClaude)
+        ├── quickstart.sh              # Quick Start mode for beginners
         └── menus.sh                   # Interactive menu system and main loop (Turkish)
 ```
 
@@ -113,9 +117,13 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 3. **Python Ecosystem** (`modules/python.sh`) - Python, pip, pipx, UV with PEP 668 compliance
 4. **JavaScript Ecosystem** (`modules/javascript.sh`) - NVM and Bun.js installation
 5. **PHP Ecosystem** (`modules/php.sh`) - Multiple PHP versions (7.4-8.5) with Laravel support
-6. **AI CLI Tools** (`modules/ai-cli.sh`) - Claude Code, Gemini, Qwen, OpenCode, Copilot, GitHub CLI, Qoder CLI
-7. **AI Frameworks** (`modules/ai-frameworks.sh`) - SuperGemini, SuperQwen, SuperClaude
-8. **Interactive Menus** (`modules/menus.sh`) - Menu-driven interface with multi-choice support
+6. **Go Language** (`modules/go.sh`) - Go language installation and configuration
+7. **Modern CLI Tools** (`modules/modern-tools.sh`) - Modern replacements for traditional tools (bat, eza, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker)
+8. **Shell Environment** (`modules/shell-setup.sh`) - Custom aliases (62+), functions, bashrc enhancements, history settings, FZF configuration, Starship prompt
+9. **AI CLI Tools** (`modules/ai-cli.sh`) - Claude Code, Gemini, Qwen, OpenCode, Copilot, GitHub CLI, Qoder CLI
+10. **AI Frameworks** (`modules/ai-frameworks.sh`) - SuperGemini, SuperQwen, SuperClaude
+11. **Quick Start Mode** (`modules/quickstart.sh`) - Simplified UX with presets for beginners
+12. **Interactive Menus** (`modules/menus.sh`) - Menu-driven interface with multi-choice support
 
 ### Key Implementation Details
 
@@ -172,16 +180,48 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 - `install_github_cli()` - Installs GitHub CLI
 - `install_ai_cli_tools_menu()` - Interactive AI tools menu
 
+### Go Functions (modules/go.sh)
+- `install_go()` - Installs Go language and configures environment
+- `install_go_menu()` - Interactive Go installation menu
+
+### Modern CLI Tools Functions (modules/modern-tools.sh)
+- `install_modern_cli_tools()` - Installs all modern CLI tools
+- `install_modern_tools_apt()` - APT-specific installation
+- `install_modern_tools_dnf()` - DNF/YUM-specific installation
+- `install_modern_tools_pacman()` - Pacman-specific installation
+- Tools installed: bat, ripgrep, fd-find, eza, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker
+
+### Shell Environment Functions (modules/shell-setup.sh)
+- `setup_custom_shell()` - Main shell configuration function
+- `setup_bash_aliases()` - Creates ~/.bash_aliases with 62+ custom aliases
+- `setup_custom_functions()` - Adds custom bash functions (mcd, make)
+- `setup_bashrc_enhancements()` - Enhances .bashrc with history, FZF, modern tools integration
+- `setup_starship_config()` - Creates Starship prompt configuration
+
+### AI CLI Functions (modules/ai-cli.sh)
+- `install_claude_code()` - Installs Claude Code CLI
+- `install_gemini_cli()` - Installs Gemini CLI
+- `install_github_cli()` - Installs GitHub CLI
+- `install_ai_cli_tools_menu()` - Interactive AI tools menu
+
 ### AI Framework Functions (modules/ai-frameworks.sh)
 - `install_supergemini()` - Installs SuperGemini framework
 - `install_superqwen()` - Installs SuperQwen framework
 - `install_superclaude()` - Installs SuperClaude framework
 - `install_ai_frameworks_menu()` - Interactive frameworks menu
 
+### Quick Start Functions (modules/quickstart.sh)
+- `run_quickstart_mode()` - Main Quick Start flow
+- `show_presets()` - Display installation presets
+- `generate_installation_plan()` - Build tool list based on preset
+- `execute_installation_plan()` - Install tools automatically
+
 ### Menu System (modules/menus.sh)
 - `configure_git()` - Interactive Git configuration
 - `show_menu()` - Main interactive menu display
-- `main()` - Main program loop with multi-choice support
+- `show_mode_selection()` - Quick Start vs Advanced mode selection
+- `run_advanced_mode()` - Advanced mode menu loop
+- `main()` - Main program entry point
 
 ## Development Notes
 
@@ -296,7 +336,7 @@ docker run -it ubuntu:latest /bin/bash
 
 ## Project Information
 
-- **Repository**: https://github.com/altudev/1453-wsl-bash-script
+- **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
 - **Language**: Bash with Turkish interface
 - **Target Platform**: WSL (Windows Subsystem for Linux)
 - **Target Audience**: Turkish AI developers and "Vibe Coders"

@@ -14,7 +14,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # Renk Yok
 
 # GitHub depo bilgileri
-REPO_OWNER="altudev"
+REPO_OWNER="ravidulundu"
 REPO_NAME="1453-wsl-bash-script"
 BRANCH="master"
 BASE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}"
@@ -91,6 +91,8 @@ main() {
         "src/modules/javascript.sh:JavaScript ekosistemi"
         "src/modules/php.sh:PHP ekosistemi"
         "src/modules/go.sh:Go kurulum modülü"
+        "src/modules/modern-tools.sh:Modern CLI araçları"
+        "src/modules/shell-setup.sh:Shell ortamı yapılandırma"
         "src/modules/ai-cli.sh:AI CLI araçları"
         "src/modules/ai-frameworks.sh:AI framework'leri"
         "src/modules/quickstart.sh:Quick Start modu"

@@ -86,3 +86,5 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+wsl_diagnostic.json
+wsl_diagnostic.json:Zone.Identifier

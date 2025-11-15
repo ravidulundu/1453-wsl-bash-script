@@ -47,6 +47,8 @@ show_menu() {
     echo -e "  ${GREEN}12${NC}) AI Framework'leri"
     echo -e "  ${GREEN}13${NC}) AI Framework'leri Kaldır"
     echo -e "  ${GREEN}14${NC}) Go Kurulumu"
+    echo -e "  ${GREEN}15${NC}) Modern CLI Araçları (bat, eza, starship, zoxide, fzf, lazygit)"
+    echo -e "  ${GREEN}16${NC}) Shell Ortamı Kurulumu (aliases, functions, bashrc)"
     echo -e "  ${GREEN}0${NC}) Çıkış"
     echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 }
@@ -167,6 +169,8 @@ run_advanced_mode() {
                 12) install_ai_frameworks_menu ;;
                 13) remove_ai_frameworks_menu ;;
                 14) install_go_menu ;;
+                15) install_modern_cli_tools ;;
+                16) setup_custom_shell ;;
                 0)
                     echo -e "\n${GREEN}[BİLGİ]${NC} Ana menüye dönülüyor..."
                     sleep 1

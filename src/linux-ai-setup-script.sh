@@ -41,6 +41,12 @@ source "${SCRIPT_DIR}/modules/go.sh"
 # shellcheck source=modules/php.sh
 source "${SCRIPT_DIR}/modules/php.sh"
 
+# shellcheck source=modules/modern-tools.sh
+source "${SCRIPT_DIR}/modules/modern-tools.sh"
+
+# shellcheck source=modules/shell-setup.sh
+source "${SCRIPT_DIR}/modules/shell-setup.sh"
+
 # shellcheck source=modules/ai-cli.sh
 source "${SCRIPT_DIR}/modules/ai-cli.sh"
 

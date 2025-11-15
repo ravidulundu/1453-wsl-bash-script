@@ -102,10 +102,12 @@ generate_installation_plan() {
     echo ""
 
     # Always install base tools
-    echo -e "${YELLOW}📦 İlk önce:${NC}"
+    echo -e "${YELLOW}📦 İlk önce (tüm paketlerde):${NC}"
     echo -e "  ✓ Sistem güncellemeleri"
     echo -e "  ✓ Git yapılandırması"
     echo -e "  ✓ Python + pip + pipx + UV"
+    echo -e "  ✓ Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
+    echo -e "  ✓ Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
     echo ""
 
     # Build tool list based on preset
@@ -172,20 +174,19 @@ execute_installation_plan() {
     update_system
     configure_git
 
+    # Install Python + modern CLI tools first (base for all presets)
+    install_python
+    install_pip
+    install_pipx
+    install_uv
+    install_modern_cli_tools
+    setup_custom_shell
+
     # Install tools
     for tool in "${tools[@]}"; do
         case $tool in
-            "python")
-                install_python
-                ;;
-            "pip")
-                install_pip
-                ;;
-            "pipx")
-                install_pipx
-                ;;
-            "uv")
-                install_uv
+            "python"|"pip"|"pipx"|"uv")
+                # Already installed above
                 ;;
             "nvm")
                 install_nvm
