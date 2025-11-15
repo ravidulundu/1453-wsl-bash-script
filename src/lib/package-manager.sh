@@ -35,40 +35,151 @@ detect_package_manager() {
     export INSTALL_CMD
 }
 
-# Update system packages and install essential tools
+# Install package with retry mechanism
+# Usage: install_package_with_retry "package_name" [max_retries]
+install_package_with_retry() {
+    local packages="$1"
+    local max_retries="${2:-$MAX_PACKAGE_RETRIES}"
+    local attempt=1
+
+    while [ $attempt -le $max_retries ]; do
+        if [ $attempt -gt 1 ]; then
+            echo -e "${YELLOW}[↻]${NC} Deneme $attempt/$max_retries..."
+            sleep "$RETRY_DELAY_SECONDS"
+        fi
+
+        # Use array to safely execute INSTALL_CMD without eval
+        local cmd_array
+        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+        if "${cmd_array[@]}" $packages; then
+            return 0
+        fi
+
+        ((attempt++))
+    done
+
+    return 1
+}
+
+# Update system packages and install essential tools with retry
 update_system() {
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
-    eval "$UPDATE_CMD"
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler, sıkıştırma ve geliştirme araçları kuruluyor..."
+    # Try system update with retry
+    # Safe execution without eval (prevents command injection)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$UPDATE_CMD"
+
+    local update_attempt=1
+    while [ $update_attempt -le $MAX_UPDATE_RETRIES ]; do
+        if [ $update_attempt -gt 1 ]; then
+            echo -e "${YELLOW}[↻]${NC} Sistem güncellemesi tekrar deneniyor ($update_attempt/$MAX_UPDATE_RETRIES)..."
+            sleep "$RETRY_DELAY_SECONDS"
+        fi
+
+        if "${cmd_array[@]}"; then
+            echo -e "${GREEN}[✓]${NC} Sistem güncellemesi başarılı!"
+            break
+        fi
+
+        if [ $update_attempt -eq $MAX_UPDATE_RETRIES ]; then
+            echo -e "${RED}[✗]${NC} Sistem güncellemesi $MAX_UPDATE_RETRIES denemede başarısız!"
+            echo -e "${YELLOW}[!]${NC} Paket kurulumları yapılacak ama bazıları başarısız olabilir..."
+        fi
+        ((update_attempt++))
+    done
+
+    echo -e "\n${YELLOW}[BİLGİ]${NC} Temel paketler, sıkıştırma ve geliştirme araçları kuruluyor..."
 
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip-full"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip-full
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip-full" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y curl wget git jq zip unzip p7zip-full"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+        fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (build-essential) kuruluyor..."
-        eval "$INSTALL_CMD" build-essential
+        if ! install_package_with_retry "build-essential" 3; then
+            echo -e "${RED}[✗]${NC} build-essential 3 denemede kurulamadı!"
+            echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y build-essential"
+        else
+            echo -e "${GREEN}[✓]${NC} build-essential kuruldu"
+        fi
 
     elif [ "$PKG_MANAGER" = "dnf" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+        fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        sudo dnf groupinstall "Development Tools" -y
+        local dev_attempt=1
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
+            fi
+            if sudo dnf groupinstall "Development Tools" -y; then
+                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+        fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (base-devel) kuruluyor..."
-        sudo pacman -S base-devel --noconfirm
+        local dev_attempt=1
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
+            fi
+            if sudo pacman -S base-devel --noconfirm; then
+                echo -e "${GREEN}[✓]${NC} base-devel kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
 
     elif [ "$PKG_MANAGER" = "yum" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+        fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        sudo yum groupinstall "Development Tools" -y
+        local dev_attempt=1
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
+            fi
+            if sudo yum groupinstall "Development Tools" -y; then
+                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Sistem güncelleme ve temel paket kurulumu tamamlandı!"
+    echo ""
+    echo -e "${GREEN}[✓]${NC} Sistem paket kurulumu tamamlandı!"
+    echo -e "${CYAN}[ℹ]${NC} Eksik paketler varsa yukarıdaki mesajlara bakın."
 }
 
 # Export functions
 export -f detect_package_manager
+export -f install_package_with_retry
 export -f update_system

@@ -15,7 +15,10 @@ install_python() {
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Python3 kuruluyor..."
-    eval "$INSTALL_CMD" python3 python3-pip python3-venv
+    # Safe execution without eval (prevents command injection)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+    "${cmd_array[@]}" python3 python3-pip python3-venv
 
     if command -v python3 &> /dev/null; then
         echo -e "${GREEN}[BAŞARILI]${NC} Python kurulumu tamamlandı: $(python3 --version)"
@@ -72,15 +75,18 @@ install_pipx() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} Sistem paket yöneticisi ile pipx kuruluyor..."
 
-    # Try installing pipx using the system package manager
+    # Try installing pipx using the system package manager (safe execution)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+
     if [ "$PKG_MANAGER" = "apt" ]; then
-        eval "$INSTALL_CMD" pipx
+        "${cmd_array[@]}" pipx
     elif [ "$PKG_MANAGER" = "dnf" ]; then
-        eval "$INSTALL_CMD" pipx
+        "${cmd_array[@]}" pipx
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        eval "$INSTALL_CMD" python-pipx
+        "${cmd_array[@]}" python-pipx
     elif [ "$PKG_MANAGER" = "yum" ]; then
-        eval "$INSTALL_CMD" pipx
+        "${cmd_array[@]}" pipx
     fi
 
     # If system package manager failed, try manual installation
@@ -158,7 +164,7 @@ install_uv() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -e "${YELLOW}[BİLGİ]${NC} UV kuruluyor..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl -LsSf "$UV_INSTALL_URL" | sh
 
     # Add Cargo bin to PATH
     export PATH="$HOME/.cargo/bin:$PATH"

@@ -120,15 +120,28 @@ install_lazydocker_tool() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kuruluyor..."
 
-    # Install using direct download
-    LAZYDOCKER_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazydocker/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    # Initialize versions if not already done (using centralized version from config/tool-versions.sh)
+    if [ -z "$LAZYDOCKER_VERSION" ]; then
+        init_tool_versions
+    fi
 
     echo -e "${CYAN}[BİLGİ]${NC} Version: $LAZYDOCKER_VERSION"
 
-    curl -sL "https://github.com/jesseduffield/lazydocker/releases/latest/download/lazydocker_${LAZYDOCKER_VERSION}_Linux_x86_64.tar.gz" | tar xz -C /tmp
+    local lazydocker_tarball="lazydocker_${LAZYDOCKER_VERSION}_Linux_x86_64.tar.gz"
+    local lazydocker_url="https://github.com/jesseduffield/lazydocker/releases/latest/download/${lazydocker_tarball}"
+    local lazydocker_checksum_url="https://github.com/jesseduffield/lazydocker/releases/latest/download/checksums.txt"
 
-    sudo mv /tmp/lazydocker /usr/local/bin/
-    sudo chmod +x /usr/local/bin/lazydocker
+    # Download with checksum verification
+    if download_with_checksum "$lazydocker_url" "/tmp/lazydocker.tar.gz" "$lazydocker_checksum_url"; then
+        tar xzf /tmp/lazydocker.tar.gz -C /tmp
+        sudo mv /tmp/lazydocker /usr/local/bin/
+        sudo chmod +x /usr/local/bin/lazydocker
+        rm -f /tmp/lazydocker.tar.gz
+    else
+        echo -e "${RED}[✗]${NC} Lazydocker kurulumu başarısız! (checksum doğrulanamadı)"
+        rm -f /tmp/lazydocker.tar.gz
+        return 1
+    fi
 
     # Verify installation
     if command -v lazydocker &> /dev/null; then

@@ -48,12 +48,59 @@ install_modern_cli_tools() {
     echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı!"
 }
 
+# Generic function to fix bat/fd symlinks (works across all distros)
+fix_bat_fd_symlinks() {
+    echo -e "${YELLOW}[BİLGİ]${NC} bat ve fd symlink'leri kontrol ediliyor..."
+
+    # Create ~/.local/bin if it doesn't exist
+    mkdir -p "$HOME/.local/bin"
+
+    # Create bat symlink if batcat exists but bat doesn't
+    if command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
+        local batcat_path
+        batcat_path="$(which batcat)"
+        if [ -n "$batcat_path" ]; then
+            ln -sf "$batcat_path" "$HOME/.local/bin/bat"
+            echo -e "${GREEN}[BAŞARILI]${NC} bat symlink oluşturuldu: batcat → bat"
+        fi
+    fi
+
+    # Create fd symlink if fdfind exists but fd doesn't
+    if command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
+        local fdfind_path
+        fdfind_path="$(which fdfind)"
+        if [ -n "$fdfind_path" ]; then
+            ln -sf "$fdfind_path" "$HOME/.local/bin/fd"
+            echo -e "${GREEN}[BAŞARILI]${NC} fd symlink oluşturuldu: fdfind → fd"
+        fi
+    fi
+
+    # Ensure ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} ~/.local/bin PATH'e ekleniyor..."
+
+        # Add to .bashrc if not already there
+        if ! grep -qF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
+            echo '' >> "$HOME/.bashrc"
+            echo '# Add ~/.local/bin to PATH for user binaries' >> "$HOME/.bashrc"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+            echo -e "${GREEN}[BAŞARILI]${NC} ~/.local/bin bashrc'ye eklendi"
+        fi
+
+        # Export for current session
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+}
+
 # Install modern tools for APT (Debian/Ubuntu)
 install_modern_tools_apt() {
     echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
 
     # Core tools available in repos
     sudo apt install -y bat ripgrep fd-find fzf
+
+    # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
+    fix_bat_fd_symlinks
 
     # Install eza (modern ls replacement)
     if ! command -v eza &> /dev/null; then
@@ -68,10 +115,13 @@ install_modern_tools_apt() {
         echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
     fi
 
+    # Initialize tool versions (fetch latest from GitHub with fallbacks)
+    init_tool_versions
+
     # Install starship prompt
     if ! command -v starship &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
     else
         echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
     fi
@@ -79,18 +129,27 @@ install_modern_tools_apt() {
     # Install zoxide
     if ! command -v zoxide &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+        curl -sS "$ZOXIDE_INSTALL_URL" | bash
     else
         echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
     fi
 
-    # Install vivid
+    # Install vivid (using centralized version from config/tool-versions.sh)
     if ! command -v vivid &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Vivid kuruluyor..."
-        VIVID_VERSION=$(curl -s "https://api.github.com/repos/sharkdp/vivid/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        wget -q "https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/vivid_${VIVID_VERSION}_amd64.deb"
-        sudo dpkg -i "vivid_${VIVID_VERSION}_amd64.deb"
-        rm "vivid_${VIVID_VERSION}_amd64.deb"
+        echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
+
+        local vivid_deb="vivid_${VIVID_VERSION}_amd64.deb"
+        local vivid_url="https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/${vivid_deb}"
+        local vivid_checksum_url="${vivid_url}.sha256"
+
+        # Download with checksum verification
+        if download_with_checksum "$vivid_url" "$vivid_deb" "$vivid_checksum_url"; then
+            sudo dpkg -i "$vivid_deb"
+            rm "$vivid_deb"
+        else
+            echo -e "${RED}[✗]${NC} Vivid kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f "$vivid_deb"
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
     fi
@@ -104,17 +163,16 @@ install_modern_tools_apt() {
             # Method 1: Snap (most reliable)
             echo -e "${CYAN}[BİLGİ]${NC} Snap ile kuruluyor..."
             sudo snap install fastfetch 2>/dev/null || {
-                # Method 2: Download latest release from GitHub
+                # Method 2: Download latest release from GitHub (using centralized URL)
                 echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-                FASTFETCH_VERSION=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
-                curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+                curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
                 sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
                 rm -f /tmp/fastfetch.deb
             }
         else
-            # Method 2: Direct download
+            # Method 2: Direct download (using centralized URL)
             echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-            curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+            curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
             sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
             rm -f /tmp/fastfetch.deb
         fi
@@ -128,14 +186,23 @@ install_modern_tools_apt() {
         echo -e "${GREEN}[BİLGİ]${NC} Fastfetch zaten kurulu."
     fi
 
-    # Install lazygit
+    # Install lazygit (using centralized version from config/tool-versions.sh)
     if ! command -v lazygit &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit kuruluyor..."
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf lazygit.tar.gz lazygit
-        sudo install lazygit /usr/local/bin
-        rm lazygit lazygit.tar.gz
+        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit ${LAZYGIT_VERSION} kuruluyor..."
+
+        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
+        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
+
+        # Download with checksum verification
+        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit lazygit.tar.gz
+        else
+            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f lazygit.tar.gz lazygit
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazygit zaten kurulu."
     fi
@@ -155,6 +222,9 @@ install_modern_tools_dnf() {
 
     # Core tools
     sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf
+
+    # Fix bat/fd symlinks
+    fix_bat_fd_symlinks
 
     # Install remaining tools using generic methods
     install_starship_generic
@@ -179,26 +249,39 @@ install_modern_tools_pacman() {
     echo -e "${YELLOW}[UYARI]${NC} Vivid, Fastfetch AUR'dan kurulabilir."
 }
 
-# Generic installer functions
+# Generic installer functions (using centralized versions from config/tool-versions.sh)
 install_starship_generic() {
     if ! command -v starship &> /dev/null; then
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
     fi
 }
 
 install_zoxide_generic() {
     if ! command -v zoxide &> /dev/null; then
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+        curl -sS "$ZOXIDE_INSTALL_URL" | bash
     fi
 }
 
 install_lazygit_generic() {
     if ! command -v lazygit &> /dev/null; then
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        tar xf lazygit.tar.gz lazygit
-        sudo install lazygit /usr/local/bin
-        rm lazygit lazygit.tar.gz
+        # Initialize versions if not already done
+        if [ -z "$LAZYGIT_VERSION" ]; then
+            init_tool_versions
+        fi
+
+        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
+        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
+
+        # Download with checksum verification
+        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit lazygit.tar.gz
+        else
+            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            rm -f lazygit.tar.gz lazygit
+        fi
     fi
 }
 
@@ -210,6 +293,7 @@ install_lazydocker_generic() {
 
 # Export functions
 export -f install_modern_cli_tools
+export -f fix_bat_fd_symlinks
 export -f install_modern_tools_apt
 export -f install_modern_tools_dnf
 export -f install_modern_tools_pacman

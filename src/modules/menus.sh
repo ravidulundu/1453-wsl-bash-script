@@ -137,6 +137,14 @@ show_advanced_menu() {
 
 # Main program loop - Advanced Mode
 run_advanced_mode() {
+    # Run pre-flight checks before starting
+    if ! run_preflight_checks; then
+        echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!"
+        echo -e "${YELLOW}[!]${NC} Advanced Mode menüsüne yönlendiriliyorsunuz..."
+        echo -e "${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir."
+        sleep 3
+    fi
+
     # Detect package manager on startup
     detect_package_manager
 

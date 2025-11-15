@@ -188,10 +188,12 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 
 ### Modern CLI Tools Functions (modules/modern-tools.sh)
 - `install_modern_cli_tools()` - Installs all modern CLI tools
-- `install_modern_tools_apt()` - APT-specific installation
-- `install_modern_tools_dnf()` - DNF/YUM-specific installation
+- `fix_bat_fd_symlinks()` - Creates bat/fd symlinks for batcat/fdfind (Ubuntu compatibility)
+- `install_modern_tools_apt()` - APT-specific installation with bat/fd symlink fix
+- `install_modern_tools_dnf()` - DNF/YUM-specific installation with bat/fd symlink fix
 - `install_modern_tools_pacman()` - Pacman-specific installation
 - Tools installed: bat, ripgrep, fd-find, eza, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker
+- **Important**: Ubuntu installs `batcat` and `fdfind`, symlinks to `bat` and `fd` are auto-created in `~/.local/bin`
 
 ### Shell Environment Functions (modules/shell-setup.sh)
 - `setup_custom_shell()` - Main shell configuration function
@@ -216,7 +218,10 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 - `run_quickstart_mode()` - Main Quick Start flow
 - `show_presets()` - Display installation presets
 - `generate_installation_plan()` - Build tool list based on preset
-- `execute_installation_plan()` - Install tools automatically
+- `execute_installation_plan()` - Install tools automatically (non-interactive)
+  - **PHP**: Installs PHP 8.3 automatically (stable version)
+  - **AI CLI**: Installs Claude Code + GitHub CLI automatically
+  - **AI Frameworks**: Installs SuperClaude automatically
 
 ### Menu System (modules/menus.sh)
 - `configure_git()` - Interactive Git configuration
@@ -224,6 +229,44 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 - `show_mode_selection()` - Quick Start vs Advanced mode selection
 - `run_advanced_mode()` - Advanced mode menu loop
 - `main()` - Main program entry point
+
+### Cleanup Functions (modules/cleanup.sh)
+- `cleanup_system_packages()` - Removes system packages installed by update_system()
+  - Removes: jq, zip, unzip, p7zip-full, build-essential (APT)
+  - Removes: Development Tools group (DNF/YUM), base-devel (Pacman)
+  - Preserves: curl, wget, git (critical system dependencies)
+- `cleanup_python()` - Removes Python ecosystem
+  - Removes: pipx, UV, pip cache
+  - Removes: python3-pip, python3-venv (APT packages)
+  - Preserves: python3 (may be system critical)
+- `cleanup_nodejs()` - Removes Node.js and NVM
+  - Removes: ~/.nvm directory, Bun.js, shell configuration
+- `cleanup_php()` - Removes PHP ecosystem
+  - Removes: All PHP versions (php7.4, php8.0, php8.1, php8.2, php8.3, etc.)
+  - Removes: Composer, ~/.composer
+  - Removes: Ondřej Surý PPA repository
+- `cleanup_go()` - Removes Go installation
+  - Removes: /usr/local/go, GOPATH/GOROOT from shell configs
+- `cleanup_modern_tools()` - Removes modern CLI tools
+  - APT packages: bat, ripgrep, fd-find, fzf
+  - Manual installs: starship, zoxide, eza, vivid, fastfetch, lazygit, lazydocker
+  - Symlinks: ~/.local/bin/bat, ~/.local/bin/fd
+- `cleanup_ai_tools()` - Removes AI CLI tools
+  - Pipx tools: claude, qoder, gemini-cli, opencode, qwen
+  - GitHub Copilot CLI (via npm)
+  - GitHub CLI (via APT + repository cleanup)
+- `cleanup_ai_frameworks()` - Removes AI frameworks (SuperGemini, SuperQwen, SuperClaude)
+- `cleanup_shell_configs()` - Removes shell configuration changes
+  - Removes: ~/.bash_aliases, starship config, FZF
+  - Cleans: .bashrc of all script modifications
+- `cleanup_installations()` - Removes all installations (keeps configs)
+- `cleanup_full_reset()` - Complete rollback to pre-installation state
+  - Removes EVERYTHING: all packages, tools, configs, installation directory
+  - Goal: Return WSL to fresh installation state
+- `show_cleanup_menu()` - Interactive cleanup menu
+- `show_individual_cleanup_menu()` - Individual component cleanup
+
+**Important**: The cleanup script now provides complete rollback functionality. When users select "Full Reset", the script removes EVERYTHING it installed, including APT packages, repositories, manual installations, and configuration changes.
 
 ## Development Notes
 
@@ -360,6 +403,10 @@ docker run -it ubuntu:latest /bin/bash
 4. **Missing Dependencies**: Script installs prerequisites automatically
 5. **Shell Not Reloading**: Script calls `reload_shell_configs()` automatically
 6. **Interactive Prompt in Pipe**: Fixed with `/dev/tty` redirection in installer
+7. **bat/fd commands not found**: Ubuntu installs as `batcat`/`fdfind` - script auto-creates symlinks in `~/.local/bin`
+   - Symlinks: `bat` → `batcat`, `fd` → `fdfind`
+   - `~/.local/bin` automatically added to PATH
+   - Run `source ~/.bashrc` or restart terminal to apply
 
 ## Version History
 

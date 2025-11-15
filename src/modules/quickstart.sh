@@ -190,7 +190,14 @@ execute_installation_plan() {
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
-    # Update system and configure git first
+    # Run pre-flight checks first
+    if ! run_preflight_checks; then
+        echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+        echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
+        return 1
+    fi
+
+    # Update system and configure git
     update_system
     configure_git
 
@@ -218,7 +225,12 @@ execute_installation_plan() {
                 install_bun
                 ;;
             "php")
-                install_php_version_menu
+                # Quick Start: Install PHP 8.3 (stable) automatically without menu
+                echo -e "${YELLOW}[QUICK START]${NC} PHP 8.3 otomatik kuruluyor..."
+                if ! install_php_version "8.3"; then
+                    echo -e "${RED}[✗]${NC} PHP 8.3 kurulumu başarısız!"
+                    return 1
+                fi
                 ;;
             "composer")
                 install_composer
@@ -227,10 +239,16 @@ execute_installation_plan() {
                 install_go
                 ;;
             "ai_cli")
-                install_ai_cli_tools_menu
+                # Quick Start: Install essential AI CLI tools automatically
+                echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
+                if ! install_claude_code || ! install_github_cli; then
+                    echo -e "${YELLOW}[!]${NC} Bazı AI CLI araçları kurulamadı"
+                fi
                 ;;
             "ai_frameworks")
-                install_ai_frameworks_menu
+                # Quick Start: Install SuperClaude framework automatically
+                echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
+                install_superclaude
                 ;;
             "git_config")
                 # Already configured

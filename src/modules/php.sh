@@ -7,7 +7,10 @@
 ensure_php_repository() {
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "\n${YELLOW}[BİLGİ]${NC} PHP için Ondřej Surý deposu kontrol ediliyor..."
-        eval "$INSTALL_CMD software-properties-common ca-certificates apt-transport-https lsb-release gnupg"
+        # Safe execution without eval (prevents command injection)
+        local cmd_array
+        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+        "${cmd_array[@]}" software-properties-common ca-certificates apt-transport-https lsb-release gnupg
         if ! grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
             echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA ekleniyor..."
             sudo add-apt-repository -y ppa:ondrej/php
@@ -184,7 +187,10 @@ install_php_version() {
             ;;
         pacman)
             echo -e "${YELLOW}[UYARI]${NC} Arch Linux için PHP kurulumu manuel olarak yapılandırılmalıdır."
-            eval "$INSTALL_CMD" php php-fpm
+            # Safe execution without eval
+            local cmd_array
+            IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+            "${cmd_array[@]}" php php-fpm
             ;;
     esac
 
@@ -195,8 +201,10 @@ install_php_version() {
 
     if [ ${#pkgs_to_install[@]} -gt 0 ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak paketler: ${pkgs_to_install[*]}"
-        # shellcheck disable=SC2086
-        eval "$INSTALL_CMD ${pkgs_to_install[*]}"
+        # Safe execution without eval (prevents command injection)
+        local cmd_array
+        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+        "${cmd_array[@]}" "${pkgs_to_install[@]}"
     fi
 
     if [ ${#skipped_exts[@]} -gt 0 ]; then

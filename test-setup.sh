@@ -737,6 +737,7 @@ test_functional() {
     }
 
     cd "$test_dir" || {
+        cd "$orig_dir" 2>/dev/null || cd "$HOME"
         rm -rf "$test_dir"
         record_test "$category" "FAIL" "Test dizinine geçilemedi"
         return
@@ -1255,7 +1256,7 @@ generate_snapshot() {
     echo -e "${CYAN}PHP Ekosistemi:${NC}"
     command -v php &>/dev/null && echo "  PHP: $(php --version | head -n1 | awk '{print $2}')" || echo "  PHP: KURULU DEĞİL"
     command -v composer &>/dev/null && echo "  Composer: $(composer --version 2>/dev/null | awk '{print $3}')" || echo "  Composer: KURULU DEĞİL"
-    local php_count
+    local php_count=0
     if command -v update-alternatives &>/dev/null && command -v php &>/dev/null; then
         php_count=$(update-alternatives --list php 2>/dev/null | wc -l)
         [ "$php_count" -gt 0 ] && echo "  PHP Versiyonları: $php_count adet"
@@ -1336,7 +1337,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -l|--log)
-            if [ -z "$2" ] || [[ "$2" == -* ]]; then
+            if [ $# -lt 2 ] || [[ "${2:-}" == -* ]]; then
                 echo -e "${RED}Error: --log requires a filename${NC}"
                 show_usage
                 exit 1

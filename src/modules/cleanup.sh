@@ -127,8 +127,21 @@ show_installed_items() {
     fi
 
     echo ""
+    echo -e "${CYAN}[Docker]${NC}"
+    if command -v docker &>/dev/null; then
+        echo -e "  ${GREEN}✅ Docker Engine: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)${NC}"
+    else
+        echo -e "  ${RED}❌ Docker Engine: Kurulu değil${NC}"
+    fi
+    if command -v lazydocker &>/dev/null; then
+        echo -e "  ${GREEN}✅ lazydocker${NC}"
+    else
+        echo -e "  ${RED}❌ lazydocker${NC}"
+    fi
+
+    echo ""
     echo -e "${CYAN}[Modern CLI Tools]${NC}"
-    local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit" "lazydocker")
+    local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit")
     for tool in "${tools[@]}"; do
         if command -v "$tool" &>/dev/null; then
             echo -e "  ${GREEN}✅ $tool${NC}"
@@ -149,18 +162,64 @@ show_installed_items() {
     echo ""
 }
 
+# Cleanup System Packages (installed by update_system())
+cleanup_system_packages() {
+    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║    Sistem Paketleri Temizleniyor       ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+
+    echo -e "${CYAN}[BİLGİ]${NC} update_system() tarafından kurulan paketler kaldırılıyor..."
+    echo ""
+
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor (jq, zip, unzip, p7zip-full)..."
+        sudo apt remove -y jq zip unzip p7zip-full 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Temel paketler kaldırıldı"
+
+        echo -e "${YELLOW}[BİLGİ]${NC} Build tools kaldırılıyor (build-essential)..."
+        sudo apt remove -y build-essential 2>/dev/null
+        sudo apt autoremove -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Build tools kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "dnf" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo dnf remove -y jq zip unzip p7zip 2>/dev/null
+        sudo dnf groupremove "Development Tools" -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "yum" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo yum remove -y jq zip unzip p7zip 2>/dev/null
+        sudo yum groupremove "Development Tools" -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "pacman" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo pacman -R --noconfirm jq zip unzip p7zip base-devel 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+    fi
+
+    echo -e "${CYAN}[BİLGİ]${NC} curl, wget, git korundu (sistem için kritik olabilir)"
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Sistem paketleri temizlendi"
+}
+
 # Cleanup Python ecosystem
 cleanup_python() {
     echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
     echo -e "${BLUE}║     Python Ekosistemi Temizleniyor     ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    # pipx packages
+    # pipx packages and executable
     if command -v pipx &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} pipx paketleri kaldırılıyor..."
         pipx uninstall-all 2>/dev/null
         rm -rf ~/.local/pipx
-        echo -e "${GREEN}[BAŞARILI]${NC} pipx paketleri kaldırıldı"
+
+        # Remove pipx itself if installed via APT
+        if [ "$PKG_MANAGER" = "apt" ]; then
+            sudo apt remove -y pipx 2>/dev/null
+        fi
+        echo -e "${GREEN}[BAŞARILI]${NC} pipx kaldırıldı"
     fi
 
     # UV
@@ -178,8 +237,14 @@ cleanup_python() {
         echo -e "${GREEN}[BAŞARILI]${NC} pip cache temizlendi"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Python3 sistem paketi olabilir, manuel kaldırma:"
-    echo -e "  ${CYAN}sudo apt remove python3-pip${NC}"
+    # Python APT packages installed by script
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Python APT paketleri kaldırılıyor..."
+        sudo apt remove -y python3-pip python3-venv 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Python APT paketleri kaldırıldı"
+        echo -e "${CYAN}[BİLGİ]${NC} python3 korundu (sistem paketi olabilir)"
+    fi
+
     echo -e "\n${GREEN}[BAŞARILI]${NC} Python ekosistemi temizlendi"
 }
 
@@ -227,8 +292,25 @@ cleanup_php() {
         echo -e "${GREEN}[BAŞARILI]${NC} Composer kaldırıldı"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} PHP sürümlerini kaldırmak için:"
-    echo -e "  ${CYAN}sudo apt remove php*${NC}"
+    # Remove PHP packages installed via APT
+    if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
+        # Get list of installed PHP packages safely using dpkg
+        local php_packages
+        php_packages=$(dpkg -l | grep '^ii' | grep -E 'php[0-9]' | awk '{print $2}')
+        if [ -n "$php_packages" ]; then
+            sudo apt remove -y $php_packages 2>/dev/null
+            sudo apt autoremove -y 2>/dev/null
+        fi
+
+        # Remove Ondřej Surý PPA
+        if grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
+            echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA kaldırılıyor..."
+            sudo add-apt-repository --remove -y ppa:ondrej/php 2>/dev/null
+        fi
+        echo -e "${GREEN}[BAŞARILI]${NC} PHP paketleri kaldırıldı"
+    fi
+
     echo -e "\n${GREEN}[BAŞARILI]${NC} PHP ekosistemi temizlendi"
 }
 
@@ -258,85 +340,76 @@ cleanup_modern_tools() {
     echo -e "${BLUE}║    Modern CLI Tools Temizleniyor       ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    # Tool name mapping (command name -> package name)
-    declare -A tool_packages=(
-        ["bat"]="bat"
-        ["batcat"]="bat"
-        ["eza"]="eza"
-        ["rg"]="ripgrep"
-        ["ripgrep"]="ripgrep"
-        ["fd"]="fd-find"
-        ["fd-find"]="fd-find"
-        ["fzf"]="fzf"
-        ["vivid"]="vivid"
-        ["fastfetch"]="fastfetch"
-        ["lazygit"]="lazygit"
-        ["lazydocker"]="lazydocker"
-    )
+    echo -e "${CYAN}[BİLGİ]${NC} 1453 WSL Setup'ın kurduğu modern CLI tools kaldırılıyor..."
+    echo ""
 
-    # Special handling for each tool
+    # APT packages installed by this script
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} APT paketleri kaldırılıyor (bat, ripgrep, fd-find, fzf)..."
+        sudo apt remove -y bat ripgrep fd-find fzf 2>/dev/null && \
+            echo -e "${GREEN}[BAŞARILI]${NC} APT paketleri kaldırıldı"
+    fi
 
-    # Starship (manual install)
-    if command -v starship &>/dev/null; then
+    # Starship (manual install via curl)
+    if command -v starship &>/dev/null && [ -f /usr/local/bin/starship ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kaldırılıyor..."
         sudo rm -f /usr/local/bin/starship
         rm -f ~/.config/starship.toml
         echo -e "${GREEN}[BAŞARILI]${NC} Starship kaldırıldı"
     fi
 
-    # Zoxide (manual install)
-    if command -v zoxide &>/dev/null; then
+    # Zoxide (manual install via curl)
+    if [ -f ~/.local/bin/zoxide ] || [ -f /usr/local/bin/zoxide ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kaldırılıyor..."
         rm -f ~/.local/bin/zoxide
         sudo rm -f /usr/local/bin/zoxide
-        sudo rm -f /usr/bin/zoxide
         echo -e "${GREEN}[BAŞARILI]${NC} Zoxide kaldırıldı"
     fi
 
-    # APT packages
-    for cmd in "${!tool_packages[@]}"; do
-        if command -v "$cmd" &>/dev/null; then
-            local pkg="${tool_packages[$cmd]}"
-            echo -e "${YELLOW}[BİLGİ]${NC} $pkg kaldırılıyor..."
-
-            # Try apt remove
-            if sudo apt remove -y "$pkg" 2>/dev/null; then
-                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (apt) kaldırıldı"
-            elif sudo snap remove "$pkg" 2>/dev/null; then
-                echo -e "${GREEN}[BAŞARILI]${NC} $pkg (snap) kaldırıldı"
-            else
-                # Manual cleanup
-                sudo rm -f "/usr/local/bin/$cmd"
-                sudo rm -f "/usr/bin/$cmd"
-                rm -f "$HOME/.local/bin/$cmd"
-                echo -e "${GREEN}[BAŞARILI]${NC} $cmd (manuel) kaldırıldı"
-            fi
-        fi
-    done
-
-    # Lazydocker (GitHub release)
-    if command -v lazydocker &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
-        sudo rm -f /usr/local/bin/lazydocker
-        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
-    fi
-
-    # Lazygit (PPA)
-    if command -v lazygit &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} lazygit kaldırılıyor..."
-        sudo apt remove -y lazygit 2>/dev/null || sudo rm -f /usr/local/bin/lazygit
-        echo -e "${GREEN}[BAŞARILI]${NC} lazygit kaldırıldı"
-    fi
-
-    # Clean up eza repository
-    if [ -f /etc/apt/sources.list.d/gierens.list ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} eza repository kaldırılıyor..."
+    # Eza (manual install via repository)
+    if command -v eza &>/dev/null && [ -f /etc/apt/sources.list.d/gierens.list ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Eza kaldırılıyor..."
+        sudo apt remove -y eza 2>/dev/null
         sudo rm -f /etc/apt/sources.list.d/gierens.list
         sudo rm -f /etc/apt/keyrings/gierens.gpg
-        echo -e "${GREEN}[BAŞARILI]${NC} eza repository kaldırıldı"
+        echo -e "${GREEN}[BAŞARILI]${NC} Eza kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
+    # Vivid (manual .deb install)
+    if command -v vivid &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Vivid kaldırılıyor..."
+        sudo apt remove -y vivid 2>/dev/null || sudo rm -f /usr/bin/vivid
+        echo -e "${GREEN}[BAŞARILI]${NC} Vivid kaldırıldı"
+    fi
+
+    # Fastfetch (manual install via snap or GitHub)
+    if command -v fastfetch &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kaldırılıyor..."
+        if snap list | grep -q fastfetch 2>/dev/null; then
+            sudo snap remove fastfetch
+            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch (snap) kaldırıldı"
+        else
+            sudo apt remove -y fastfetch 2>/dev/null
+            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch kaldırıldı"
+        fi
+    fi
+
+    # Lazygit (manual install via GitHub)
+    if [ -f /usr/local/bin/lazygit ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazygit
+        echo -e "${GREEN}[BAŞARILI]${NC} Lazygit kaldırıldı"
+    fi
+
+    # Note: lazydocker is cleaned up in cleanup_docker()
+
+    # Clean up symlinks created by this script
+    echo -e "${YELLOW}[BİLGİ]${NC} Script symlink'leri temizleniyor..."
+    rm -f ~/.local/bin/bat ~/.local/bin/fd
+    echo -e "${GREEN}[BAŞARILI]${NC} Symlink'ler temizlendi"
+
+    echo ""
+    echo -e "${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
 }
 
 # Cleanup Shell Configs
@@ -438,23 +511,38 @@ cleanup_ai_tools() {
     echo -e "${BLUE}║      AI CLI Tools Temizleniyor         ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    local tools=("claude" "qoder" "gh")
+    # Tools installed via pipx
+    local pipx_tools=("claude" "qoder" "gemini-cli" "opencode" "qwen")
 
-    for tool in "${tools[@]}"; do
-        if command -v "$tool" &>/dev/null; then
-            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor..."
-
-            # Remove from pipx if installed via pipx
-            if pipx list 2>/dev/null | grep -q "$tool"; then
-                pipx uninstall "$tool"
-            else
-                sudo rm -f "/usr/local/bin/$tool"
-                rm -f "$HOME/.local/bin/$tool"
-            fi
-
+    for tool in "${pipx_tools[@]}"; do
+        if command -v pipx &>/dev/null && pipx list 2>/dev/null | grep -q "$tool"; then
+            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor (pipx)..."
+            pipx uninstall "$tool" 2>/dev/null
             echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı"
         fi
     done
+
+    # GitHub Copilot CLI (installed via npm)
+    if command -v copilot &>/dev/null || command -v github-copilot-cli &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kaldırılıyor (npm)..."
+        npm uninstall -g @githubnext/github-copilot-cli 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kaldırıldı"
+    fi
+
+    # GitHub CLI (installed via APT)
+    if command -v gh &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kaldırılıyor..."
+        if [ "$PKG_MANAGER" = "apt" ]; then
+            sudo apt remove -y gh 2>/dev/null
+            # Remove GitHub CLI repository
+            sudo rm -f /etc/apt/sources.list.d/github-cli.list
+            sudo rm -f /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kaldırıldı"
+        else
+            sudo rm -f /usr/local/bin/gh
+            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI binary kaldırıldı"
+        fi
+    fi
 
     echo -e "\n${GREEN}[BAŞARILI]${NC} AI CLI tools temizlendi"
 }
@@ -481,20 +569,104 @@ cleanup_ai_frameworks() {
     echo -e "\n${GREEN}[BAŞARILI]${NC} AI frameworks temizlendi"
 }
 
+# Cleanup Docker
+cleanup_docker() {
+    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║         Docker Temizleniyor            ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+
+    # Check if Docker is installed
+    if ! command -v docker &>/dev/null && [ ! -f /etc/apt/sources.list.d/docker.list ]; then
+        echo -e "${CYAN}[BİLGİ]${NC} Docker kurulu değil, temizleme atlanıyor..."
+        return 0
+    fi
+
+    # Remove Docker APT packages
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker paketleri kaldırılıyor..."
+        sudo apt remove -y \
+            docker-ce \
+            docker-ce-cli \
+            containerd.io \
+            docker-buildx-plugin \
+            docker-compose-plugin \
+            docker-compose 2>/dev/null
+        sudo apt autoremove -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker paketleri kaldırıldı"
+    fi
+
+    # Remove Docker repository
+    if [ -f /etc/apt/sources.list.d/docker.list ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker repository kaldırılıyor..."
+        sudo rm -f /etc/apt/sources.list.d/docker.list
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker repository kaldırıldı"
+    fi
+
+    # Remove Docker GPG key
+    if [ -f /etc/apt/keyrings/docker.gpg ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker GPG anahtarı kaldırılıyor..."
+        sudo rm -f /etc/apt/keyrings/docker.gpg
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker GPG anahtarı kaldırıldı"
+    fi
+
+    # Remove user from docker group
+    if id -nG "$USER" | grep -qw docker; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Kullanıcı docker grubundan çıkarılıyor..."
+        sudo deluser "$USER" docker 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker grup üyeliği kaldırıldı"
+    fi
+
+    # Remove lazydocker
+    if [ -f /usr/local/bin/lazydocker ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazydocker
+        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
+    fi
+
+    # Ask about Docker data
+    echo ""
+    echo -e "${YELLOW}[!]${NC} Docker imajları ve volume'leri de silinsin mi?"
+    echo -e "${YELLOW}[!]${NC} Bu işlem GERİ ALINAMAZ! Tüm container, image, volume, network silinecek."
+    echo -ne "${YELLOW}Docker verilerini de sil? (e/h): ${NC}"
+
+    # Check if running in interactive mode
+    if [ -t 0 ]; then
+        read -r delete_data </dev/tty
+    else
+        # Default to 'no' in non-interactive mode (CI/CD, scripts)
+        delete_data="h"
+        echo -e "\n${CYAN}[BİLGİ]${NC} Non-interactive mod: Docker verileri korunuyor"
+    fi
+
+    if [[ "$delete_data" =~ ^[Ee]$ ]]; then
+        echo -e "${RED}[UYARI]${NC} Docker verileri siliniyor..."
+        sudo rm -rf /var/lib/docker
+        sudo rm -rf /var/lib/containerd
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker verileri silindi"
+    else
+        echo -e "${CYAN}[BİLGİ]${NC} Docker verileri korundu (/var/lib/docker)"
+    fi
+
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Docker temizlendi"
+    echo -e "${YELLOW}[!]${NC} Değişikliklerin tam aktif olması için terminali yeniden başlatın"
+}
+
 # Cleanup all installations (keep configs)
 cleanup_installations() {
     echo -e "\n${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${RED}║              TÜM KURULUMLAR TEMİZLENİYOR                    ║${NC}"
     echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
 
-    if ! confirm_cleanup "Tüm kurulumlar (Python, Node, PHP, Go, Modern Tools, AI Tools)"; then
+    if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
         return 1
     fi
 
+    cleanup_system_packages
     cleanup_python
     cleanup_nodejs
     cleanup_php
     cleanup_go
+    cleanup_docker
     cleanup_modern_tools
     cleanup_ai_tools
     cleanup_ai_frameworks
@@ -528,10 +700,12 @@ cleanup_full_reset() {
     fi
 
     # Cleanup everything - AGGRESSIVE MODE
+    cleanup_system_packages
     cleanup_python
     cleanup_nodejs
     cleanup_php
     cleanup_go
+    cleanup_docker
     cleanup_modern_tools
     cleanup_shell_configs  # Now much more aggressive
     cleanup_ai_tools
@@ -592,64 +766,78 @@ show_individual_cleanup_menu() {
         echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
         echo -e "${BLUE}║              TEK TEK TEMİZLEME MENÜSÜ                       ║${NC}"
         echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-        echo -e "  ${GREEN}1${NC}) Python (python3, pip, pipx, uv)"
-        echo -e "  ${GREEN}2${NC}) Node.js (nvm, node, npm, bun)"
-        echo -e "  ${GREEN}3${NC}) PHP (php, composer)"
-        echo -e "  ${GREEN}4${NC}) Go"
-        echo -e "  ${GREEN}5${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
-        echo -e "  ${GREEN}6${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
-        echo -e "  ${GREEN}7${NC}) AI CLI Tools"
-        echo -e "  ${GREEN}8${NC}) AI Frameworks"
+        echo -e "  ${GREEN}1${NC}) Sistem Paketleri (jq, zip, unzip, build-essential)"
+        echo -e "  ${GREEN}2${NC}) Python (python3, pip, pipx, uv)"
+        echo -e "  ${GREEN}3${NC}) Node.js (nvm, node, npm, bun)"
+        echo -e "  ${GREEN}4${NC}) PHP (php, composer)"
+        echo -e "  ${GREEN}5${NC}) Go"
+        echo -e "  ${GREEN}6${NC}) Docker (docker-ce, lazydocker)"
+        echo -e "  ${GREEN}7${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
+        echo -e "  ${GREEN}8${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
+        echo -e "  ${GREEN}9${NC}) AI CLI Tools"
+        echo -e "  ${GREEN}10${NC}) AI Frameworks"
         echo -e "  ${GREEN}0${NC}) ← Geri"
         echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
 
-        echo -ne "\n${YELLOW}Seçiminiz (0-8): ${NC}"
+        echo -ne "\n${YELLOW}Seçiminiz (0-10): ${NC}"
         read -r choice </dev/tty
 
         case $choice in
             1)
+                if confirm_cleanup "Sistem paketleri"; then
+                    cleanup_system_packages
+                    read -p "Devam etmek için Enter'a basın..."
+                fi
+                ;;
+            2)
                 if confirm_cleanup "Python ekosistemi"; then
                     cleanup_python
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            2)
+            3)
                 if confirm_cleanup "Node.js ekosistemi"; then
                     cleanup_nodejs
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            3)
+            4)
                 if confirm_cleanup "PHP ekosistemi"; then
                     cleanup_php
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            4)
+            5)
                 if confirm_cleanup "Go"; then
                     cleanup_go
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            5)
+            6)
+                if confirm_cleanup "Docker"; then
+                    cleanup_docker
+                    read -p "Devam etmek için Enter'a basın..."
+                fi
+                ;;
+            7)
                 if confirm_cleanup "Modern CLI Tools"; then
                     cleanup_modern_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            6)
+            8)
                 if confirm_cleanup "Shell Config"; then
                     cleanup_shell_configs
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            7)
+            9)
                 if confirm_cleanup "AI CLI Tools"; then
                     cleanup_ai_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            8)
+            10)
                 if confirm_cleanup "AI Frameworks"; then
                     cleanup_ai_frameworks
                     read -p "Devam etmek için Enter'a basın..."
@@ -736,10 +924,12 @@ show_cleanup_menu() {
 export -f backup_configs
 export -f confirm_cleanup
 export -f show_installed_items
+export -f cleanup_system_packages
 export -f cleanup_python
 export -f cleanup_nodejs
 export -f cleanup_php
 export -f cleanup_go
+export -f cleanup_docker
 export -f cleanup_modern_tools
 export -f cleanup_shell_configs
 export -f cleanup_ai_tools

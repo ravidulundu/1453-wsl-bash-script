@@ -15,8 +15,14 @@ source "${SCRIPT_DIR}/lib/init.sh"
 # shellcheck source=config/colors.sh
 source "${SCRIPT_DIR}/config/colors.sh"
 
+# shellcheck source=config/constants.sh
+source "${SCRIPT_DIR}/config/constants.sh"
+
 # shellcheck source=config/php-versions.sh
 source "${SCRIPT_DIR}/config/php-versions.sh"
+
+# shellcheck source=config/tool-versions.sh
+source "${SCRIPT_DIR}/config/tool-versions.sh"
 
 # shellcheck source=config/banner.sh
 source "${SCRIPT_DIR}/config/banner.sh"
