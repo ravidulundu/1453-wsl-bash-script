@@ -132,11 +132,15 @@ install_go_package() {
         return 0
     fi
 
+    # Safe execution without eval (prevents command injection)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+
     # Detect package manager and install
     case "$PKG_MANAGER" in
         "apt")
             echo -e "${YELLOW}[BİLGİ]${NC} APT ile Go kuruluyor..."
-            if eval "$INSTALL_CMD" golang-go; then
+            if "${cmd_array[@]}" golang-go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go APT ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} APT ile Go kurulumu başarısız!"
@@ -145,7 +149,7 @@ install_go_package() {
             ;;
         "dnf")
             echo -e "${YELLOW}[BİLGİ]${NC} DNF ile Go kuruluyor..."
-            if eval "$INSTALL_CMD" golang; then
+            if "${cmd_array[@]}" golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go DNF ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} DNF ile Go kurulumu başarısız!"
@@ -154,7 +158,7 @@ install_go_package() {
             ;;
         "yum")
             echo -e "${YELLOW}[BİLGİ]${NC} YUM ile Go kuruluyor..."
-            if eval "$INSTALL_CMD" golang; then
+            if "${cmd_array[@]}" golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go YUM ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} YUM ile Go kurulumu başarısız!"
@@ -163,7 +167,7 @@ install_go_package() {
             ;;
         "pacman")
             echo -e "${YELLOW}[BİLGİ]${NC} Pacman ile Go kuruluyor..."
-            if eval "$INSTALL_CMD" go; then
+            if "${cmd_array[@]}" go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go Pacman ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} Pacman ile Go kurulumu başarısız!"

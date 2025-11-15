@@ -66,6 +66,10 @@ update_system() {
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
 
     # Try system update with retry
+    # Safe execution without eval (prevents command injection)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$UPDATE_CMD"
+
     local update_attempt=1
     local max_update_retries=3
     while [ $update_attempt -le $max_update_retries ]; do
@@ -74,7 +78,7 @@ update_system() {
             sleep 2
         fi
 
-        if eval "$UPDATE_CMD"; then
+        if "${cmd_array[@]}"; then
             echo -e "${GREEN}[✓]${NC} Sistem güncellemesi başarılı!"
             break
         fi

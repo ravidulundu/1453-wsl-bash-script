@@ -115,19 +115,23 @@ install_github_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Safe execution without eval (prevents command injection)
+    local cmd_array
+    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} GitHub GPG key ekleniyor..."
         curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
         sudo apt update
-        eval "$INSTALL_CMD" gh
+        "${cmd_array[@]}" gh
 
     elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
         sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-        eval "$INSTALL_CMD" gh
+        "${cmd_array[@]}" gh
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        eval "$INSTALL_CMD" github-cli
+        "${cmd_array[@]}" github-cli
     fi
 
     if command -v gh &> /dev/null; then
