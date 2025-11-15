@@ -11,12 +11,12 @@ Comprehensive automated setup script for WSL (Windows Subsystem for Linux) envir
 WSL terminalinizde bu tek komutu çalıştırarak her şeyi indirip kurabilirsiniz:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 ```
 
 Veya wget ile:
 ```bash
-wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 ```
 
 Bu komut:

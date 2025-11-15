@@ -20,12 +20,14 @@ This is a WSL (Windows Subsystem for Linux) automated setup script designed for 
 One-line installation that downloads all components and sets up everything:
 
 ```bash
-# Using curl
-curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+# Using curl (process substitution - prevents stdin issues)
+bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 
 # Or using wget
-wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 ```
+
+**Important**: We use process substitution `bash <(curl ...)` instead of piping `curl | bash` to ensure interactive prompts work correctly by keeping stdin connected to the terminal.
 
 This installer:
 - Downloads all 13 modular components from GitHub
