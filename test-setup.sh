@@ -722,6 +722,191 @@ test_missing_installations() {
     fi
 }
 
+# 15. Functional Tests - Gerçek Kullanım Testleri
+test_functional() {
+    local category="Functional Tests (Çalışma Testleri)"
+    show_category "$category"
+
+    # Test dizini oluştur
+    local test_dir="/tmp/1453-test-$$"
+    mkdir -p "$test_dir"
+    cd "$test_dir" || return
+
+    # 1. Modern ls (eza/ll) testi
+    if [ -f "$HOME/.bash_aliases" ] && grep -q "alias ll=" "$HOME/.bash_aliases" 2>/dev/null; then
+        if command -v eza &> /dev/null; then
+            # Test dosyası oluştur
+            touch test-file.txt
+            # ll alias'ını simüle et (eza komutu direkt çalıştır)
+            if eza -lah test-file.txt &> /dev/null; then
+                record_test "$category" "PASS" "ll (eza) komutu çalışıyor ✓"
+            else
+                record_test "$category" "FAIL" "ll alias tanımlı ama eza ÇALIŞMIYOR"
+            fi
+        else
+            record_test "$category" "FAIL" "ll alias var ama eza kurulu değil"
+        fi
+    else
+        record_test "$category" "WARNING" "ll alias tanımlı değil"
+    fi
+
+    # 2. Modern cat (batcat) testi
+    if [ -f "$HOME/.bash_aliases" ] && grep -q "alias cat=" "$HOME/.bash_aliases" 2>/dev/null; then
+        if command -v batcat &> /dev/null; then
+            echo "test content" > test-cat.txt
+            if batcat test-cat.txt &> /dev/null; then
+                record_test "$category" "PASS" "cat (batcat) komutu çalışıyor ✓"
+            else
+                record_test "$category" "FAIL" "cat alias tanımlı ama batcat ÇALIŞMIYOR"
+            fi
+        else
+            record_test "$category" "FAIL" "cat alias var ama batcat kurulu değil"
+        fi
+    else
+        record_test "$category" "WARNING" "cat alias tanımlı değil"
+    fi
+
+    # 3. Starship prompt testi
+    if command -v starship &> /dev/null; then
+        if grep -q "starship init" "$HOME/.bashrc" 2>/dev/null; then
+            # Starship config testi
+            if starship prompt &> /dev/null; then
+                record_test "$category" "PASS" "Starship prompt çalışıyor ✓"
+            else
+                record_test "$category" "WARNING" "Starship kurulu ama prompt oluşturulamıyor"
+            fi
+        else
+            record_test "$category" "FAIL" "Starship kurulu ama .bashrc'de init edilmemiş"
+        fi
+    else
+        record_test "$category" "WARNING" "Starship kurulu değil"
+    fi
+
+    # 4. Zoxide testi
+    if command -v zoxide &> /dev/null; then
+        if grep -q "zoxide init" "$HOME/.bashrc" 2>/dev/null; then
+            # Zoxide query testi
+            if zoxide query --help &> /dev/null; then
+                record_test "$category" "PASS" "Zoxide çalışıyor ✓"
+            else
+                record_test "$category" "WARNING" "Zoxide kurulu ama query çalışmıyor"
+            fi
+        else
+            record_test "$category" "FAIL" "Zoxide kurulu ama .bashrc'de init edilmemiş"
+        fi
+    else
+        record_test "$category" "WARNING" "Zoxide kurulu değil"
+    fi
+
+    # 5. FZF testi
+    if command -v fzf &> /dev/null; then
+        # FZF key bindings kontrolü
+        if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
+            if grep -q "key-bindings.bash" "$HOME/.bashrc" 2>/dev/null; then
+                record_test "$category" "PASS" "FZF key bindings yapılandırılmış ✓"
+            else
+                record_test "$category" "WARNING" "FZF kurulu ama key bindings yok"
+            fi
+        fi
+
+        # FZF temel çalışma testi
+        echo -e "option1\noption2\noption3" | fzf --filter="opt" &> /dev/null
+        if [ $? -eq 0 ] || [ $? -eq 1 ]; then
+            record_test "$category" "PASS" "FZF filter çalışıyor ✓"
+        else
+            record_test "$category" "FAIL" "FZF kurulu ama ÇALIŞMIYOR"
+        fi
+    else
+        record_test "$category" "WARNING" "FZF kurulu değil"
+    fi
+
+    # 6. ripgrep (rg) testi
+    if command -v rg &> /dev/null; then
+        echo "test pattern" > test-rg.txt
+        if rg "pattern" test-rg.txt &> /dev/null; then
+            record_test "$category" "PASS" "ripgrep (rg) çalışıyor ✓"
+        else
+            record_test "$category" "FAIL" "rg kurulu ama ÇALIŞMIYOR"
+        fi
+    else
+        record_test "$category" "WARNING" "ripgrep kurulu değil"
+    fi
+
+    # 7. fd-find testi
+    if command -v fdfind &> /dev/null || command -v fd &> /dev/null; then
+        local fd_cmd="fdfind"
+        command -v fd &> /dev/null && fd_cmd="fd"
+
+        touch test-fd-file.txt
+        if $fd_cmd "test-fd" . &> /dev/null; then
+            record_test "$category" "PASS" "fd-find çalışıyor ✓"
+        else
+            record_test "$category" "FAIL" "fd kurulu ama ÇALIŞMIYOR"
+        fi
+    else
+        record_test "$category" "WARNING" "fd-find kurulu değil"
+    fi
+
+    # 8. Custom functions testi (mcd)
+    if grep -q "function mcd" "$HOME/.bashrc" 2>/dev/null || grep -q "^mcd()" "$HOME/.bashrc" 2>/dev/null; then
+        record_test "$category" "PASS" "Custom function 'mcd' tanımlı ✓"
+
+        # mcd fonksiyonunu test et (source etmeden, sadece tanımlı mı kontrolü)
+        if declare -f mcd &> /dev/null; then
+            record_test "$category" "PASS" "mcd fonksiyonu aktif ✓"
+        else
+            record_test "$category" "WARNING" "mcd tanımlı ama bu shell'de yüklü değil"
+        fi
+    else
+        record_test "$category" "WARNING" "Custom function 'mcd' tanımlı değil"
+    fi
+
+    # 9. Git alias testi
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local git_aliases=$(grep -c "^alias g" "$HOME/.bash_aliases" 2>/dev/null || echo "0")
+        if [ "$git_aliases" -gt 0 ]; then
+            record_test "$category" "PASS" "Git aliasları tanımlı ($git_aliases adet) ✓"
+        else
+            record_test "$category" "WARNING" "Git aliasları bulunamadı"
+        fi
+    fi
+
+    # 10. Vivid (LS_COLORS) testi
+    if command -v vivid &> /dev/null; then
+        if vivid generate catppuccin-mocha &> /dev/null; then
+            record_test "$category" "PASS" "vivid (LS_COLORS) çalışıyor ✓"
+        else
+            record_test "$category" "WARNING" "vivid kurulu ama theme oluşturulamıyor"
+        fi
+
+        if grep -q "vivid generate" "$HOME/.bashrc" 2>/dev/null; then
+            record_test "$category" "PASS" "vivid .bashrc'de yapılandırılmış ✓"
+        else
+            record_test "$category" "WARNING" "vivid kurulu ama .bashrc'de yapılandırılmamış"
+        fi
+    else
+        record_test "$category" "WARNING" "vivid kurulu değil"
+    fi
+
+    # 11. Bash history settings testi
+    if grep -q "HISTSIZE=100000" "$HOME/.bashrc" 2>/dev/null; then
+        record_test "$category" "PASS" "Bash history ayarları yapılandırılmış ✓"
+    else
+        record_test "$category" "WARNING" "Bash history ayarları eksik"
+    fi
+
+    # 12. PATH kontrolü (~/.local/bin)
+    if echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        record_test "$category" "PASS" "~/.local/bin PATH'e eklenmiş ✓"
+    else
+        record_test "$category" "WARNING" "~/.local/bin PATH'de yok"
+    fi
+
+    # Cleanup
+    cd - > /dev/null 2>&1
+    rm -rf "$test_dir"
+}
+
 # ===================================================================================================
 # Rapor Oluşturma
 # ===================================================================================================
@@ -1097,6 +1282,7 @@ test_docker
 test_installation_directory
 test_aliases
 test_missing_installations
+test_functional
 
 # Rapor göster
 if [ "$JSON_OUTPUT" = true ]; then

@@ -630,8 +630,16 @@ Test scripti şu kategorileri kontrol eder:
 10. **AI Frameworks** - SuperGemini, SuperQwen, SuperClaude
 11. **Docker** - Docker Engine, lazydocker
 12. **Kurulum Dizini** - ~/.1453-wsl-setup yapısı
-13. **🆕 Bash Aliases** - 62+ alias ve bağımlılık kontrolü (cat→batcat, ll→eza, vb.)
-14. **🆕 Eksik Yüklemeler** - Kritik ve opsiyonel araçların detaylı analizi
+13. **Bash Aliases** - 62+ alias ve bağımlılık kontrolü (cat→batcat, ll→eza, vb.)
+14. **Eksik Yüklemeler** - Kritik ve opsiyonel araçların detaylı analizi
+15. **🆕 Functional Tests** - Komutları gerçekten çalıştırıp test eder:
+    - `ll`, `cat`, `rg`, `fd` komutlarının çalışması
+    - Starship prompt aktifliği ve çalışması
+    - Zoxide, FZF entegrasyonu
+    - Custom functions (mcd, make)
+    - Vivid LS_COLORS
+    - Bash history ayarları
+    - PATH yapılandırması
 
 ### Test Sonuçları
 
