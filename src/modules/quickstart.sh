@@ -6,6 +6,21 @@
 # Show welcome screen for Quick Start mode
 show_quickstart_welcome() {
     clear
+
+    # DEBUG: stdin durumunu kontrol et
+    echo "[DEBUG] stdin test ediliyor..." >&2
+    if [ -t 0 ]; then
+        echo "[DEBUG] stdin IS a terminal (TTY)" >&2
+    else
+        echo "[DEBUG] stdin is NOT a terminal" >&2
+    fi
+
+    if [ -e /dev/tty ]; then
+        echo "[DEBUG] /dev/tty mevcut" >&2
+    else
+        echo "[DEBUG] /dev/tty MEVCUT DEĞİL!" >&2
+    fi
+
     echo -e "${CYAN}"
     cat << 'EOF'
     ╔════════════════════════════════════════════════════════════════╗
@@ -33,8 +48,13 @@ EOF
     echo ""
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
+
+    echo "[DEBUG] read komutu çalıştırılıyor..." >&2
     echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
-    read -r response
+
+    # /dev/tty'den oku
+    read -r response </dev/tty
+    echo "[DEBUG] read tamamlandı, yanıt: '$response'" >&2
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
