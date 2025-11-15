@@ -144,7 +144,13 @@ if [ -e /dev/tty ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
+
+# If stdin is not a terminal, redirect from /dev/tty
+if [ ! -t 0 ] && [ -e /dev/tty ]; then
+    bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@" </dev/tty
+else
+    bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
+fi
 LAUNCHER
 
     chmod +x "${INSTALL_DIR}/1453-setup"
@@ -191,7 +197,8 @@ LAUNCHER
     if [[ "$response" =~ ^[eE]$ ]]; then
         echo ""
         echo -e "${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
-        bash "${INSTALL_DIR}/1453-setup"
+        # Run with stdin explicitly from /dev/tty
+        bash "${INSTALL_DIR}/1453-setup" </dev/tty
     else
         echo ""
         echo -e "${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
