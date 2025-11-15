@@ -230,6 +230,44 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 - `run_advanced_mode()` - Advanced mode menu loop
 - `main()` - Main program entry point
 
+### Cleanup Functions (modules/cleanup.sh)
+- `cleanup_system_packages()` - Removes system packages installed by update_system()
+  - Removes: jq, zip, unzip, p7zip-full, build-essential (APT)
+  - Removes: Development Tools group (DNF/YUM), base-devel (Pacman)
+  - Preserves: curl, wget, git (critical system dependencies)
+- `cleanup_python()` - Removes Python ecosystem
+  - Removes: pipx, UV, pip cache
+  - Removes: python3-pip, python3-venv (APT packages)
+  - Preserves: python3 (may be system critical)
+- `cleanup_nodejs()` - Removes Node.js and NVM
+  - Removes: ~/.nvm directory, Bun.js, shell configuration
+- `cleanup_php()` - Removes PHP ecosystem
+  - Removes: All PHP versions (php7.4, php8.0, php8.1, php8.2, php8.3, etc.)
+  - Removes: Composer, ~/.composer
+  - Removes: Ondřej Surý PPA repository
+- `cleanup_go()` - Removes Go installation
+  - Removes: /usr/local/go, GOPATH/GOROOT from shell configs
+- `cleanup_modern_tools()` - Removes modern CLI tools
+  - APT packages: bat, ripgrep, fd-find, fzf
+  - Manual installs: starship, zoxide, eza, vivid, fastfetch, lazygit, lazydocker
+  - Symlinks: ~/.local/bin/bat, ~/.local/bin/fd
+- `cleanup_ai_tools()` - Removes AI CLI tools
+  - Pipx tools: claude, qoder, gemini-cli, opencode, qwen
+  - GitHub Copilot CLI (via npm)
+  - GitHub CLI (via APT + repository cleanup)
+- `cleanup_ai_frameworks()` - Removes AI frameworks (SuperGemini, SuperQwen, SuperClaude)
+- `cleanup_shell_configs()` - Removes shell configuration changes
+  - Removes: ~/.bash_aliases, starship config, FZF
+  - Cleans: .bashrc of all script modifications
+- `cleanup_installations()` - Removes all installations (keeps configs)
+- `cleanup_full_reset()` - Complete rollback to pre-installation state
+  - Removes EVERYTHING: all packages, tools, configs, installation directory
+  - Goal: Return WSL to fresh installation state
+- `show_cleanup_menu()` - Interactive cleanup menu
+- `show_individual_cleanup_menu()` - Individual component cleanup
+
+**Important**: The cleanup script now provides complete rollback functionality. When users select "Full Reset", the script removes EVERYTHING it installed, including APT packages, repositories, manual installations, and configuration changes.
+
 ## Development Notes
 
 ### Working with the Modular Architecture
