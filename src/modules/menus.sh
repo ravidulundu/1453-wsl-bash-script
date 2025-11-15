@@ -87,11 +87,14 @@ EOF
         echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
         echo ""
 
+        echo "[DEBUG] Mode seçimi bekleniyor..." >&2
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-        read -r mode_choice
+        read -r mode_choice </dev/tty
+        echo "[DEBUG] Mode seçildi: '$mode_choice'" >&2
 
         # Boş input kontrolü
         if [ -z "$mode_choice" ]; then
+            echo "[DEBUG] Boş input algılandı" >&2
             echo -e "\n${RED}[HATA]${NC} Boş giriş! Lütfen 0, 1 veya 2 girin."
             sleep 2
             continue
@@ -99,22 +102,28 @@ EOF
 
         case $mode_choice in
             1)
+                echo "[DEBUG] Mode seçimi: Quick Start (1)" >&2
                 echo ""
+                echo "[DEBUG] run_quickstart_mode çağrılıyor..." >&2
                 run_quickstart_mode
+                echo "[DEBUG] run_quickstart_mode döndü, tekrar menüye dönülüyor" >&2
                 # Quick start bittikten sonra tekrar menüye dön
                 continue
                 ;;
             2)
+                echo "[DEBUG] Mode seçimi: Advanced (2)" >&2
                 echo ""
                 run_advanced_mode
                 # Advanced mode bittikten sonra çık
                 break
                 ;;
             0)
+                echo "[DEBUG] Mode seçimi: Çıkış (0)" >&2
                 echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
             *)
+                echo "[DEBUG] Geçersiz mode seçimi: '$mode_choice'" >&2
                 echo -e "\n${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0, 1 veya 2 girin."
                 sleep 2
                 continue
