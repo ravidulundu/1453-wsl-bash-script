@@ -132,7 +132,7 @@ main() {
 #!/bin/bash
 # 1453.AI WSL Kurulum Başlatıcı
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
+bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 LAUNCHER
 
     chmod +x "${INSTALL_DIR}/1453-setup"
@@ -179,7 +179,7 @@ LAUNCHER
     if [[ "$response" =~ ^[eE]$ ]]; then
         echo ""
         echo -e "${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
-        exec "${INSTALL_DIR}/1453-setup"
+        bash "${INSTALL_DIR}/1453-setup"
     else
         echo ""
         echo -e "${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
