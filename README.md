@@ -632,14 +632,19 @@ Test scripti şu kategorileri kontrol eder:
 12. **Kurulum Dizini** - ~/.1453-wsl-setup yapısı
 13. **Bash Aliases** - 62+ alias ve bağımlılık kontrolü (cat→batcat, ll→eza, vb.)
 14. **Eksik Yüklemeler** - Kritik ve opsiyonel araçların detaylı analizi
-15. **🆕 Functional Tests** - Komutları gerçekten çalıştırıp test eder:
-    - `ll`, `cat`, `rg`, `fd` komutlarının çalışması
-    - Starship prompt aktifliği ve çalışması
-    - Zoxide, FZF entegrasyonu
-    - Custom functions (mcd, make)
-    - Vivid LS_COLORS
-    - Bash history ayarları
-    - PATH yapılandırması
+15. **🆕 Functional Tests** - Komutları gerçekten çalıştırıp test eder (20+ test):
+    - **Modern CLI:** `ll`, `cat`, `rg`, `fd`, `fastfetch` gerçek çalışma testleri
+    - **Entegrasyonlar:** Starship prompt, Zoxide, FZF, Vivid LS_COLORS
+    - **Aliaslar (60+):**
+      - Navigasyon (.., ..., home)
+      - Safety (cp -i, mv -i, rm -i)
+      - Git aliasları (g, ga, gc, gp, gl, vb.)
+      - Docker aliasları (dps, dpsa, di, dex, dlog, vb.)
+      - NPM aliasları (ni, nid, ns, nd, nb, nt, vb.)
+      - Python aliasları (py, pip, venv, activate)
+      - System info (cpuinfo, meminfo, disk, ports)
+      - Clear aliasları (c, cl, cls)
+    - **Config:** Custom functions, Bash history, PATH
 
 ### Test Sonuçları
 

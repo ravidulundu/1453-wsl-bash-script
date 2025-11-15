@@ -902,6 +902,98 @@ test_functional() {
         record_test "$category" "WARNING" "~/.local/bin PATH'de yok"
     fi
 
+    # 13. Fastfetch testi
+    if command -v fastfetch &> /dev/null; then
+        if fastfetch --version &> /dev/null; then
+            record_test "$category" "PASS" "fastfetch çalışıyor ✓"
+        else
+            record_test "$category" "FAIL" "fastfetch kurulu ama ÇALIŞMIYOR"
+        fi
+    else
+        record_test "$category" "WARNING" "fastfetch kurulu değil"
+    fi
+
+    # 14. Navigasyon aliasları test (.. , ..., home)
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local nav_count=0
+        grep -q "alias \.\.=" "$HOME/.bash_aliases" 2>/dev/null && ((nav_count++))
+        grep -q "alias \.\.\.=" "$HOME/.bash_aliases" 2>/dev/null && ((nav_count++))
+        grep -q "alias home=" "$HOME/.bash_aliases" 2>/dev/null && ((nav_count++))
+
+        if [ "$nav_count" -ge 2 ]; then
+            record_test "$category" "PASS" "Navigasyon aliasları tanımlı ($nav_count adet) ✓"
+        else
+            record_test "$category" "WARNING" "Navigasyon aliasları eksik"
+        fi
+    fi
+
+    # 15. Safety aliasları (cp -i, mv -i, rm -i)
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local safety_count=0
+        grep -q "alias cp='cp -i'" "$HOME/.bash_aliases" 2>/dev/null && ((safety_count++))
+        grep -q "alias mv='mv -i'" "$HOME/.bash_aliases" 2>/dev/null && ((safety_count++))
+        grep -q "alias rm='rm -i'" "$HOME/.bash_aliases" 2>/dev/null && ((safety_count++))
+
+        if [ "$safety_count" -eq 3 ]; then
+            record_test "$category" "PASS" "Safety aliasları (cp/mv/rm -i) tanımlı ✓"
+        else
+            record_test "$category" "WARNING" "Safety aliasları eksik ($safety_count/3)"
+        fi
+    fi
+
+    # 16. Docker aliasları
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local docker_alias_count=$(grep -c "^alias d" "$HOME/.bash_aliases" 2>/dev/null || echo "0")
+        if [ "$docker_alias_count" -gt 0 ]; then
+            record_test "$category" "PASS" "Docker aliasları tanımlı ($docker_alias_count adet) ✓"
+        fi
+    fi
+
+    # 17. NPM aliasları
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local npm_alias_count=$(grep -c "^alias n" "$HOME/.bash_aliases" 2>/dev/null || echo "0")
+        if [ "$npm_alias_count" -gt 0 ]; then
+            record_test "$category" "PASS" "NPM aliasları tanımlı ($npm_alias_count adet) ✓"
+        fi
+    fi
+
+    # 18. Python aliasları
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local py_alias_count=0
+        grep -q "alias py=" "$HOME/.bash_aliases" 2>/dev/null && ((py_alias_count++))
+        grep -q "alias venv=" "$HOME/.bash_aliases" 2>/dev/null && ((py_alias_count++))
+        grep -q "alias activate=" "$HOME/.bash_aliases" 2>/dev/null && ((py_alias_count++))
+
+        if [ "$py_alias_count" -ge 2 ]; then
+            record_test "$category" "PASS" "Python aliasları tanımlı ($py_alias_count adet) ✓"
+        fi
+    fi
+
+    # 19. System info aliasları (cpuinfo, meminfo, disk, ports, myip)
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local sysinfo_count=0
+        grep -q "alias cpuinfo=" "$HOME/.bash_aliases" 2>/dev/null && ((sysinfo_count++))
+        grep -q "alias meminfo=" "$HOME/.bash_aliases" 2>/dev/null && ((sysinfo_count++))
+        grep -q "alias disk=" "$HOME/.bash_aliases" 2>/dev/null && ((sysinfo_count++))
+        grep -q "alias ports=" "$HOME/.bash_aliases" 2>/dev/null && ((sysinfo_count++))
+
+        if [ "$sysinfo_count" -ge 3 ]; then
+            record_test "$category" "PASS" "System info aliasları tanımlı ($sysinfo_count adet) ✓"
+        fi
+    fi
+
+    # 20. Clear aliasları (c, cl, cls)
+    if [ -f "$HOME/.bash_aliases" ]; then
+        local clear_count=0
+        grep -q "alias c='clear'" "$HOME/.bash_aliases" 2>/dev/null && ((clear_count++))
+        grep -q "alias cl='clear'" "$HOME/.bash_aliases" 2>/dev/null && ((clear_count++))
+        grep -q "alias cls='clear'" "$HOME/.bash_aliases" 2>/dev/null && ((clear_count++))
+
+        if [ "$clear_count" -ge 2 ]; then
+            record_test "$category" "PASS" "Clear aliasları tanımlı ($clear_count adet) ✓"
+        fi
+    fi
+
     # Cleanup
     cd - > /dev/null 2>&1
     rm -rf "$test_dir"
