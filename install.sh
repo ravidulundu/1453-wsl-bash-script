@@ -5,6 +5,12 @@
 
 set -e
 
+# CRITICAL: Redirect stdin to /dev/tty at the very beginning
+if [ -e /dev/tty ]; then
+    exec 0</dev/tty
+    echo "[DEBUG INSTALLER] stdin redirected to /dev/tty" >&2
+fi
+
 # Renkli çıktı için tanımlamalar
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -131,6 +137,12 @@ main() {
     cat > "${INSTALL_DIR}/1453-setup" << 'LAUNCHER'
 #!/bin/bash
 # 1453.AI WSL Kurulum Başlatıcı
+
+# CRITICAL: Redirect stdin to /dev/tty
+if [ -e /dev/tty ]; then
+    exec 0</dev/tty
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 LAUNCHER
