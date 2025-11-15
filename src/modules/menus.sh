@@ -55,75 +55,77 @@ show_menu() {
 
 # Show mode selection menu
 show_mode_selection() {
-    clear
-    echo -e "${CYAN}"
-    cat << 'EOF'
+    # Loop için bayrak
+    local retry=0
+
+    while true; do
+        clear
+        echo -e "${CYAN}"
+        cat << 'EOF'
     ╔════════════════════════════════════════════════════════════════╗
     ║                                                                ║
     ║           🎯 1453.AI - MOD SEÇİMİNİ YAPIN 🎯                  ║
     ║                                                                ║
     ╚════════════════════════════════════════════════════════════════╝
 EOF
-    echo -e "${NC}"
-    echo -e "${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}"
-    echo ""
-    echo -e "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE (Önerilen)${NC}"
-    echo -e "     ${YELLOW}→ Vibe coder'lar ve yeni başlayanlar için${NC}"
-    echo -e "     ${YELLOW}→ Basit sorular, otomatik kurulum${NC}"
-    echo -e "     ${YELLOW}→ Sizi yormaz, sadece gerekli araçları kurar${NC}"
-    echo ""
-    echo -e "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}"
-    echo -e "     ${YELLOW}→ İleri düzey kullanıcılar için${NC}"
-    echo -e "     ${YELLOW}→ Detaylı kontrol, her aracı ayrı seçin${NC}"
-    echo -e "     ${YELLOW}→ 14 farklı kurulum seçeneği${NC}"
-    echo ""
-    echo -e "  ${GREEN}0${NC}) ${CYAN}❌ Çıkış${NC}"
-    echo ""
-    echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-    echo ""
+        echo -e "${NC}"
+        echo -e "${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}"
+        echo ""
+        echo -e "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE (Önerilen)${NC}"
+        echo -e "     ${YELLOW}→ Vibe coder'lar ve yeni başlayanlar için${NC}"
+        echo -e "     ${YELLOW}→ Basit sorular, otomatik kurulum${NC}"
+        echo -e "     ${YELLOW}→ Sizi yormaz, sadece gerekli araçları kurar${NC}"
+        echo ""
+        echo -e "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}"
+        echo -e "     ${YELLOW}→ İleri düzey kullanıcılar için${NC}"
+        echo -e "     ${YELLOW}→ Detaylı kontrol, her aracı ayrı seçin${NC}"
+        echo -e "     ${YELLOW}→ 16 farklı kurulum seçeneği${NC}"
+        echo ""
+        echo -e "  ${GREEN}0${NC}) ${CYAN}❌ Çıkış${NC}"
+        echo ""
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+        echo ""
 
-    # TTY kontrolü - eğer /dev/tty yoksa veya okunamıyorsa
-    if [ ! -t 0 ] && [ -e /dev/tty ]; then
-        exec < /dev/tty
-    fi
+        echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
 
-    echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-    read -r mode_choice
+        # Read from /dev/tty if available
+        if [ -e /dev/tty ]; then
+            read -r mode_choice </dev/tty
+        else
+            read -r mode_choice
+        fi
 
-    # Debug için
-    echo "[DEBUG] Girilen değer: '$mode_choice'" >&2
-
-    # Boş input kontrolü
-    if [ -z "$mode_choice" ]; then
-        echo -e "${RED}[HATA]${NC} Boş giriş algılandı! Lütfen 0, 1 veya 2 girin."
-        sleep 2
-        show_mode_selection
-        return
-    fi
-
-    case $mode_choice in
-        1)
-            echo ""
-            run_quickstart_mode
-            if [ $? -eq 0 ]; then
-                # User wants to continue, show mode selection again
-                show_mode_selection
-            fi
-            ;;
-        2)
-            # Run advanced mode
-            run_advanced_mode
-            ;;
-        0)
-            echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0-2 arasında bir değer girin."
+        # Boş input kontrolü
+        if [ -z "$mode_choice" ]; then
+            echo -e "\n${RED}[HATA]${NC} Boş giriş! Lütfen 0, 1 veya 2 girin."
             sleep 2
-            show_mode_selection
-            ;;
-    esac
+            continue
+        fi
+
+        case $mode_choice in
+            1)
+                echo ""
+                run_quickstart_mode
+                # Quick start bittikten sonra tekrar menüye dön
+                continue
+                ;;
+            2)
+                echo ""
+                run_advanced_mode
+                # Advanced mode bittikten sonra çık
+                break
+                ;;
+            0)
+                echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
+                exit 0
+                ;;
+            *)
+                echo -e "\n${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0, 1 veya 2 girin."
+                sleep 2
+                continue
+                ;;
+        esac
+    done
 }
 
 # Advanced mode menu (current menu system)
