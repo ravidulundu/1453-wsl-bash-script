@@ -127,8 +127,21 @@ show_installed_items() {
     fi
 
     echo ""
+    echo -e "${CYAN}[Docker]${NC}"
+    if command -v docker &>/dev/null; then
+        echo -e "  ${GREEN}✅ Docker Engine: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)${NC}"
+    else
+        echo -e "  ${RED}❌ Docker Engine: Kurulu değil${NC}"
+    fi
+    if command -v lazydocker &>/dev/null; then
+        echo -e "  ${GREEN}✅ lazydocker${NC}"
+    else
+        echo -e "  ${RED}❌ lazydocker${NC}"
+    fi
+
+    echo ""
     echo -e "${CYAN}[Modern CLI Tools]${NC}"
-    local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit" "lazydocker")
+    local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit")
     for tool in "${tools[@]}"; do
         if command -v "$tool" &>/dev/null; then
             echo -e "  ${GREEN}✅ $tool${NC}"
@@ -384,12 +397,7 @@ cleanup_modern_tools() {
         echo -e "${GREEN}[BAŞARILI]${NC} Lazygit kaldırıldı"
     fi
 
-    # Lazydocker (manual install via GitHub)
-    if [ -f /usr/local/bin/lazydocker ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazydocker kaldırılıyor..."
-        sudo rm -f /usr/local/bin/lazydocker
-        echo -e "${GREEN}[BAŞARILI]${NC} Lazydocker kaldırıldı"
-    fi
+    # Note: lazydocker is cleaned up in cleanup_docker()
 
     # Clean up symlinks created by this script
     echo -e "${YELLOW}[BİLGİ]${NC} Script symlink'leri temizleniyor..."
@@ -563,13 +571,87 @@ cleanup_ai_frameworks() {
     echo -e "\n${GREEN}[BAŞARILI]${NC} AI frameworks temizlendi"
 }
 
+# Cleanup Docker
+cleanup_docker() {
+    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║         Docker Temizleniyor            ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+
+    # Check if Docker is installed
+    if ! command -v docker &>/dev/null && [ ! -f /etc/apt/sources.list.d/docker.list ]; then
+        echo -e "${CYAN}[BİLGİ]${NC} Docker kurulu değil, temizleme atlanıyor..."
+        return 0
+    fi
+
+    # Remove Docker APT packages
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker paketleri kaldırılıyor..."
+        sudo apt remove -y \
+            docker-ce \
+            docker-ce-cli \
+            containerd.io \
+            docker-buildx-plugin \
+            docker-compose-plugin \
+            docker-compose 2>/dev/null
+        sudo apt autoremove -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker paketleri kaldırıldı"
+    fi
+
+    # Remove Docker repository
+    if [ -f /etc/apt/sources.list.d/docker.list ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker repository kaldırılıyor..."
+        sudo rm -f /etc/apt/sources.list.d/docker.list
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker repository kaldırıldı"
+    fi
+
+    # Remove Docker GPG key
+    if [ -f /etc/apt/keyrings/docker.gpg ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Docker GPG anahtarı kaldırılıyor..."
+        sudo rm -f /etc/apt/keyrings/docker.gpg
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker GPG anahtarı kaldırıldı"
+    fi
+
+    # Remove user from docker group
+    if groups $USER | grep -q docker; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Kullanıcı docker grubundan çıkarılıyor..."
+        sudo deluser $USER docker 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker grup üyeliği kaldırıldı"
+    fi
+
+    # Remove lazydocker
+    if [ -f /usr/local/bin/lazydocker ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
+        sudo rm -f /usr/local/bin/lazydocker
+        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
+    fi
+
+    # Ask about Docker data
+    echo ""
+    echo -e "${YELLOW}[!]${NC} Docker imajları ve volume'leri de silinsin mi?"
+    echo -e "${YELLOW}[!]${NC} Bu işlem GERİ ALINAMAZ! Tüm container, image, volume, network silinecek."
+    echo -ne "${YELLOW}Docker verilerini de sil? (e/h): ${NC}"
+    read -r delete_data </dev/tty
+
+    if [[ "$delete_data" =~ ^[Ee]$ ]]; then
+        echo -e "${RED}[UYARI]${NC} Docker verileri siliniyor..."
+        sudo rm -rf /var/lib/docker
+        sudo rm -rf /var/lib/containerd
+        echo -e "${GREEN}[BAŞARILI]${NC} Docker verileri silindi"
+    else
+        echo -e "${CYAN}[BİLGİ]${NC} Docker verileri korundu (/var/lib/docker)"
+    fi
+
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Docker temizlendi"
+    echo -e "${YELLOW}[!]${NC} Değişikliklerin tam aktif olması için terminali yeniden başlatın"
+}
+
 # Cleanup all installations (keep configs)
 cleanup_installations() {
     echo -e "\n${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${RED}║              TÜM KURULUMLAR TEMİZLENİYOR                    ║${NC}"
     echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
 
-    if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Modern Tools, AI Tools)"; then
+    if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
         return 1
     fi
 
@@ -578,6 +660,7 @@ cleanup_installations() {
     cleanup_nodejs
     cleanup_php
     cleanup_go
+    cleanup_docker
     cleanup_modern_tools
     cleanup_ai_tools
     cleanup_ai_frameworks
@@ -616,6 +699,7 @@ cleanup_full_reset() {
     cleanup_nodejs
     cleanup_php
     cleanup_go
+    cleanup_docker
     cleanup_modern_tools
     cleanup_shell_configs  # Now much more aggressive
     cleanup_ai_tools
@@ -681,14 +765,15 @@ show_individual_cleanup_menu() {
         echo -e "  ${GREEN}3${NC}) Node.js (nvm, node, npm, bun)"
         echo -e "  ${GREEN}4${NC}) PHP (php, composer)"
         echo -e "  ${GREEN}5${NC}) Go"
-        echo -e "  ${GREEN}6${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
-        echo -e "  ${GREEN}7${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
-        echo -e "  ${GREEN}8${NC}) AI CLI Tools"
-        echo -e "  ${GREEN}9${NC}) AI Frameworks"
+        echo -e "  ${GREEN}6${NC}) Docker (docker-ce, lazydocker)"
+        echo -e "  ${GREEN}7${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
+        echo -e "  ${GREEN}8${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
+        echo -e "  ${GREEN}9${NC}) AI CLI Tools"
+        echo -e "  ${GREEN}10${NC}) AI Frameworks"
         echo -e "  ${GREEN}0${NC}) ← Geri"
         echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
 
-        echo -ne "\n${YELLOW}Seçiminiz (0-9): ${NC}"
+        echo -ne "\n${YELLOW}Seçiminiz (0-10): ${NC}"
         read -r choice </dev/tty
 
         case $choice in
@@ -723,24 +808,30 @@ show_individual_cleanup_menu() {
                 fi
                 ;;
             6)
+                if confirm_cleanup "Docker"; then
+                    cleanup_docker
+                    read -p "Devam etmek için Enter'a basın..."
+                fi
+                ;;
+            7)
                 if confirm_cleanup "Modern CLI Tools"; then
                     cleanup_modern_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            7)
+            8)
                 if confirm_cleanup "Shell Config"; then
                     cleanup_shell_configs
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            8)
+            9)
                 if confirm_cleanup "AI CLI Tools"; then
                     cleanup_ai_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            9)
+            10)
                 if confirm_cleanup "AI Frameworks"; then
                     cleanup_ai_frameworks
                     read -p "Devam etmek için Enter'a basın..."
@@ -832,6 +923,7 @@ export -f cleanup_python
 export -f cleanup_nodejs
 export -f cleanup_php
 export -f cleanup_go
+export -f cleanup_docker
 export -f cleanup_modern_tools
 export -f cleanup_shell_configs
 export -f cleanup_ai_tools
