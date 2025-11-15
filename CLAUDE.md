@@ -283,6 +283,9 @@ MCP (Model Context Protocol) servers are managed through:
 
 # Save to log file
 ./test-setup.sh --log results.log
+
+# Snapshot/X-ray mode
+./test-setup.sh --snapshot
 ```
 
 The validation script checks:
