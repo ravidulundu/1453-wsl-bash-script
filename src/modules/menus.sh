@@ -82,7 +82,12 @@ EOF
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
     echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-    read -r mode_choice
+    read -r mode_choice </dev/tty
+
+    # Boş input kontrolü
+    if [ -z "$mode_choice" ]; then
+        mode_choice="*"
+    fi
 
     case $mode_choice in
         1)
@@ -128,7 +133,7 @@ run_advanced_mode() {
     while true; do
         show_advanced_menu
         echo -ne "\n${YELLOW}Seçiminizi yapın (virgülle ayırarak birden fazla seçebilirsiniz): ${NC}"
-        read -r choices
+        read -r choices </dev/tty
 
         # Convert choices to array
         IFS=',' read -ra choice_array <<< "$choices"

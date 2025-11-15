@@ -89,3 +89,4 @@ typings/
 wsl_diagnostic.json
 wsl_diagnostic.json:Zone.Identifier
 TEST_WSL_RESET.md
+CLEANUP_FEATURE_PLAN.md
