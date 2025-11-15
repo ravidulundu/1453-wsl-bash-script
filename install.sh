@@ -8,7 +8,6 @@ set -e
 # CRITICAL: Redirect stdin to /dev/tty at the very beginning
 if [ -e /dev/tty ]; then
     exec 0</dev/tty
-    echo "[DEBUG INSTALLER] stdin redirected to /dev/tty" >&2
 fi
 
 # Renkli çıktı için tanımlamalar
@@ -102,6 +101,7 @@ main() {
         "src/modules/ai-cli.sh:AI CLI araçları"
         "src/modules/ai-frameworks.sh:AI framework'leri"
         "src/modules/quickstart.sh:Quick Start modu"
+        "src/modules/cleanup.sh:Temizleme ve sıfırlama"
         "src/modules/menus.sh:Menü sistemi"
     )
 

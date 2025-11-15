@@ -7,20 +7,6 @@
 show_quickstart_welcome() {
     clear
 
-    # DEBUG: stdin durumunu kontrol et
-    echo "[DEBUG] stdin test ediliyor..." >&2
-    if [ -t 0 ]; then
-        echo "[DEBUG] stdin IS a terminal (TTY)" >&2
-    else
-        echo "[DEBUG] stdin is NOT a terminal" >&2
-    fi
-
-    if [ -e /dev/tty ]; then
-        echo "[DEBUG] /dev/tty mevcut" >&2
-    else
-        echo "[DEBUG] /dev/tty MEVCUT DEĞİL!" >&2
-    fi
-
     echo -e "${CYAN}"
     cat << 'EOF'
     ╔════════════════════════════════════════════════════════════════╗
@@ -49,15 +35,12 @@ EOF
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
 
-    echo "[DEBUG] read komutu çalıştırılıyor..." >&2
-
     # CRITICAL FIX: Flush stdin buffer before reading
     # Clear any pending input that might cause read to return immediately
     while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
     echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
-    read -r response
-    echo "[DEBUG] read tamamlandı, yanıt: '$response'" >&2
+    read -r response </dev/tty
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
@@ -98,38 +81,30 @@ show_presets() {
     echo ""
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
-    echo "[DEBUG] Preset seçimi bekleniyor..." >&2
 
     # CRITICAL FIX: Flush stdin buffer before reading
     while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
     echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-    read -r preset
-    echo "[DEBUG] Preset seçildi: '$preset'" >&2
+    read -r preset </dev/tty
 
     case $preset in
         1)
-            echo "[DEBUG] Web Development seçildi, dönüyor: 'web'" >&2
-            echo "web"
+            QUICKSTART_PRESET_CHOICE="web"
             ;;
         2)
-            echo "[DEBUG] AI Development seçildi, dönüyor: 'ai'" >&2
-            echo "ai"
+            QUICKSTART_PRESET_CHOICE="ai"
             ;;
         3)
-            echo "[DEBUG] Backend Development seçildi, dönüyor: 'backend'" >&2
-            echo "backend"
+            QUICKSTART_PRESET_CHOICE="backend"
             ;;
         4)
-            echo "[DEBUG] Everything seçildi, dönüyor: 'everything'" >&2
-            echo "everything"
+            QUICKSTART_PRESET_CHOICE="everything"
             ;;
         5)
-            echo "[DEBUG] Mobile + Web seçildi, dönüyor: 'mobile'" >&2
-            echo "mobile"
+            QUICKSTART_PRESET_CHOICE="mobile"
             ;;
         *)
-            echo "[DEBUG] Geçersiz seçim: '$preset', tekrar soruluyor..." >&2
             echo -e "\n${RED}[HATA]${NC} 1-5 arası seç, toy! 😄"
             sleep 1
             show_presets
@@ -283,36 +258,25 @@ execute_installation_plan() {
 
 # Main Quick Start flow
 run_quickstart_mode() {
-    echo "[DEBUG] run_quickstart_mode başladı" >&2
-
     # Show welcome
-    echo "[DEBUG] show_quickstart_welcome çağrılıyor..." >&2
     if ! show_quickstart_welcome; then
-        echo "[DEBUG] Kullanıcı 'n' dedi, geri dönüyor" >&2
         return 1
     fi
-    echo "[DEBUG] show_quickstart_welcome başarılı, devam ediliyor" >&2
 
     # Show preset selection
-    echo "[DEBUG] show_presets çağrılıyor..." >&2
-    local preset=$(show_presets)
-    echo "[DEBUG] Seçilen preset: '$preset'" >&2
+    show_presets
+    local preset="$QUICKSTART_PRESET_CHOICE"
 
     echo -e "\n${CYAN}⚡ Bir saniye, başlıyorum...${NC}"
     sleep 1
 
     # Generate and show plan
-    echo "[DEBUG] generate_installation_plan çağrılıyor..." >&2
     local -a tools=($(generate_installation_plan "$preset"))
-    echo "[DEBUG] Araçlar: ${tools[*]}" >&2
 
     # Execute installation immediately
-    echo "[DEBUG] execute_installation_plan çağrılıyor..." >&2
     execute_installation_plan "${tools[@]}"
-
-    echo "[DEBUG] Kurulum tamamlandı, kullanıcıya soruluyor..." >&2
     echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
-    read -r more
+    read -r more </dev/tty
     if [[ ! "$more" =~ ^[yY]$ ]]; then
         exit 0
     fi

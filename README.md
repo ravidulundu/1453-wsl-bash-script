@@ -77,6 +77,7 @@ bash src/linux-ai-setup-script.sh
 - **Automatic Configuration**: Git setup, shell configuration, package manager detection
 - **Two Modes**: Quick Start (presets for beginners) and Advanced (detailed control)
 - **Interactive Menu**: User-friendly interface with multi-choice support
+- **Cleanup & Reset**: Comprehensive cleanup system with backup, selective removal, and full reset options
 
 ## 📋 Installation Modes
 
@@ -93,31 +94,93 @@ All presets automatically include:
 - Shell environment setup (62+ aliases, custom functions, enhanced bashrc)
 - Python + pip + pipx + UV
 
-### ⚙️ Advanced Mode (Detailed Control)
-1. Full installation (all tools)
-2. Setup preparation (system update + Git)
-3. Install Python
-4. Install pip
-5. Install pipx
-6. Install UV (ultra-fast Python package installer)
-7. Install NVM (Node Version Manager)
-8. Install Bun.js
-9. Install PHP (multiple versions)
-10. Install Composer
-11. Install AI CLI tools
-12. Install AI frameworks
-13. Remove AI frameworks
-14. Install Go
-15. Install Modern CLI tools
-16. Setup Shell environment
-0. Exit
+### ⚙️ Advanced Mode (Gelişmiş Mod - Detaylı Kontrol)
+1. Tam Kurulum (tüm araçlar)
+2. Hazırlık (sistem güncelleme + Git)
+3. Python Kurulumu
+4. Pip Güncelleme
+5. Pipx Kurulumu
+6. UV Kurulumu (ultra-hızlı Python paket yükleyici)
+7. NVM Kurulumu (Node Version Manager)
+8. Bun.js Kurulumu
+9. PHP Kurulumu (birden fazla versiyon)
+10. Composer Kurulumu
+11. AI CLI Araçları
+12. AI Framework'leri
+13. AI Framework'leri Kaldır
+14. Go Kurulumu
+15. Modern CLI Araçları
+16. Shell Ortamı Kurulumu
+17. 🗑️ Temizleme ve Sıfırlama
+0. Çıkış
+
+## 🗑️ Temizleme ve Sıfırlama Özellikleri
+
+Kurulumlarınızı yönetmek ve sıfırlamak için kapsamlı araçlar sunar:
+
+### Temizleme Seçenekleri
+
+1. **🔴 Tam Sıfırlama (Beyaz Bayrak)**
+   - Sistemi tamamen temiz duruma getirir
+   - Tüm kurulumları ve yapılandırmaları kaldırır
+   - Temizlemeden önce otomatik yedek oluşturur
+   - ⚠️ UYARI: Bu işlem geri alınamaz!
+
+2. **🧹 Sadece Kurulumları Temizle**
+   - Tüm kurulu araçları kaldırır (Python, Node.js, PHP, Go, AI araçları)
+   - Yapılandırma dosyalarını korur (.bashrc, .bash_aliases, vb.)
+   - Özel ayarları kaybetmeden araçları yeniden yüklemenin güvenli yolu
+
+3. **📦 Tek Tek Temizle**
+   - Belirli bileşenleri seçerek kaldırın:
+     - Python ekosistemi (python3, pip, pipx, uv)
+     - Node.js ekosistemi (nvm, node, npm, bun)
+     - PHP ekosistemi (php, composer)
+     - Go
+     - Modern CLI araçları (bat, eza, starship, zoxide, vb.)
+     - Shell yapılandırmaları
+     - AI CLI araçları
+     - AI framework'leri
+
+4. **⚙️ Sadece Config Temizle**
+   - Sadece yapılandırma dosyalarını kaldırır
+   - Tüm kurulumları korur
+   - Shell özelleştirmelerini sıfırlamak için kullanışlı
+
+5. **📊 Kurulu Olanları Göster**
+   - Şu anda nelerin kurulu olduğunu gösterir
+   - Temizlemeden önce kurulum durumunu kontrol edin
+   - Temizleme sonrası sonuçları doğrulayın
+
+### Güvenlik Özellikleri
+
+- **Çift Onay**: Kritik işlemler için "evet" yazmanızı gerektirir
+- **Otomatik Yedekleme**: Temizlemeden önce isteğe bağlı yedek oluşturma
+- **Zaman Damgalı Yedekler**: `~/.1453-backup-YYYYMMDD_HHMMSS/` dizinine kaydedilir
+- **Sistem Koruması**: Sistem paketlerini korur, sadece kullanıcı alanı kurulumlarını kaldırır
+- **Geri Alınabilir İşlemler**: Config dosyaları silinmek yerine `.removed` uzantısıyla taşınır
+
+### Kullanım Örneği
+
+```bash
+# Script'i çalıştır
+~/.1453-wsl-setup/1453-setup
+
+# Advanced Mode seç (2)
+# 17 numaralı seçeneği seç (Temizleme ve Sıfırlama)
+
+# Temizleme türünü seç:
+# - Kurulu olanları göster (5)
+# - Belirli bileşeni kaldır (3)
+# - Gerekirse tam sıfırlama (1)
+```
 
 ## 👨‍💻 Credits
 
 - **Project Creator**: Alper Tunga
 - **Developer**: Tamer KARACA (A.K.A THE KING)
 - **Contributors**: FitzGPT, Tuğser OKUR
-- **Version**: 1.0.1
+- **Version**: 2.1.0
 
 ## 📄 License
 

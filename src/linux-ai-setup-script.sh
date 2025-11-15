@@ -56,6 +56,9 @@ source "${SCRIPT_DIR}/modules/ai-frameworks.sh"
 # shellcheck source=modules/quickstart.sh
 source "${SCRIPT_DIR}/modules/quickstart.sh"
 
+# shellcheck source=modules/cleanup.sh
+source "${SCRIPT_DIR}/modules/cleanup.sh"
+
 # shellcheck source=modules/menus.sh
 source "${SCRIPT_DIR}/modules/menus.sh"
 
@@ -63,28 +66,18 @@ source "${SCRIPT_DIR}/modules/menus.sh"
 # CRITICAL FIX: stdin might be in nonblocking mode, causing read to return immediately
 # Fix nonblocking stdin first, then redirect to /dev/tty
 
-echo "[DEBUG] Fixing stdin..." >&2
-
 # Fix nonblocking stdin issue - try multiple methods
 if command -v perl &>/dev/null; then
-    echo "[DEBUG] Setting stdin to blocking mode with perl..." >&2
-    perl -MFcntl -e 'fcntl STDIN, F_SETFL, fcntl(STDIN, F_GETFL, 0) & ~O_NONBLOCK' 2>&1 | head -1 >&2
+    perl -MFcntl -e 'fcntl STDIN, F_SETFL, fcntl(STDIN, F_GETFL, 0) & ~O_NONBLOCK' 2>/dev/null
 elif command -v python3 &>/dev/null; then
-    echo "[DEBUG] Setting stdin to blocking mode with python3..." >&2
-    python3 -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>&1 | head -1 >&2
+    python3 -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>/dev/null
 elif command -v python &>/dev/null; then
-    echo "[DEBUG] Setting stdin to blocking mode with python..." >&2
-    python -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>&1 | head -1 >&2
-else
-    echo "[DEBUG] WARNING: Neither perl nor python available, cannot fix nonblocking stdin" >&2
+    python -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>/dev/null
 fi
 
 # Redirect stdin to /dev/tty
 if [ -e /dev/tty ]; then
     exec 0</dev/tty
-    echo "[DEBUG] stdin redirected to /dev/tty" >&2
-else
-    echo "[DEBUG] WARNING: /dev/tty not available!" >&2
 fi
 
 # Phase 6: Display banner and run main program

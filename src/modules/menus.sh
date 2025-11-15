@@ -10,10 +10,10 @@ configure_git() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -ne "${YELLOW}Git kullanıcı adınızı girin: ${NC}"
-    read -r git_user
+    read -r git_user </dev/tty
 
     echo -ne "${YELLOW}Git e-posta adresinizi girin: ${NC}"
-    read -r git_email
+    read -r git_email </dev/tty
 
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
@@ -50,6 +50,7 @@ show_menu() {
     echo -e "  ${GREEN}14${NC}) Go Kurulumu"
     echo -e "  ${GREEN}15${NC}) Modern CLI Araçları (bat, eza, starship, zoxide, fzf, lazygit)"
     echo -e "  ${GREEN}16${NC}) Shell Ortamı Kurulumu (aliases, functions, bashrc)"
+    echo -e "  ${RED}17${NC}) 🗑️  Temizleme ve Sıfırlama"
     echo -e "  ${GREEN}0${NC}) Çıkış"
     echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 }
@@ -87,18 +88,14 @@ EOF
         echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
         echo ""
 
-        echo "[DEBUG] Mode seçimi bekleniyor..." >&2
-
         # CRITICAL FIX: Flush stdin buffer before reading
         while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-        read -r mode_choice
-        echo "[DEBUG] Mode seçildi: '$mode_choice'" >&2
+        read -r mode_choice </dev/tty
 
         # Boş input kontrolü
         if [ -z "$mode_choice" ]; then
-            echo "[DEBUG] Boş input algılandı" >&2
             echo -e "\n${RED}[HATA]${NC} Boş giriş! Lütfen 0, 1 veya 2 girin."
             sleep 2
             continue
@@ -106,28 +103,22 @@ EOF
 
         case $mode_choice in
             1)
-                echo "[DEBUG] Mode seçimi: Quick Start (1)" >&2
                 echo ""
-                echo "[DEBUG] run_quickstart_mode çağrılıyor..." >&2
                 run_quickstart_mode
-                echo "[DEBUG] run_quickstart_mode döndü, tekrar menüye dönülüyor" >&2
                 # Quick start bittikten sonra tekrar menüye dön
                 continue
                 ;;
             2)
-                echo "[DEBUG] Mode seçimi: Advanced (2)" >&2
                 echo ""
                 run_advanced_mode
                 # Advanced mode bittikten sonra çık
                 break
                 ;;
             0)
-                echo "[DEBUG] Mode seçimi: Çıkış (0)" >&2
                 echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
             *)
-                echo "[DEBUG] Geçersiz mode seçimi: '$mode_choice'" >&2
                 echo -e "\n${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0, 1 veya 2 girin."
                 sleep 2
                 continue
@@ -155,7 +146,7 @@ run_advanced_mode() {
     while true; do
         show_advanced_menu
         echo -ne "\n${YELLOW}Seçiminizi yapın (virgülle ayırarak birden fazla seçebilirsiniz): ${NC}"
-        read -r choices
+        read -r choices </dev/tty
 
         # Convert choices to array
         IFS=',' read -ra choice_array <<< "$choices"
@@ -198,6 +189,7 @@ run_advanced_mode() {
                 14) install_go_menu ;;
                 15) install_modern_cli_tools ;;
                 16) setup_custom_shell ;;
+                17) show_cleanup_menu ;;
                 0)
                     echo -e "\n${GREEN}[BİLGİ]${NC} Ana menüye dönülüyor..."
                     sleep 1
@@ -218,7 +210,7 @@ run_advanced_mode() {
         fi
 
         echo -e "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-        read -r
+        read -r </dev/tty
     done
 }
 

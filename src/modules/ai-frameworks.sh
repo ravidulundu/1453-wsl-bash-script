@@ -159,7 +159,7 @@ install_ai_frameworks_menu() {
     echo -e "  ${CYAN}5${NC}) Ana menüye dön"
 
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     case $choice in
         1) install_supergemini ;;
@@ -187,7 +187,7 @@ remove_ai_frameworks_menu() {
     echo -e "  ${CYAN}5${NC}) Ana menüye dön"
 
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     case $choice in
         1) remove_supergemini ;;

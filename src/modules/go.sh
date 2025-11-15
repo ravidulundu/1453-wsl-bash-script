@@ -234,7 +234,7 @@ install_go_menu() {
     echo -e "  ${GREEN}0${NC}) Ana menüye dön"
 
     echo -ne "\n${YELLOW}Seçiminizi yapın: ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     case $choice in
         1)

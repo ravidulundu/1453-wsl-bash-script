@@ -221,7 +221,7 @@ install_php_version_menu() {
     echo -e "  ${CYAN}$((index+1))${NC}) Ana menüye dön"
 
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     if [ "$choice" = "$((index+1))" ]; then
         return

@@ -98,9 +98,32 @@ install_modern_tools_apt() {
     # Install fastfetch
     if ! command -v fastfetch &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kuruluyor..."
-        sudo add-apt-repository -y ppa:zhangsongcui3371/fastfetch
-        sudo apt update
-        sudo apt install -y fastfetch
+
+        # Try multiple installation methods
+        if command -v snap &> /dev/null; then
+            # Method 1: Snap (most reliable)
+            echo -e "${CYAN}[BİLGİ]${NC} Snap ile kuruluyor..."
+            sudo snap install fastfetch 2>/dev/null || {
+                # Method 2: Download latest release from GitHub
+                echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
+                FASTFETCH_VERSION=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
+                curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+                sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
+                rm -f /tmp/fastfetch.deb
+            }
+        else
+            # Method 2: Direct download
+            echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
+            curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+            sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
+            rm -f /tmp/fastfetch.deb
+        fi
+
+        if command -v fastfetch &> /dev/null; then
+            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch kuruldu!"
+        else
+            echo -e "${RED}[HATA]${NC} Fastfetch kurulamadı."
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Fastfetch zaten kurulu."
     fi

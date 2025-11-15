@@ -156,7 +156,7 @@ install_ai_cli_tools_menu() {
     echo -e "  ${CYAN}9${NC}) Ana menüye dön"
 
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-9): ${NC}"
-    read -r choice
+    read -r choice </dev/tty
 
     case $choice in
         1) install_claude_code ;;
