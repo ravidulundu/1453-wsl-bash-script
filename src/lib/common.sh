@@ -70,7 +70,7 @@ check_internet_connection() {
     # Try multiple methods
     if ping -c 1 -W 2 8.8.8.8 &>/dev/null || \
        ping -c 1 -W 2 1.1.1.1 &>/dev/null || \
-       curl -s --connect-timeout 3 https://www.google.com &>/dev/null; then
+       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" https://www.google.com &>/dev/null; then
         echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
         return 0
     else
@@ -91,7 +91,7 @@ start_sudo_keepalive() {
         while true; do
             # Refresh sudo timestamp (non-interactive)
             sudo -n true 2>/dev/null
-            sleep 60
+            sleep "$SUDO_KEEPALIVE_INTERVAL"
 
             # Check if parent process still exists
             # If parent died, exit gracefully
@@ -138,16 +138,16 @@ check_disk_space() {
     local available_mb
     available_mb=$(df -m "$HOME" | awk 'NR==2 {print $4}')
 
-    if [ "$available_mb" -ge 2000 ]; then
+    if [ "$available_mb" -ge "$RECOMMENDED_DISK_SPACE_MB" ]; then
         echo -e "${GREEN}[✓]${NC} Disk alanı: ${available_mb} MB mevcut"
         return 0
-    elif [ "$available_mb" -ge 1000 ]; then
-        echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az 2GB önerilir)"
+    elif [ "$available_mb" -ge "$WARNING_DISK_SPACE_MB" ]; then
+        echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az ${RECOMMENDED_DISK_SPACE_MB}MB önerilir)"
         echo -e "${YELLOW}[!]${NC} Devam ediliyor ama bazı kurulumlar başarısız olabilir..."
         return 0
     else
         echo -e "${RED}[✗]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
-        echo -e "${YELLOW}[!]${NC} En az 1GB boş alan gerekiyor!"
+        echo -e "${YELLOW}[!]${NC} En az ${WARNING_DISK_SPACE_MB}MB boş alan gerekiyor!"
         return 1
     fi
 }
@@ -162,10 +162,10 @@ check_apt_repositories() {
 
     # Check if timeout command is available
     if command -v timeout &>/dev/null; then
-        if timeout 10 sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
+        if timeout "$APT_UPDATE_TIMEOUT_SECONDS" sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
             echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
             return 0
-        elif timeout 10 sudo apt-get update -qq &>/dev/null; then
+        elif timeout "$APT_UPDATE_TIMEOUT_SECONDS" sudo apt-get update -qq &>/dev/null; then
             echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
             return 0
         else
@@ -262,12 +262,12 @@ verify_checksum() {
 
     # Compare checksums (case-insensitive)
     if [ "${actual_checksum,,}" = "${expected_checksum,,}" ]; then
-        echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:16}..."
+        echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:$CHECKSUM_DISPLAY_LENGTH}..."
         return 0
     else
         echo -e "${RED}[✗]${NC} Checksum uyuşmuyor!"
-        echo -e "${YELLOW}[!]${NC} Beklenen: ${expected_checksum:0:32}..."
-        echo -e "${YELLOW}[!]${NC} Bulunan:  ${actual_checksum:0:32}..."
+        echo -e "${YELLOW}[!]${NC} Beklenen: ${expected_checksum:0:$CHECKSUM_FULL_DISPLAY}..."
+        echo -e "${YELLOW}[!]${NC} Bulunan:  ${actual_checksum:0:$CHECKSUM_FULL_DISPLAY}..."
         echo -e "${RED}[!]${NC} Dosya bozuk veya güvenlik sorunu olabilir!"
         return 1
     fi

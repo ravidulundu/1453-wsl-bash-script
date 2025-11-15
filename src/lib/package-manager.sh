@@ -39,13 +39,13 @@ detect_package_manager() {
 # Usage: install_package_with_retry "package_name" [max_retries]
 install_package_with_retry() {
     local packages="$1"
-    local max_retries="${2:-3}"
+    local max_retries="${2:-$MAX_PACKAGE_RETRIES}"
     local attempt=1
 
     while [ $attempt -le $max_retries ]; do
         if [ $attempt -gt 1 ]; then
             echo -e "${YELLOW}[↻]${NC} Deneme $attempt/$max_retries..."
-            sleep 2
+            sleep "$RETRY_DELAY_SECONDS"
         fi
 
         # Use array to safely execute INSTALL_CMD without eval
@@ -71,11 +71,10 @@ update_system() {
     IFS=' ' read -ra cmd_array <<< "$UPDATE_CMD"
 
     local update_attempt=1
-    local max_update_retries=3
-    while [ $update_attempt -le $max_update_retries ]; do
+    while [ $update_attempt -le $MAX_UPDATE_RETRIES ]; do
         if [ $update_attempt -gt 1 ]; then
-            echo -e "${YELLOW}[↻]${NC} Sistem güncellemesi tekrar deneniyor ($update_attempt/$max_update_retries)..."
-            sleep 2
+            echo -e "${YELLOW}[↻]${NC} Sistem güncellemesi tekrar deneniyor ($update_attempt/$MAX_UPDATE_RETRIES)..."
+            sleep "$RETRY_DELAY_SECONDS"
         fi
 
         if "${cmd_array[@]}"; then
@@ -83,8 +82,8 @@ update_system() {
             break
         fi
 
-        if [ $update_attempt -eq $max_update_retries ]; then
-            echo -e "${RED}[✗]${NC} Sistem güncellemesi $max_update_retries denemede başarısız!"
+        if [ $update_attempt -eq $MAX_UPDATE_RETRIES ]; then
+            echo -e "${RED}[✗]${NC} Sistem güncellemesi $MAX_UPDATE_RETRIES denemede başarısız!"
             echo -e "${YELLOW}[!]${NC} Paket kurulumları yapılacak ama bazıları başarısız olabilir..."
         fi
         ((update_attempt++))
@@ -119,10 +118,10 @@ update_system() {
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
         local dev_attempt=1
-        while [ $dev_attempt -le 3 ]; do
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
             if [ $dev_attempt -gt 1 ]; then
-                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
-                sleep 2
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo dnf groupinstall "Development Tools" -y; then
                 echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
@@ -140,10 +139,10 @@ update_system() {
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (base-devel) kuruluyor..."
         local dev_attempt=1
-        while [ $dev_attempt -le 3 ]; do
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
             if [ $dev_attempt -gt 1 ]; then
-                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
-                sleep 2
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo pacman -S base-devel --noconfirm; then
                 echo -e "${GREEN}[✓]${NC} base-devel kuruldu"
@@ -162,10 +161,10 @@ update_system() {
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
         local dev_attempt=1
-        while [ $dev_attempt -le 3 ]; do
+        while [ $dev_attempt -le $MAX_PACKAGE_RETRIES ]; do
             if [ $dev_attempt -gt 1 ]; then
-                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
-                sleep 2
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/$MAX_PACKAGE_RETRIES..."
+                sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo yum groupinstall "Development Tools" -y; then
                 echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
