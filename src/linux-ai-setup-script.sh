@@ -60,8 +60,18 @@ source "${SCRIPT_DIR}/modules/quickstart.sh"
 source "${SCRIPT_DIR}/modules/menus.sh"
 
 # Phase 5: Fix stdin for interactive mode
-# CRITICAL: Redirect stdin to /dev/tty BEFORE anything else
-# This MUST happen before show_banner or any function calls
+# CRITICAL FIX: stdin might be in nonblocking mode, causing read to return immediately
+# Fix nonblocking stdin first, then redirect to /dev/tty
+
+echo "[DEBUG] Fixing stdin..." >&2
+
+# Fix nonblocking stdin issue (if perl is available)
+if command -v perl &>/dev/null; then
+    echo "[DEBUG] Setting stdin to blocking mode with perl..." >&2
+    perl -MFcntl -e 'fcntl STDIN, F_SETFL, fcntl(STDIN, F_GETFL, 0) & ~O_NONBLOCK' 2>&1 | head -1 >&2
+fi
+
+# Redirect stdin to /dev/tty
 if [ -e /dev/tty ]; then
     exec 0</dev/tty
     echo "[DEBUG] stdin redirected to /dev/tty" >&2
