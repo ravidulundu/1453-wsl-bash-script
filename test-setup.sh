@@ -92,7 +92,7 @@ ${BOLD}Örnekler:${NC}
     ./test-setup.sh --json > report.json     # JSON rapor
     ./test-setup.sh --log test-results.log   # Log dosyasına kaydet
     ./test-setup.sh --snapshot               # WSL sistem röntgeni
-    ./test-setup.sh --snapshot --log wsl-snapshot.log  # Snapshot'ı log dosyasına kaydet
+    ./test-setup.sh --snapshot --log wsl-snapshot.log  # Snapshot raporunu log dosyasına kaydet
 EOF
 }
 
@@ -858,7 +858,7 @@ test_functional() {
     fi
 
     # 8. Custom functions testi (mcd)
-    if grep -qE "^[[:space:]]*(function[[:space:]]+mcd[[:space:]]*\(\)|mcd[[:space:]]*\(\))" "$HOME/.bashrc" 2>/dev/null; then
+    if grep -qE "^[[:space:]]*(function[[:space:]]+mcd|mcd)[[:space:]]*\(\)" "$HOME/.bashrc" 2>/dev/null; then
         record_test "$category" "PASS" "Custom function 'mcd' tanımlı ✓"
 
         # mcd fonksiyonunu test et (source etmeden, sadece tanımlı mı kontrolü)
@@ -1093,10 +1093,10 @@ generate_json_report() {
     local end_time=$(date +%s)
     local duration=$((end_time - START_TIME))
 
-    # Calculate success rate safely
+    # Calculate success rate safely (integer percentage)
     local success_rate=0
     if [ $TOTAL_TESTS -gt 0 ]; then
-        success_rate=$(echo "scale=2; $PASSED_TESTS * 100 / $TOTAL_TESTS" | bc)
+        success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
     fi
 
     cat << EOF
@@ -1115,6 +1115,7 @@ generate_json_report() {
     "categories": {
 EOF
 
+    # Note: Empty categories/arrays are valid JSON - {} and [] are both valid
     local first=true
     for category in "${!CATEGORY_TOTAL[@]}"; do
         if [ "$first" = false ]; then
@@ -1254,8 +1255,9 @@ generate_snapshot() {
     echo -e "${CYAN}PHP Ekosistemi:${NC}"
     command -v php &>/dev/null && echo "  PHP: $(php --version | head -n1 | awk '{print $2}')" || echo "  PHP: KURULU DEĞİL"
     command -v composer &>/dev/null && echo "  Composer: $(composer --version 2>/dev/null | awk '{print $3}')" || echo "  Composer: KURULU DEĞİL"
+    local php_count
     if command -v update-alternatives &>/dev/null && command -v php &>/dev/null; then
-        local php_count=$(update-alternatives --list php 2>/dev/null | wc -l)
+        php_count=$(update-alternatives --list php 2>/dev/null | wc -l)
         [ "$php_count" -gt 0 ] && echo "  PHP Versiyonları: $php_count adet"
     fi
     echo ""
