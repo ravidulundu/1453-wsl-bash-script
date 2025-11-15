@@ -10,7 +10,7 @@ install_claude_code() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI indiriliyor ve kuruluyor..."
-    curl -L https://github.com/anthropics/claude-code/releases/latest/download/installer.sh | bash
+    curl -L "$CLAUDE_CODE_INSTALL_URL" | bash
 
     reload_shell_configs
 
@@ -191,7 +191,7 @@ install_qoder_cli() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI indiriliyor ve kuruluyor..."
-    curl -fsSL https://qoder.com/install | bash
+    curl -fsSL "$QODER_INSTALL_URL" | bash
 
     reload_shell_configs
 

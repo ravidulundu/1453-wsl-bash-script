@@ -120,8 +120,10 @@ install_lazydocker_tool() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kuruluyor..."
 
-    # Install using direct download
-    LAZYDOCKER_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazydocker/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    # Initialize versions if not already done (using centralized version from config/tool-versions.sh)
+    if [ -z "$LAZYDOCKER_VERSION" ]; then
+        init_tool_versions
+    fi
 
     echo -e "${CYAN}[BİLGİ]${NC} Version: $LAZYDOCKER_VERSION"
 

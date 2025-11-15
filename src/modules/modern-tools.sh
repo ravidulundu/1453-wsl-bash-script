@@ -115,10 +115,13 @@ install_modern_tools_apt() {
         echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
     fi
 
+    # Initialize tool versions (fetch latest from GitHub with fallbacks)
+    init_tool_versions
+
     # Install starship prompt
     if ! command -v starship &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
     else
         echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
     fi
@@ -126,15 +129,14 @@ install_modern_tools_apt() {
     # Install zoxide
     if ! command -v zoxide &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+        curl -sS "$ZOXIDE_INSTALL_URL" | bash
     else
         echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
     fi
 
-    # Install vivid
+    # Install vivid (using centralized version from config/tool-versions.sh)
     if ! command -v vivid &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Vivid kuruluyor..."
-        VIVID_VERSION=$(curl -s "https://api.github.com/repos/sharkdp/vivid/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
         wget -q "https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/vivid_${VIVID_VERSION}_amd64.deb"
         sudo dpkg -i "vivid_${VIVID_VERSION}_amd64.deb"
         rm "vivid_${VIVID_VERSION}_amd64.deb"
@@ -151,17 +153,16 @@ install_modern_tools_apt() {
             # Method 1: Snap (most reliable)
             echo -e "${CYAN}[BİLGİ]${NC} Snap ile kuruluyor..."
             sudo snap install fastfetch 2>/dev/null || {
-                # Method 2: Download latest release from GitHub
+                # Method 2: Download latest release from GitHub (using centralized URL)
                 echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-                FASTFETCH_VERSION=$(curl -s https://api.github.com/repos/fastfetch-cli/fastfetch/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
-                curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+                curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
                 sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
                 rm -f /tmp/fastfetch.deb
             }
         else
-            # Method 2: Direct download
+            # Method 2: Direct download (using centralized URL)
             echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-            curl -sL "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.deb" -o /tmp/fastfetch.deb
+            curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
             sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
             rm -f /tmp/fastfetch.deb
         fi
@@ -175,10 +176,9 @@ install_modern_tools_apt() {
         echo -e "${GREEN}[BİLGİ]${NC} Fastfetch zaten kurulu."
     fi
 
-    # Install lazygit
+    # Install lazygit (using centralized version from config/tool-versions.sh)
     if ! command -v lazygit &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit kuruluyor..."
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit ${LAZYGIT_VERSION} kuruluyor..."
         curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
         tar xf lazygit.tar.gz lazygit
         sudo install lazygit /usr/local/bin
@@ -229,22 +229,25 @@ install_modern_tools_pacman() {
     echo -e "${YELLOW}[UYARI]${NC} Vivid, Fastfetch AUR'dan kurulabilir."
 }
 
-# Generic installer functions
+# Generic installer functions (using centralized versions from config/tool-versions.sh)
 install_starship_generic() {
     if ! command -v starship &> /dev/null; then
-        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
     fi
 }
 
 install_zoxide_generic() {
     if ! command -v zoxide &> /dev/null; then
-        curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+        curl -sS "$ZOXIDE_INSTALL_URL" | bash
     fi
 }
 
 install_lazygit_generic() {
     if ! command -v lazygit &> /dev/null; then
-        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        # Initialize versions if not already done
+        if [ -z "$LAZYGIT_VERSION" ]; then
+            init_tool_versions
+        fi
         curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
         tar xf lazygit.tar.gz lazygit
         sudo install lazygit /usr/local/bin

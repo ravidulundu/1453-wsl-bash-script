@@ -18,6 +18,9 @@ source "${SCRIPT_DIR}/config/colors.sh"
 # shellcheck source=config/php-versions.sh
 source "${SCRIPT_DIR}/config/php-versions.sh"
 
+# shellcheck source=config/tool-versions.sh
+source "${SCRIPT_DIR}/config/tool-versions.sh"
+
 # shellcheck source=config/banner.sh
 source "${SCRIPT_DIR}/config/banner.sh"
 

@@ -9,8 +9,9 @@ install_nvm() {
     echo -e "${YELLOW}[BİLGİ]${NC} NVM kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    # Download and install NVM
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    # Download and install NVM (using centralized version from config/tool-versions.sh)
+    echo -e "${YELLOW}[BİLGİ]${NC} NVM ${NVM_VERSION} indiriliyor..."
+    curl -o- "$NVM_INSTALL_URL" | bash
 
     # Set up NVM directory
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"

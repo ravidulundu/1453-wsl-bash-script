@@ -164,7 +164,7 @@ install_uv() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -e "${YELLOW}[BİLGİ]${NC} UV kuruluyor..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+    curl -LsSf "$UV_INSTALL_URL" | sh
 
     # Add Cargo bin to PATH
     export PATH="$HOME/.cargo/bin:$PATH"
