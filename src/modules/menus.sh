@@ -81,12 +81,24 @@ EOF
     echo ""
     echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
+
+    # TTY kontrolü - eğer /dev/tty yoksa veya okunamıyorsa
+    if [ ! -t 0 ] && [ -e /dev/tty ]; then
+        exec < /dev/tty
+    fi
+
     echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-    read -r mode_choice </dev/tty
+    read -r mode_choice
+
+    # Debug için
+    echo "[DEBUG] Girilen değer: '$mode_choice'" >&2
 
     # Boş input kontrolü
     if [ -z "$mode_choice" ]; then
-        mode_choice="*"
+        echo -e "${RED}[HATA]${NC} Boş giriş algılandı! Lütfen 0, 1 veya 2 girin."
+        sleep 2
+        show_mode_selection
+        return
     fi
 
     case $mode_choice in
