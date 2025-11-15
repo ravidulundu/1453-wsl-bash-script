@@ -89,7 +89,7 @@ EOF
 
         echo "[DEBUG] Mode seçimi bekleniyor..." >&2
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-        read -r mode_choice </dev/tty
+        read -r mode_choice
         echo "[DEBUG] Mode seçildi: '$mode_choice'" >&2
 
         # Boş input kontrolü

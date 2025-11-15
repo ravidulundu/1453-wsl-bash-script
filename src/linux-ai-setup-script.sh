@@ -60,9 +60,13 @@ source "${SCRIPT_DIR}/modules/quickstart.sh"
 source "${SCRIPT_DIR}/modules/menus.sh"
 
 # Phase 5: Fix stdin for interactive mode
-# If stdin is not a terminal (piped from curl), redirect to /dev/tty
-if [ ! -t 0 ] && [ -e /dev/tty ]; then
-    exec </dev/tty
+# CRITICAL: Redirect stdin to /dev/tty BEFORE anything else
+# This MUST happen before show_banner or any function calls
+if [ -e /dev/tty ]; then
+    exec 0</dev/tty
+    echo "[DEBUG] stdin redirected to /dev/tty" >&2
+else
+    echo "[DEBUG] WARNING: /dev/tty not available!" >&2
 fi
 
 # Phase 6: Display banner and run main program

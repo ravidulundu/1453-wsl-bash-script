@@ -52,8 +52,7 @@ EOF
     echo "[DEBUG] read komutu çalıştırılıyor..." >&2
     echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
 
-    # /dev/tty'den oku
-    read -r response </dev/tty
+    read -r response
     echo "[DEBUG] read tamamlandı, yanıt: '$response'" >&2
 
     if [[ "$response" =~ ^[nN]$ ]]; then
@@ -97,7 +96,7 @@ show_presets() {
     echo ""
     echo "[DEBUG] Preset seçimi bekleniyor..." >&2
     echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-    read -r preset </dev/tty
+    read -r preset
     echo "[DEBUG] Preset seçildi: '$preset'" >&2
 
     case $preset in
@@ -305,7 +304,7 @@ run_quickstart_mode() {
 
     echo "[DEBUG] Kurulum tamamlandı, kullanıcıya soruluyor..." >&2
     echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
-    read -r more </dev/tty
+    read -r more
     if [[ ! "$more" =~ ^[yY]$ ]]; then
         exit 0
     fi
