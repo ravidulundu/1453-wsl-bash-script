@@ -190,7 +190,14 @@ execute_installation_plan() {
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
-    # Update system and configure git first
+    # Run pre-flight checks first
+    if ! run_preflight_checks; then
+        echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+        echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
+        return 1
+    fi
+
+    # Update system and configure git
     update_system
     configure_git
 

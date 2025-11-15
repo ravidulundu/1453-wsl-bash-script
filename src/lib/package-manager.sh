@@ -35,68 +35,145 @@ detect_package_manager() {
     export INSTALL_CMD
 }
 
-# Update system packages and install essential tools
+# Install package with retry mechanism
+# Usage: install_package_with_retry "package_name" [max_retries]
+install_package_with_retry() {
+    local packages="$1"
+    local max_retries="${2:-3}"
+    local attempt=1
+
+    while [ $attempt -le $max_retries ]; do
+        if [ $attempt -gt 1 ]; then
+            echo -e "${YELLOW}[↻]${NC} Deneme $attempt/$max_retries..."
+            sleep 2
+        fi
+
+        if eval "$INSTALL_CMD" $packages; then
+            return 0
+        fi
+
+        ((attempt++))
+    done
+
+    return 1
+}
+
+# Update system packages and install essential tools with retry
 update_system() {
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
-    if ! eval "$UPDATE_CMD"; then
-        echo -e "${RED}[HATA]${NC} Sistem güncellemesi başarısız!"
-        echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor ama bazı paketler eksik olabilir."
-    fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler, sıkıştırma ve geliştirme araçları kuruluyor..."
+    # Try system update with retry
+    local update_attempt=1
+    local max_update_retries=3
+    while [ $update_attempt -le $max_update_retries ]; do
+        if [ $update_attempt -gt 1 ]; then
+            echo -e "${YELLOW}[↻]${NC} Sistem güncellemesi tekrar deneniyor ($update_attempt/$max_update_retries)..."
+            sleep 2
+        fi
+
+        if eval "$UPDATE_CMD"; then
+            echo -e "${GREEN}[✓]${NC} Sistem güncellemesi başarılı!"
+            break
+        fi
+
+        if [ $update_attempt -eq $max_update_retries ]; then
+            echo -e "${RED}[✗]${NC} Sistem güncellemesi $max_update_retries denemede başarısız!"
+            echo -e "${YELLOW}[!]${NC} Paket kurulumları yapılacak ama bazıları başarısız olabilir..."
+        fi
+        ((update_attempt++))
+    done
+
+    echo -e "\n${YELLOW}[BİLGİ]${NC} Temel paketler, sıkıştırma ve geliştirme araçları kuruluyor..."
 
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip-full"
-        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip-full; then
-            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip-full" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y curl wget git jq zip unzip p7zip-full"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
         fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (build-essential) kuruluyor..."
-        if ! eval "$INSTALL_CMD" build-essential; then
-            echo -e "${RED}[HATA]${NC} build-essential kurulamadı (make, gcc eksik olabilir)!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        if ! install_package_with_retry "build-essential" 3; then
+            echo -e "${RED}[✗]${NC} build-essential 3 denemede kurulamadı!"
+            echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y build-essential"
+        else
+            echo -e "${GREEN}[✓]${NC} build-essential kuruldu"
         fi
 
     elif [ "$PKG_MANAGER" = "dnf" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
-            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
-        fi
-        echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        if ! sudo dnf groupinstall "Development Tools" -y; then
-            echo -e "${RED}[HATA]${NC} Development Tools kurulamadı (make, gcc eksik olabilir)!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
         fi
 
+        echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
+        local dev_attempt=1
+        while [ $dev_attempt -le 3 ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
+                sleep 2
+            fi
+            if sudo dnf groupinstall "Development Tools" -y; then
+                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
+
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
-            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
         fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (base-devel) kuruluyor..."
-        if ! sudo pacman -S base-devel --noconfirm; then
-            echo -e "${RED}[HATA]${NC} base-devel kurulamadı (make, gcc eksik olabilir)!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
-        fi
+        local dev_attempt=1
+        while [ $dev_attempt -le 3 ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
+                sleep 2
+            fi
+            if sudo pacman -S base-devel --noconfirm; then
+                echo -e "${GREEN}[✓]${NC} base-devel kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
 
     elif [ "$PKG_MANAGER" = "yum" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
-        if ! eval "$INSTALL_CMD" curl wget git jq zip unzip p7zip; then
-            echo -e "${RED}[HATA]${NC} Bazı temel paketler kurulamadı!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
+        if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
+            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+        else
+            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
         fi
+
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
-        if ! sudo yum groupinstall "Development Tools" -y; then
-            echo -e "${RED}[HATA]${NC} Development Tools kurulamadı (make, gcc eksik olabilir)!"
-            echo -e "${YELLOW}[UYARI]${NC} Kuruluma devam ediliyor..."
-        fi
+        local dev_attempt=1
+        while [ $dev_attempt -le 3 ]; do
+            if [ $dev_attempt -gt 1 ]; then
+                echo -e "${YELLOW}[↻]${NC} Deneme $dev_attempt/3..."
+                sleep 2
+            fi
+            if sudo yum groupinstall "Development Tools" -y; then
+                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                break
+            fi
+            ((dev_attempt++))
+        done
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Sistem güncelleme ve temel paket kurulumu tamamlandı!"
-    echo -e "${CYAN}[BİLGİ]${NC} Eksik paketler varsa yukarıdaki hata mesajlarını kontrol edin."
+    echo ""
+    echo -e "${GREEN}[✓]${NC} Sistem paket kurulumu tamamlandı!"
+    echo -e "${CYAN}[ℹ]${NC} Eksik paketler varsa yukarıdaki mesajlara bakın."
 }
 
 # Export functions
 export -f detect_package_manager
+export -f install_package_with_retry
 export -f update_system

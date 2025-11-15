@@ -63,6 +63,124 @@ mask_secret() {
     echo "${prefix}${mask}${suffix}"
 }
 
+# Check internet connection
+check_internet_connection() {
+    echo -e "${CYAN}[✓]${NC} İnternet bağlantısı kontrol ediliyor..."
+
+    # Try multiple methods
+    if ping -c 1 -W 2 8.8.8.8 &>/dev/null || \
+       ping -c 1 -W 2 1.1.1.1 &>/dev/null || \
+       curl -s --connect-timeout 3 https://www.google.com &>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
+        return 0
+    else
+        echo -e "${RED}[✗]${NC} İnternet bağlantısı yok!"
+        echo -e "${YELLOW}[!]${NC} Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin."
+        return 1
+    fi
+}
+
+# Check sudo access
+check_sudo_access() {
+    echo -e "${CYAN}[✓]${NC} Sudo yetkisi kontrol ediliyor..."
+
+    if sudo -n true 2>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} Sudo yetkisi: OK"
+        return 0
+    else
+        echo -e "${YELLOW}[!]${NC} Sudo şifresi gerekiyor..."
+        if sudo true; then
+            echo -e "${GREEN}[✓]${NC} Sudo yetkisi: OK"
+            return 0
+        else
+            echo -e "${RED}[✗]${NC} Sudo yetkisi alınamadı!"
+            return 1
+        fi
+    fi
+}
+
+# Check disk space (minimum 2GB recommended)
+check_disk_space() {
+    echo -e "${CYAN}[✓]${NC} Disk alanı kontrol ediliyor..."
+
+    local available_mb
+    available_mb=$(df -m "$HOME" | awk 'NR==2 {print $4}')
+
+    if [ "$available_mb" -ge 2000 ]; then
+        echo -e "${GREEN}[✓]${NC} Disk alanı: ${available_mb} MB mevcut"
+        return 0
+    elif [ "$available_mb" -ge 1000 ]; then
+        echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az 2GB önerilir)"
+        echo -e "${YELLOW}[!]${NC} Devam ediliyor ama bazı kurulumlar başarısız olabilir..."
+        return 0
+    else
+        echo -e "${RED}[✗]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
+        echo -e "${YELLOW}[!]${NC} En az 1GB boş alan gerekiyor!"
+        return 1
+    fi
+}
+
+# Check APT repositories access (for APT-based systems)
+check_apt_repositories() {
+    if [ "${PKG_MANAGER:-}" != "apt" ]; then
+        return 0  # Skip for non-APT systems
+    fi
+
+    echo -e "${CYAN}[✓]${NC} APT repository erişimi kontrol ediliyor..."
+
+    if timeout 10 sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
+        echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+        return 0
+    elif timeout 10 sudo apt-get update -qq &>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
+        return 0
+    else
+        echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
+        echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+        return 1
+    fi
+}
+
+# Run all pre-flight checks
+# Returns 0 if all critical checks pass, 1 otherwise
+run_preflight_checks() {
+    echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║           🔍 SİSTEM GEREKSİNİMLERİ KONTROL EDİLİYOR          ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+
+    local all_passed=true
+
+    # Critical checks (must pass)
+    if ! check_internet_connection; then
+        all_passed=false
+    fi
+
+    if ! check_sudo_access; then
+        all_passed=false
+    fi
+
+    # Non-critical checks (warnings only)
+    check_disk_space || true
+    check_apt_repositories || true
+
+    echo ""
+    if [ "$all_passed" = true ]; then
+        echo -e "${GREEN}[✓]${NC} Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
+        echo ""
+        return 0
+    else
+        echo -e "${RED}[✗]${NC} Bazı kritik kontroller başarısız!"
+        echo -e "${YELLOW}[!]${NC} Yukarıdaki hataları düzeltin ve tekrar deneyin."
+        echo ""
+        return 1
+    fi
+}
+
 # Export functions for use in other modules
 export -f reload_shell_configs
 export -f mask_secret
+export -f check_internet_connection
+export -f check_sudo_access
+export -f check_disk_space
+export -f check_apt_repositories
+export -f run_preflight_checks
