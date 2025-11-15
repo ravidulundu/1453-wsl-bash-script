@@ -267,12 +267,52 @@ MCP (Model Context Protocol) servers are managed through:
 
 ## Testing Approach
 
-No automated tests exist. Manual testing approach:
+### Automated Validation Script
+
+**NEW:** A comprehensive validation script (`test-setup.sh`) is now available to verify installations:
+
+```bash
+# Run validation test
+./test-setup.sh
+
+# Verbose output
+./test-setup.sh --verbose
+
+# JSON report
+./test-setup.sh --json > report.json
+
+# Save to log file
+./test-setup.sh --log results.log
+```
+
+The validation script checks:
+1. **System Information** - OS, kernel, WSL, package manager
+2. **Basic Tools** - git, curl, wget, jq, build essentials
+3. **Python Ecosystem** - Python, pip, pipx, UV
+4. **JavaScript Ecosystem** - NVM, Node.js, npm, Bun.js
+5. **PHP Ecosystem** - PHP versions, Composer, extensions
+6. **Go Language** - Go, GOPATH, GOROOT
+7. **Modern CLI Tools** - bat, eza, starship, zoxide, fzf, lazygit, lazydocker
+8. **Shell Environment** - aliases, functions, bashrc enhancements
+9. **AI CLI Tools** - Claude Code, Gemini CLI, GitHub CLI
+10. **AI Frameworks** - SuperGemini, SuperQwen, SuperClaude
+11. **Docker** - Docker Engine, lazydocker
+12. **Installation Directory** - ~/.1453-wsl-setup structure
+
+Output includes:
+- Total tests, passed, failed, warnings
+- Category-based statistics
+- Detailed failure and warning lists
+- Success rate percentage
+- Duration
 
 ### Syntax Validation
 ```bash
 # Test main script syntax
 bash -n src/linux-ai-setup-script.sh
+
+# Test validation script
+bash -n test-setup.sh
 
 # Test all modules at once
 for file in src/{lib,config,modules}/*.sh; do
@@ -281,7 +321,7 @@ for file in src/{lib,config,modules}/*.sh; do
 done
 
 # Run shellcheck for linting (if installed)
-shellcheck src/linux-ai-setup-script.sh src/{lib,config,modules}/*.sh
+shellcheck src/linux-ai-setup-script.sh src/{lib,config,modules}/*.sh test-setup.sh
 ```
 
 ### Module Testing

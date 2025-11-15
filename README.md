@@ -472,12 +472,64 @@ rm -rf ~/1453-wsl-bash-script  # veya bulduğunuz dizin
 
 MIT License - See [LICENSE.md](LICENSE.md) for details
 
+## ✅ Testing & Validation
+
+Kurulumunuzun doğru yapıldığını kontrol etmek için test scripti kullanabilirsiniz:
+
+### Hızlı Test
+```bash
+# Temel test
+./test-setup.sh
+
+# Detaylı çıktı ile test
+./test-setup.sh --verbose
+
+# JSON formatında rapor
+./test-setup.sh --json > test-report.json
+
+# Log dosyasına kaydet
+./test-setup.sh --log test-results.log
+```
+
+### Test Scripti Neleri Kontrol Eder?
+
+Test scripti şu kategorileri kontrol eder:
+
+1. **Sistem Bilgileri** - OS, kernel, WSL, paket yöneticisi
+2. **Temel Araçlar** - git, curl, wget, jq, build essentials
+3. **Python Ekosistemi** - Python, pip, pipx, UV
+4. **JavaScript Ekosistemi** - NVM, Node.js, npm, Bun.js
+5. **PHP Ekosistemi** - PHP, Composer, birden fazla PHP versiyonu
+6. **Go Language** - Go, GOPATH, GOROOT
+7. **Modern CLI Araçları** - bat, eza, starship, zoxide, fzf, lazygit, lazydocker, vb.
+8. **Shell Ortamı** - .bash_aliases, custom functions, bashrc enhancements
+9. **AI CLI Araçları** - Claude Code, Gemini CLI, GitHub CLI
+10. **AI Frameworks** - SuperGemini, SuperQwen, SuperClaude
+11. **Docker** - Docker Engine, lazydocker
+12. **Kurulum Dizini** - ~/.1453-wsl-setup yapısı
+
+### Test Sonuçları
+
+Script şu bilgileri sağlar:
+- ✓ **Başarılı**: Araç kurulu ve çalışıyor
+- ✗ **Başarısız**: Araç kurulu değil veya hatalı
+- ⚠ **Uyarı**: Opsiyonel bileşen eksik
+
+Her testten sonra detaylı özet rapor gösterilir:
+- Toplam test sayısı
+- Kategori bazında sonuçlar
+- Başarılı/Başarısız/Uyarı sayıları
+- Eksik veya hatalı bileşenlerin listesi
+
 ## 🐛 Troubleshooting
 
 ### Script Syntax Check
 ```bash
 # Check for syntax errors without running
 bash -n src/linux-ai-setup-script.sh
+
+# Test scriptini kontrol et
+bash -n test-setup.sh
 ```
 
 ### Common Issues
@@ -486,6 +538,7 @@ bash -n src/linux-ai-setup-script.sh
 2. **CRLF Line Endings**: Use `fix-crlf.sh` helper or convert manually
 3. **Missing Dependencies**: Script installs prerequisites automatically
 4. **Shell Not Reloading**: Restart terminal or run `source ~/.bashrc`
+5. **Test Failed**: Eksik bileşenleri test raporundan görebilir ve setup scriptini tekrar çalıştırabilirsiniz
 
 ## 🤝 Contributing
 
