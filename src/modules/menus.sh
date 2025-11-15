@@ -10,9 +10,18 @@ configure_git() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     echo -ne "${YELLOW}Git kullanıcı adınızı girin: ${NC}"
-    read -r git_user
+    if [ -e /dev/tty ]; then
+        read -r git_user </dev/tty
+    else
+        read -r git_user
+    fi
+
     echo -ne "${YELLOW}Git e-posta adresinizi girin: ${NC}"
-    read -r git_email
+    if [ -e /dev/tty ]; then
+        read -r git_email </dev/tty
+    else
+        read -r git_email
+    fi
 
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
