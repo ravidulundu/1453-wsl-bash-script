@@ -149,18 +149,64 @@ show_installed_items() {
     echo ""
 }
 
+# Cleanup System Packages (installed by update_system())
+cleanup_system_packages() {
+    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║    Sistem Paketleri Temizleniyor       ║${NC}"
+    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+
+    echo -e "${CYAN}[BİLGİ]${NC} update_system() tarafından kurulan paketler kaldırılıyor..."
+    echo ""
+
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor (jq, zip, unzip, p7zip-full)..."
+        sudo apt remove -y jq zip unzip p7zip-full 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Temel paketler kaldırıldı"
+
+        echo -e "${YELLOW}[BİLGİ]${NC} Build tools kaldırılıyor (build-essential)..."
+        sudo apt remove -y build-essential 2>/dev/null
+        sudo apt autoremove -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Build tools kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "dnf" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo dnf remove -y jq zip unzip p7zip 2>/dev/null
+        sudo dnf groupremove "Development Tools" -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "yum" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo yum remove -y jq zip unzip p7zip 2>/dev/null
+        sudo yum groupremove "Development Tools" -y 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+
+    elif [ "$PKG_MANAGER" = "pacman" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        sudo pacman -R --noconfirm jq zip unzip p7zip base-devel 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+    fi
+
+    echo -e "${CYAN}[BİLGİ]${NC} curl, wget, git korundu (sistem için kritik olabilir)"
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Sistem paketleri temizlendi"
+}
+
 # Cleanup Python ecosystem
 cleanup_python() {
     echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
     echo -e "${BLUE}║     Python Ekosistemi Temizleniyor     ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    # pipx packages
+    # pipx packages and executable
     if command -v pipx &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} pipx paketleri kaldırılıyor..."
         pipx uninstall-all 2>/dev/null
         rm -rf ~/.local/pipx
-        echo -e "${GREEN}[BAŞARILI]${NC} pipx paketleri kaldırıldı"
+
+        # Remove pipx itself if installed via APT
+        if [ "$PKG_MANAGER" = "apt" ]; then
+            sudo apt remove -y pipx 2>/dev/null
+        fi
+        echo -e "${GREEN}[BAŞARILI]${NC} pipx kaldırıldı"
     fi
 
     # UV
@@ -178,8 +224,14 @@ cleanup_python() {
         echo -e "${GREEN}[BAŞARILI]${NC} pip cache temizlendi"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Python3 sistem paketi olabilir, manuel kaldırma:"
-    echo -e "  ${CYAN}sudo apt remove python3-pip${NC}"
+    # Python APT packages installed by script
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Python APT paketleri kaldırılıyor..."
+        sudo apt remove -y python3-pip python3-venv 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Python APT paketleri kaldırıldı"
+        echo -e "${CYAN}[BİLGİ]${NC} python3 korundu (sistem paketi olabilir)"
+    fi
+
     echo -e "\n${GREEN}[BAŞARILI]${NC} Python ekosistemi temizlendi"
 }
 
@@ -227,8 +279,21 @@ cleanup_php() {
         echo -e "${GREEN}[BAŞARILI]${NC} Composer kaldırıldı"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} PHP sürümlerini kaldırmak için:"
-    echo -e "  ${CYAN}sudo apt remove php*${NC}"
+    # Remove PHP packages installed via APT
+    if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
+        # Remove all php packages (php7.4, php8.0, php8.1, php8.2, php8.3, etc.)
+        sudo apt remove -y 'php*' 2>/dev/null
+        sudo apt autoremove -y 2>/dev/null
+
+        # Remove Ondřej Surý PPA
+        if grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
+            echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA kaldırılıyor..."
+            sudo add-apt-repository --remove -y ppa:ondrej/php 2>/dev/null
+        fi
+        echo -e "${GREEN}[BAŞARILI]${NC} PHP paketleri kaldırıldı"
+    fi
+
     echo -e "\n${GREEN}[BAŞARILI]${NC} PHP ekosistemi temizlendi"
 }
 
@@ -258,9 +323,15 @@ cleanup_modern_tools() {
     echo -e "${BLUE}║    Modern CLI Tools Temizleniyor       ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    echo -e "${CYAN}[BİLGİ]${NC} Sadece 1453 WSL Setup'ın kurduğu araçlar kaldırılacak"
-    echo -e "${CYAN}[BİLGİ]${NC} APT paket yöneticisinden kurulan araçlar korunacak"
+    echo -e "${CYAN}[BİLGİ]${NC} 1453 WSL Setup'ın kurduğu modern CLI tools kaldırılıyor..."
     echo ""
+
+    # APT packages installed by this script
+    if [ "$PKG_MANAGER" = "apt" ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} APT paketleri kaldırılıyor (bat, ripgrep, fd-find, fzf)..."
+        sudo apt remove -y bat ripgrep fd-find fzf 2>/dev/null && \
+            echo -e "${GREEN}[BAŞARILI]${NC} APT paketleri kaldırıldı"
+    fi
 
     # Starship (manual install via curl)
     if command -v starship &>/dev/null && [ -f /usr/local/bin/starship ]; then
@@ -332,11 +403,7 @@ cleanup_modern_tools() {
     fi
 
     echo ""
-    echo -e "${CYAN}[BİLGİ]${NC} ${YELLOW}NOT:${NC} APT paketleri (bat, ripgrep, fd-find, fzf) korundu"
-    echo -e "${CYAN}[BİLGİ]${NC} Bu paketler script öncesinde de kurulu olmuş olabilir"
-    echo -e "${CYAN}[BİLGİ]${NC} Manuel silmek için: ${YELLOW}sudo apt remove bat ripgrep fd-find fzf${NC}"
-    echo ""
-    echo -e "${GREEN}[BAŞARILI]${NC} 1453 WSL Setup'ın kurduğu modern tools kaldırıldı"
+    echo -e "${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
 }
 
 # Cleanup Shell Configs
@@ -438,23 +505,38 @@ cleanup_ai_tools() {
     echo -e "${BLUE}║      AI CLI Tools Temizleniyor         ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
-    local tools=("claude" "qoder" "gh")
+    # Tools installed via pipx
+    local pipx_tools=("claude" "qoder" "gemini-cli" "opencode" "qwen")
 
-    for tool in "${tools[@]}"; do
-        if command -v "$tool" &>/dev/null; then
-            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor..."
-
-            # Remove from pipx if installed via pipx
-            if pipx list 2>/dev/null | grep -q "$tool"; then
-                pipx uninstall "$tool"
-            else
-                sudo rm -f "/usr/local/bin/$tool"
-                rm -f "$HOME/.local/bin/$tool"
-            fi
-
+    for tool in "${pipx_tools[@]}"; do
+        if command -v pipx &>/dev/null && pipx list 2>/dev/null | grep -q "$tool"; then
+            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor (pipx)..."
+            pipx uninstall "$tool" 2>/dev/null
             echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı"
         fi
     done
+
+    # GitHub Copilot CLI (installed via npm)
+    if command -v copilot &>/dev/null || command -v github-copilot-cli &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kaldırılıyor (npm)..."
+        npm uninstall -g @githubnext/github-copilot-cli 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kaldırıldı"
+    fi
+
+    # GitHub CLI (installed via APT)
+    if command -v gh &>/dev/null; then
+        echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kaldırılıyor..."
+        if [ "$PKG_MANAGER" = "apt" ]; then
+            sudo apt remove -y gh 2>/dev/null
+            # Remove GitHub CLI repository
+            sudo rm -f /etc/apt/sources.list.d/github-cli.list
+            sudo rm -f /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kaldırıldı"
+        else
+            sudo rm -f /usr/local/bin/gh
+            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI binary kaldırıldı"
+        fi
+    fi
 
     echo -e "\n${GREEN}[BAŞARILI]${NC} AI CLI tools temizlendi"
 }
@@ -487,10 +569,11 @@ cleanup_installations() {
     echo -e "${RED}║              TÜM KURULUMLAR TEMİZLENİYOR                    ║${NC}"
     echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
 
-    if ! confirm_cleanup "Tüm kurulumlar (Python, Node, PHP, Go, Modern Tools, AI Tools)"; then
+    if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Modern Tools, AI Tools)"; then
         return 1
     fi
 
+    cleanup_system_packages
     cleanup_python
     cleanup_nodejs
     cleanup_php
@@ -528,6 +611,7 @@ cleanup_full_reset() {
     fi
 
     # Cleanup everything - AGGRESSIVE MODE
+    cleanup_system_packages
     cleanup_python
     cleanup_nodejs
     cleanup_php
@@ -592,64 +676,71 @@ show_individual_cleanup_menu() {
         echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
         echo -e "${BLUE}║              TEK TEK TEMİZLEME MENÜSÜ                       ║${NC}"
         echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-        echo -e "  ${GREEN}1${NC}) Python (python3, pip, pipx, uv)"
-        echo -e "  ${GREEN}2${NC}) Node.js (nvm, node, npm, bun)"
-        echo -e "  ${GREEN}3${NC}) PHP (php, composer)"
-        echo -e "  ${GREEN}4${NC}) Go"
-        echo -e "  ${GREEN}5${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
-        echo -e "  ${GREEN}6${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
-        echo -e "  ${GREEN}7${NC}) AI CLI Tools"
-        echo -e "  ${GREEN}8${NC}) AI Frameworks"
+        echo -e "  ${GREEN}1${NC}) Sistem Paketleri (jq, zip, unzip, build-essential)"
+        echo -e "  ${GREEN}2${NC}) Python (python3, pip, pipx, uv)"
+        echo -e "  ${GREEN}3${NC}) Node.js (nvm, node, npm, bun)"
+        echo -e "  ${GREEN}4${NC}) PHP (php, composer)"
+        echo -e "  ${GREEN}5${NC}) Go"
+        echo -e "  ${GREEN}6${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
+        echo -e "  ${GREEN}7${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
+        echo -e "  ${GREEN}8${NC}) AI CLI Tools"
+        echo -e "  ${GREEN}9${NC}) AI Frameworks"
         echo -e "  ${GREEN}0${NC}) ← Geri"
         echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
 
-        echo -ne "\n${YELLOW}Seçiminiz (0-8): ${NC}"
+        echo -ne "\n${YELLOW}Seçiminiz (0-9): ${NC}"
         read -r choice </dev/tty
 
         case $choice in
             1)
+                if confirm_cleanup "Sistem paketleri"; then
+                    cleanup_system_packages
+                    read -p "Devam etmek için Enter'a basın..."
+                fi
+                ;;
+            2)
                 if confirm_cleanup "Python ekosistemi"; then
                     cleanup_python
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            2)
+            3)
                 if confirm_cleanup "Node.js ekosistemi"; then
                     cleanup_nodejs
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            3)
+            4)
                 if confirm_cleanup "PHP ekosistemi"; then
                     cleanup_php
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            4)
+            5)
                 if confirm_cleanup "Go"; then
                     cleanup_go
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            5)
+            6)
                 if confirm_cleanup "Modern CLI Tools"; then
                     cleanup_modern_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            6)
+            7)
                 if confirm_cleanup "Shell Config"; then
                     cleanup_shell_configs
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            7)
+            8)
                 if confirm_cleanup "AI CLI Tools"; then
                     cleanup_ai_tools
                     read -p "Devam etmek için Enter'a basın..."
                 fi
                 ;;
-            8)
+            9)
                 if confirm_cleanup "AI Frameworks"; then
                     cleanup_ai_frameworks
                     read -p "Devam etmek için Enter'a basın..."
@@ -736,6 +827,7 @@ show_cleanup_menu() {
 export -f backup_configs
 export -f confirm_cleanup
 export -f show_installed_items
+export -f cleanup_system_packages
 export -f cleanup_python
 export -f cleanup_nodejs
 export -f cleanup_php
