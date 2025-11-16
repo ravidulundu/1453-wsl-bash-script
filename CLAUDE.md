@@ -6,13 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a WSL (Windows Subsystem for Linux) automated setup script designed for AI developers. The project has been refactored from a single monolithic script (2,331 lines) into a clean modular architecture for better maintainability. It provides a one-line installer for easy deployment and features a fully Turkish interface for Turkish developers.
 
+**Version**: 2.2.0 (Production-Ready)
+**Status**: All critical and high-priority bugs fixed ✅
+**Security Level**: LOW risk (previously HIGH)
+
 ### Key Features
 - **One-line installation** via curl/wget
-- **Modular architecture** - 14 files instead of 1 monolithic script
+- **Modular architecture** - 16 files instead of 1 monolithic script
 - **Turkish language support** - All messages and prompts in Turkish
 - **Interactive menus** - User-friendly interface with multi-choice support
 - **Auto-detection** - Package manager and OS detection
 - **PEP 668 compliance** - Handles Python's externally-managed environment
+- **Security hardened** - No eval usage, SHA256 checksum verification
+- **Centralized configuration** - Version and constants management
 
 ## Installation Methods
 
@@ -30,7 +36,7 @@ bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-scr
 **Important**: We use process substitution `bash <(curl ...)` instead of piping `curl | bash` to ensure interactive prompts work correctly by keeping stdin connected to the terminal.
 
 This installer:
-- Downloads all 13 modular components from GitHub
+- Downloads all 16 modular components from GitHub
 - Sets up directory structure in `~/.1453-wsl-setup/`
 - Creates a launcher script for easy access
 - Prompts to run setup immediately (Turkish: "e/E=Evet, Enter=Hayır")
@@ -63,9 +69,9 @@ shellcheck src/linux-ai-setup-script.sh
 
 ## Architecture
 
-### Version 2.0 - Modular Architecture
+### Version 2.2.0 - Secure Modular Architecture
 
-The project has been refactored from a 2,331-line monolithic script into a clean modular architecture:
+The project has been refactored from a 2,331-line monolithic script into a clean, secure modular architecture with comprehensive security hardening:
 
 #### Repository Structure
 ```
@@ -81,12 +87,14 @@ The project has been refactored from a 2,331-line monolithic script into a clean
     │
     ├── lib/                            # Core libraries
     │   ├── init.sh                    # CRLF detection and initialization
-    │   ├── common.sh                  # Shared utilities (reload_shell_configs, mask_secret)
-    │   └── package-manager.sh        # Package manager detection and system updates
+    │   ├── common.sh                  # Shared utilities (reload, mask_secret, checksum verification)
+    │   └── package-manager.sh        # Package manager detection and secure system updates
     │
     ├── config/                         # Configuration files
     │   ├── colors.sh                  # Terminal color definitions
+    │   ├── constants.sh               # Global constants (retry, timeout, disk space, history)
     │   ├── php-versions.sh            # PHP version and extension arrays
+    │   ├── tool-versions.sh           # Tool versions and URLs (centralized version management)
     │   └── banner.sh                  # ASCII art and banner display (Turkish)
     │
     └── modules/                        # Feature modules
@@ -114,8 +122,8 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 ```
 
 ### Module Categories
-1. **Core Libraries** (`lib/`) - System initialization, shared utilities, package management
-2. **Configuration** (`config/`) - Colors, PHP versions, banner/branding
+1. **Core Libraries** (`lib/`) - System initialization, shared utilities, secure package management, checksum verification
+2. **Configuration** (`config/`) - Colors, constants, PHP versions, tool versions, banner/branding
 3. **Python Ecosystem** (`modules/python.sh`) - Python, pip, pipx, UV with PEP 668 compliance
 4. **JavaScript Ecosystem** (`modules/javascript.sh`) - NVM and Bun.js installation
 5. **PHP Ecosystem** (`modules/php.sh`) - Multiple PHP versions (7.4-8.5) with Laravel support
@@ -152,13 +160,37 @@ The project has been refactored from a 2,331-line monolithic script into a clean
 
 **Interactive Prompt Fix**: The installer handles stdin properly when piped through curl/wget using `/dev/tty` redirection for user input.
 
+**Security Features (v2.2.0)**:
+- **No eval Usage**: All command injection vulnerabilities eliminated (16 instances fixed)
+- **SHA256 Checksum Verification**: Binary downloads verified for integrity (Vivid, Lazygit, Lazydocker)
+- **Centralized Version Management**: Dynamic version fetching with offline fallbacks
+- **Centralized Constants**: All magic numbers replaced with named constants
+- **Safe Array-Based Execution**: Package installation uses safe array patterns instead of eval
+
 ## Important Functions
 
 ### Core Functions (lib/)
 - `detect_package_manager()` - Detects system package manager (`lib/package-manager.sh`)
 - `reload_shell_configs()` - Reloads shell configuration files (`lib/common.sh`)
-- `update_system()` - Updates system packages (`lib/package-manager.sh`)
+- `update_system()` - Updates system packages with retry mechanism (`lib/package-manager.sh`)
 - `mask_secret()` - Masks sensitive data for display (`lib/common.sh`)
+
+### Security Functions (lib/common.sh) - NEW in v2.2.0
+- `verify_checksum(file_path, checksum, [checksum_url])` - Verifies SHA256 checksum of downloaded files
+  - Supports sha256sum and shasum
+  - Case-insensitive comparison
+  - Graceful fallback if tool missing
+  - Detailed error messages
+- `download_with_checksum(url, output, [checksum_url])` - Downloads file with automatic checksum verification
+  - Downloads file with curl
+  - Automatically fetches and verifies checksum
+  - Handles checksums.txt format (multiple files)
+  - Parses single .sha256 files
+  - Cleans up on failure
+
+### Version Management Functions (config/tool-versions.sh) - NEW in v2.2.0
+- `fetch_github_version(repo, fallback)` - Fetches latest version from GitHub API with fallback
+- `init_tool_versions()` - Initializes all tool versions (fetches from GitHub or uses fallbacks)
 
 ### Python Functions (modules/python.sh)
 - `install_python()` - Installs Python with modern pip handling
@@ -410,7 +442,49 @@ docker run -it ubuntu:latest /bin/bash
 
 ## Version History
 
-### v2.0 (Current) - Modular Architecture
+### v2.2.0 (Current) - Security Hardened Production Release
+**Release Date**: 2025-11-15
+**Status**: Production-Ready ✅
+
+#### Security Fixes
+- ✅ **PHASE 1 (CRITICAL)**: Eliminated all eval command injection vulnerabilities
+  - 16 eval instances in active modules → safe array-based execution
+  - Files: python.sh, php.sh, ai-cli.sh, go.sh, package-manager.sh
+  - Pattern: `eval "$INSTALL_CMD"` → safe array execution
+
+- ✅ **PHASE 2a (HIGH)**: Centralized version management
+  - Created `config/tool-versions.sh` (113 lines)
+  - Dynamic GitHub API version fetching
+  - Offline fallback support
+  - Tools: NVM, Vivid, Lazygit, Lazydocker
+
+- ✅ **PHASE 2b (HIGH)**: SHA256 checksum verification
+  - Added `verify_checksum()` and `download_with_checksum()` functions
+  - Binary integrity verification for Vivid, Lazygit, Lazydocker
+  - Supply chain security implemented
+
+- ✅ **PHASE 3a (MEDIUM)**: Centralized constants
+  - Created `config/constants.sh` (106 lines)
+  - 18+ magic numbers → named constants
+  - Categories: retry, timeout, disk space, history
+
+#### Statistics
+- 🔴 CRITICAL bugs: 29 → 0 (100% FIXED)
+- 🟡 HIGH bugs: 3 → 0 (100% FIXED)
+- 🟢 MEDIUM bugs: 2 → 1 (50% FIXED)
+- Security Risk: HIGH → LOW ✅
+- Compliance: Production-ready ✅
+
+#### Commits
+- `c03ad1a` - Docs: Katkıda bulunanlar listesine Ravi DULUNDU eklendi
+- `c5d4774` - Docs: Update README.md to v2.2.0
+- `dfa4782` - Docs: Update BUG-REPORT.md - All Critical/High Priority Bugs FIXED
+- `e95d081` - Code Quality: PHASE 3a Complete - Centralize constants
+- `7b2092e` - Security: PHASE 2b Complete - Add checksum verification
+- `8bdf895` - Config: PHASE 2a Complete - Centralize tool versions
+- `b4fb8f4` - Security: PHASE 1 Complete - Remove eval injection
+
+### v2.0 - Modular Architecture
 - Refactored from monolithic (2,331 lines) to modular (14 files)
 - Added one-line installer (`install.sh`)
 - Full Turkish language support
