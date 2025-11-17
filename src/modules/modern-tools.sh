@@ -9,18 +9,35 @@ install_modern_cli_tools() {
     echo -e "${BLUE}║      MODERN CLI ARAÇLARI KURULUYOR            ║${NC}"
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Modern CLI araçları kurulacak:"
-    echo -e "  ✓ bat (cat yerine)"
-    echo -e "  ✓ ripgrep (grep yerine)"
-    echo -e "  ✓ fd (find yerine)"
-    echo -e "  ✓ eza (ls yerine)"
-    echo -e "  ✓ starship (modern prompt)"
-    echo -e "  ✓ zoxide (akıllı cd)"
-    echo -e "  ✓ fzf (fuzzy finder)"
-    echo -e "  ✓ vivid (LS_COLORS)"
-    echo -e "  ✓ fastfetch (sistem bilgisi)"
-    echo -e "  ✓ lazygit (git UI)"
-    echo -e "  ✓ lazydocker (docker UI)"
+    # Check which tools are already installed
+    local already_installed=()
+    local missing_tools=()
+
+    # Check each tool
+    (command -v bat &>/dev/null || command -v batcat &>/dev/null) && already_installed+=("bat") || missing_tools+=("bat")
+    command -v rg &>/dev/null && already_installed+=("ripgrep") || missing_tools+=("ripgrep")
+    (command -v fd &>/dev/null || command -v fdfind &>/dev/null) && already_installed+=("fd") || missing_tools+=("fd")
+    command -v eza &>/dev/null && already_installed+=("eza") || missing_tools+=("eza")
+    command -v starship &>/dev/null && already_installed+=("starship") || missing_tools+=("starship")
+    command -v zoxide &>/dev/null && already_installed+=("zoxide") || missing_tools+=("zoxide")
+    command -v fzf &>/dev/null && already_installed+=("fzf") || missing_tools+=("fzf")
+    command -v vivid &>/dev/null && already_installed+=("vivid") || missing_tools+=("vivid")
+    command -v fastfetch &>/dev/null && already_installed+=("fastfetch") || missing_tools+=("fastfetch")
+    command -v lazygit &>/dev/null && already_installed+=("lazygit") || missing_tools+=("lazygit")
+    command -v lazydocker &>/dev/null && already_installed+=("lazydocker") || missing_tools+=("lazydocker")
+
+    # If all tools are installed, skip
+    if [ ${#missing_tools[@]} -eq 0 ]; then
+        echo -e "${CYAN}[!]${NC} Tüm modern CLI araçları zaten kurulu (${#already_installed[@]}/11)"
+        track_skip "Modern CLI Tools" "Tüm araçlar kurulu (${already_installed[*]})"
+        return 0
+    fi
+
+    # Show status
+    if [ ${#already_installed[@]} -gt 0 ]; then
+        echo -e "${CYAN}[!]${NC} Kurulu: ${already_installed[*]}"
+    fi
+    echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak: ${missing_tools[*]}"
     echo ""
 
     # Detect package manager
@@ -45,7 +62,39 @@ install_modern_cli_tools() {
             ;;
     esac
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı!"
+    # Final check and tracking
+    local installed_count=0
+    local final_installed=()
+    local final_failed=()
+
+    # Check which tools are now installed
+    (command -v bat &>/dev/null || command -v batcat &>/dev/null) && final_installed+=("bat") || final_failed+=("bat")
+    command -v rg &>/dev/null && final_installed+=("ripgrep") || final_failed+=("ripgrep")
+    (command -v fd &>/dev/null || command -v fdfind &>/dev/null) && final_installed+=("fd") || final_failed+=("fd")
+    command -v eza &>/dev/null && final_installed+=("eza") || final_failed+=("eza")
+    command -v starship &>/dev/null && final_installed+=("starship") || final_failed+=("starship")
+    command -v zoxide &>/dev/null && final_installed+=("zoxide") || final_failed+=("zoxide")
+    command -v fzf &>/dev/null && final_installed+=("fzf") || final_failed+=("fzf")
+    command -v vivid &>/dev/null && final_installed+=("vivid") || final_failed+=("vivid")
+    command -v fastfetch &>/dev/null && final_installed+=("fastfetch") || final_failed+=("fastfetch")
+    command -v lazygit &>/dev/null && final_installed+=("lazygit") || final_failed+=("lazygit")
+    command -v lazydocker &>/dev/null && final_installed+=("lazydocker") || final_failed+=("lazydocker")
+
+    installed_count=${#final_installed[@]}
+
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı! ($installed_count/11)"
+
+    if [ $installed_count -eq 11 ]; then
+        track_success "Modern CLI Tools" "Tüm araçlar kuruldu (11/11)"
+    elif [ $installed_count -gt 0 ]; then
+        track_success "Modern CLI Tools" "$installed_count/11 kuruldu: ${final_installed[*]}"
+        if [ ${#final_failed[@]} -gt 0 ]; then
+            track_failure "Modern CLI Tools (eksik)" "Kurulamadı: ${final_failed[*]}"
+        fi
+    else
+        track_failure "Modern CLI Tools" "Hiçbir araç kurulamadı"
+        return 1
+    fi
 }
 
 # Generic function to fix bat/fd symlinks (works across all distros)
