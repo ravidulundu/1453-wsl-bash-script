@@ -9,11 +9,38 @@ configure_git() {
     echo -e "${YELLOW}[BİLGİ]${NC} Git yapılandırması başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check existing git configuration
+    local current_user
+    local current_email
+    current_user=$(git config --global user.name 2>/dev/null || echo "")
+    current_email=$(git config --global user.email 2>/dev/null || echo "")
+
+    if [ -n "$current_user" ] && [ -n "$current_email" ]; then
+        echo -e "${CYAN}[!]${NC} Mevcut Git yapılandırması:"
+        echo -e "  Kullanıcı: ${GREEN}$current_user${NC}"
+        echo -e "  E-posta: ${GREEN}$current_email${NC}"
+        echo ""
+        echo -ne "${YELLOW}Yeni yapılandırma yapmak istiyor musunuz? (e/E=Evet, Enter=Hayır): ${NC}"
+        read -r reconfigure </dev/tty
+
+        if [[ ! "$reconfigure" =~ ^[eE]$ ]]; then
+            echo -e "${CYAN}[!]${NC} Git yapılandırması değiştirilmedi"
+            track_skip "Git Yapılandırması" "Mevcut yapılandırma korundu"
+            return 0
+        fi
+    fi
+
     echo -ne "${YELLOW}Git kullanıcı adınızı girin: ${NC}"
     read -r git_user </dev/tty
 
     echo -ne "${YELLOW}Git e-posta adresinizi girin: ${NC}"
     read -r git_email </dev/tty
+
+    if [ -z "$git_user" ] || [ -z "$git_email" ]; then
+        echo -e "${RED}[HATA]${NC} Kullanıcı adı ve e-posta gereklidir!"
+        track_failure "Git Yapılandırması" "Eksik bilgi"
+        return 1
+    fi
 
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
@@ -21,6 +48,7 @@ configure_git() {
     echo -e "${GREEN}[BAŞARILI]${NC} Git yapılandırması tamamlandı!"
     echo -e "  Kullanıcı: $git_user"
     echo -e "  E-posta: $git_email"
+    track_success "Git Yapılandırması" "$git_user <$git_email>"
 }
 
 # Prepare and configure Git
