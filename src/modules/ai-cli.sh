@@ -9,10 +9,10 @@ install_claude_code() {
     echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    # Check if already installed
-    if command -v claude-code &> /dev/null; then
+    # Check if already installed (command is 'claude', not 'claude-code')
+    if command -v claude &> /dev/null; then
         local version
-        version=$(claude-code --version 2>/dev/null | head -n1 || echo "unknown")
+        version=$(claude --version 2>/dev/null | head -n1 || echo "unknown")
         echo -e "${CYAN}[!]${NC} Claude Code CLI zaten kurulu: $version"
         track_skip "Claude Code CLI" "Zaten kurulu"
         return 0
@@ -32,15 +32,18 @@ install_claude_code() {
             rm -f "$temp_installer"
             reload_shell_configs
 
-            if command -v claude-code &> /dev/null; then
+            # Check for 'claude' command (not 'claude-code')
+            if command -v claude &> /dev/null; then
                 local version
-                version=$(claude-code --version 2>/dev/null | head -n1 || echo "unknown")
+                version=$(claude --version 2>/dev/null | head -n1 || echo "unknown")
                 echo -e "${GREEN}[BAŞARILI]${NC} Claude Code CLI kurulumu tamamlandı: $version"
+                echo -e "${CYAN}[ℹ]${NC} Komut: ${GREEN}claude${NC} (not claude-code)"
                 track_success "Claude Code CLI" "$version"
                 return 0
             else
-                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama claude-code komutu bulunamadı!"
+                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama claude komutu bulunamadı!"
                 echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
+                echo -e "${YELLOW}[!]${NC} veya yeni terminal açın"
                 track_failure "Claude Code CLI" "Komut bulunamadı (shell reload gerekli)"
                 return 1
             fi
