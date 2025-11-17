@@ -37,8 +37,8 @@ FASTFETCH_DOWNLOAD_URL="https://github.com/fastfetch-cli/fastfetch/releases/late
 # ==========================================
 # AI CLI Tools
 # ==========================================
-# Claude Code CLI
-CLAUDE_CODE_INSTALL_URL="https://github.com/anthropics/claude-code/releases/latest/download/installer.sh"
+# Claude Code CLI (Official native installer)
+CLAUDE_CODE_INSTALL_URL="https://claude.ai/install.sh"
 
 # Qoder CLI
 QODER_INSTALL_URL="https://qoder.com/install"

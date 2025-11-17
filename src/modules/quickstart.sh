@@ -290,16 +290,9 @@ execute_installation_plan() {
             "ai_cli")
                 # Quick Start: Install essential AI CLI tools automatically
                 echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
-                if install_claude_code; then
-                    track_success "Claude Code CLI"
-                else
-                    track_failure "Claude Code CLI"
-                fi
-                if install_github_cli; then
-                    track_success "GitHub CLI"
-                else
-                    track_failure "GitHub CLI"
-                fi
+                # Note: These functions already handle tracking internally
+                install_claude_code
+                install_github_cli
                 ;;
             "ai_frameworks")
                 # Quick Start: Install SuperClaude framework automatically
