@@ -304,7 +304,8 @@ execute_installation_plan() {
                 fi
                 ;;
             "git_config")
-                # Already configured
+                # Configure Git (will check existing config first)
+                configure_git
                 ;;
         esac
     done
