@@ -424,10 +424,29 @@ cleanup_shell_configs() {
         echo -e "${GREEN}[BAŞARILI]${NC} .bashrc yedeklendi"
     fi
 
-    # Remove .bash_aliases completely
     if [ -f ~/.bash_aliases ]; then
-        rm -f ~/.bash_aliases
-        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi"
+        cp ~/.bash_aliases ~/.bash_aliases.backup.$(date +%Y%m%d_%H%M%S)
+        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases yedeklendi"
+    fi
+
+    # Clean .bash_aliases - Remove only script-created aliases, keep user aliases
+    if [ -f ~/.bash_aliases ]; then
+        if grep -q "# 1453 WSL Setup Aliases" ~/.bash_aliases 2>/dev/null; then
+            # Use sed to remove the 1453 block
+            # Pattern: From "# ========" before "1453 WSL Setup Aliases" to the end of the alias block
+            sed -i '/^# ============================================================================$/,/^# 1453 WSL Setup Aliases$/d; /^# 1453 WSL Setup Aliases$/,/^$/d' ~/.bash_aliases 2>/dev/null || \
+            sed -i '/# 1453 WSL Setup Aliases/,/^$/d' ~/.bash_aliases 2>/dev/null
+
+            # If file is now empty or only whitespace, remove it
+            if [ ! -s ~/.bash_aliases ] || ! grep -q '[^[:space:]]' ~/.bash_aliases 2>/dev/null; then
+                rm -f ~/.bash_aliases
+                echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi (sadece script aliasları vardı)"
+            else
+                echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases temizlendi (kullanıcı aliasları korundu)"
+            fi
+        else
+            echo -e "${CYAN}[BİLGİ]${NC} .bash_aliases'ta script aliasları yok, korunuyor"
+        fi
     fi
 
     # Remove 1453 Setup related lines from .bashrc - SAFE CLEANUP
