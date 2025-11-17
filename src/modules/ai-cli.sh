@@ -9,15 +9,57 @@ install_claude_code() {
     echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI indiriliyor ve kuruluyor..."
-    curl -L "$CLAUDE_CODE_INSTALL_URL" | bash
-
-    reload_shell_configs
-
+    # Check if already installed
     if command -v claude-code &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Claude Code CLI kurulumu tamamlandı!"
+        local version
+        version=$(claude-code --version 2>/dev/null | head -n1 || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Claude Code CLI zaten kurulu: $version"
+        track_skip "Claude Code CLI" "Zaten kurulu"
+        return 0
+    fi
+
+    echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI indiriliyor: $CLAUDE_CODE_INSTALL_URL"
+
+    # Download installer to temp file for better error handling
+    local temp_installer
+    temp_installer=$(mktemp)
+
+    if curl -fsSL "$CLAUDE_CODE_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+
+        # Run installer
+        if bash "$temp_installer"; then
+            rm -f "$temp_installer"
+            reload_shell_configs
+
+            if command -v claude-code &> /dev/null; then
+                local version
+                version=$(claude-code --version 2>/dev/null | head -n1 || echo "unknown")
+                echo -e "${GREEN}[BAŞARILI]${NC} Claude Code CLI kurulumu tamamlandı: $version"
+                track_success "Claude Code CLI" "$version"
+                return 0
+            else
+                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama claude-code komutu bulunamadı!"
+                echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
+                track_failure "Claude Code CLI" "Komut bulunamadı (shell reload gerekli)"
+                return 1
+            fi
+        else
+            rm -f "$temp_installer"
+            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
+            track_failure "Claude Code CLI" "Kurulum scripti başarısız"
+            return 1
+        fi
     else
-        echo -e "${RED}[HATA]${NC} Claude Code CLI kurulumu başarısız!"
+        rm -f "$temp_installer"
+        echo -e "${RED}[HATA]${NC} Claude Code CLI indirilemedi!"
+        echo -e "${YELLOW}[!]${NC} URL: $CLAUDE_CODE_INSTALL_URL"
+        echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
+        echo -e "    - URL geçersiz olabilir (404)"
+        echo -e "    - İnternet bağlantısı sorunu"
+        echo -e "    - GitHub erişim sorunu"
+        echo -e "${CYAN}[ℹ]${NC} Elle kurmak için: npm install -g @anthropic-ai/claude-code"
+        track_failure "Claude Code CLI" "İndirme başarısız (URL veya ağ sorunu)"
         return 1
     fi
 }
@@ -28,16 +70,34 @@ install_gemini_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} Gemini CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if python3 -c "import google.generativeai" 2>/dev/null; then
+        echo -e "${CYAN}[!]${NC} Gemini CLI (Google AI SDK) zaten kurulu"
+        track_skip "Gemini CLI" "Zaten kurulu"
+        return 0
+    fi
+
     if ! command -v python3 &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Python kurulu değil. Önce Python kuruluyor..."
-        install_python
+        if ! install_python; then
+            track_failure "Gemini CLI" "Python gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Google AI Python SDK kuruluyor..."
-    python3 -m pip install google-generativeai --break-system-packages 2>/dev/null || \
-    python3 -m pip install google-generativeai
-
-    echo -e "${GREEN}[BAŞARILI]${NC} Gemini CLI için Google AI SDK kuruldu!"
+    if python3 -m pip install google-generativeai --break-system-packages 2>/dev/null || \
+       python3 -m pip install google-generativeai; then
+        local version
+        version=$(python3 -c "import google.generativeai; print(google.generativeai.__version__)" 2>/dev/null || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Gemini CLI için Google AI SDK kuruldu!"
+        track_success "Gemini CLI" "$version"
+        return 0
+    else
+        echo -e "${RED}[HATA]${NC} Gemini CLI kurulumu başarısız!"
+        track_failure "Gemini CLI" "pip install başarısız"
+        return 1
+    fi
 }
 
 # Install OpenCode CLI
@@ -46,20 +106,41 @@ install_opencode_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} OpenCode CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v opencode &> /dev/null; then
+        local version
+        version=$(opencode --version 2>/dev/null || echo "unknown")
+        echo -e "${CYAN}[!]${NC} OpenCode CLI zaten kurulu: $version"
+        track_skip "OpenCode CLI" "Zaten kurulu"
+        return 0
+    fi
+
     if ! command -v npm &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} NPM kurulu değil. NVM ile Node.js kuruluyor..."
-        install_nvm
+        if ! install_nvm; then
+            track_failure "OpenCode CLI" "NPM gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} OpenCode CLI npm ile kuruluyor..."
-    npm install -g opencode-cli
+    if npm install -g opencode-cli; then
+        reload_shell_configs
 
-    reload_shell_configs
-
-    if command -v opencode &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} OpenCode CLI kurulumu tamamlandı!"
+        if command -v opencode &> /dev/null; then
+            local version
+            version=$(opencode --version 2>/dev/null || echo "unknown")
+            echo -e "${GREEN}[BAŞARILI]${NC} OpenCode CLI kurulumu tamamlandı!"
+            track_success "OpenCode CLI" "$version"
+            return 0
+        else
+            echo -e "${RED}[HATA]${NC} OpenCode CLI kurulumu başarısız!"
+            track_failure "OpenCode CLI" "Komut bulunamadı"
+            return 1
+        fi
     else
         echo -e "${RED}[HATA]${NC} OpenCode CLI kurulumu başarısız!"
+        track_failure "OpenCode CLI" "npm install başarısız"
         return 1
     fi
 }
@@ -70,20 +151,41 @@ install_qwen_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} Qwen CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v qwen &> /dev/null; then
+        local version
+        version=$(qwen --version 2>/dev/null || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Qwen CLI zaten kurulu: $version"
+        track_skip "Qwen CLI" "Zaten kurulu"
+        return 0
+    fi
+
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Pipx kurulu değil. Önce pipx kuruluyor..."
-        install_pipx
+        if ! install_pipx; then
+            track_failure "Qwen CLI" "Pipx gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Qwen CLI pipx ile kuruluyor..."
-    pipx install qwen-cli
+    if pipx install qwen-cli; then
+        reload_shell_configs
 
-    reload_shell_configs
-
-    if command -v qwen &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Qwen CLI kurulumu tamamlandı!"
+        if command -v qwen &> /dev/null; then
+            local version
+            version=$(qwen --version 2>/dev/null || echo "unknown")
+            echo -e "${GREEN}[BAŞARILI]${NC} Qwen CLI kurulumu tamamlandı!"
+            track_success "Qwen CLI" "$version"
+            return 0
+        else
+            echo -e "${RED}[HATA]${NC} Qwen CLI kurulumu başarısız!"
+            track_failure "Qwen CLI" "Komut bulunamadı"
+            return 1
+        fi
     else
         echo -e "${RED}[HATA]${NC} Qwen CLI kurulumu başarısız!"
+        track_failure "Qwen CLI" "pipx install başarısız"
         return 1
     fi
 }
@@ -94,19 +196,39 @@ install_copilot_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v github-copilot-cli &> /dev/null; then
+        local version
+        version=$(npm list -g @githubnext/github-copilot-cli 2>/dev/null | grep github-copilot-cli | awk '{print $2}' || echo "unknown")
+        echo -e "${CYAN}[!]${NC} GitHub Copilot CLI zaten kurulu: $version"
+        track_skip "GitHub Copilot CLI" "Zaten kurulu"
+        return 0
+    fi
+
     if ! command -v npm &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} NPM kurulu değil. NVM ile Node.js kuruluyor..."
-        install_nvm
+        if ! install_nvm; then
+            track_failure "GitHub Copilot CLI" "NPM gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI npm ile kuruluyor..."
-    npm install -g @githubnext/github-copilot-cli
+    if npm install -g @githubnext/github-copilot-cli; then
+        reload_shell_configs
 
-    reload_shell_configs
-
-    echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kurulumu tamamlandı!"
-    echo -e "\n${CYAN}[BİLGİ]${NC} GitHub hesabınızla oturum açmak için:"
-    echo -e "  ${GREEN}github-copilot-cli auth${NC}"
+        local version
+        version=$(npm list -g @githubnext/github-copilot-cli 2>/dev/null | grep github-copilot-cli | awk '{print $2}' || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kurulumu tamamlandı!"
+        echo -e "\n${CYAN}[BİLGİ]${NC} GitHub hesabınızla oturum açmak için:"
+        echo -e "  ${GREEN}github-copilot-cli auth${NC}"
+        track_success "GitHub Copilot CLI" "$version"
+        return 0
+    else
+        echo -e "${RED}[HATA]${NC} GitHub Copilot CLI kurulumu başarısız!"
+        track_failure "GitHub Copilot CLI" "npm install başarısız"
+        return 1
+    fi
 }
 
 # Install GitHub CLI
@@ -115,31 +237,62 @@ install_github_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v gh &> /dev/null; then
+        local version
+        version=$(gh --version 2>/dev/null | head -n1 || echo "unknown")
+        echo -e "${CYAN}[!]${NC} GitHub CLI zaten kurulu: $version"
+        track_skip "GitHub CLI" "Zaten kurulu"
+        return 0
+    fi
+
+    # Ensure package manager is detected
+    if [ -z "$INSTALL_CMD" ]; then
+        detect_package_manager
+    fi
+
     # Safe execution without eval (prevents command injection)
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
 
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} GitHub GPG key ekleniyor..."
-        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        if ! curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; then
+            track_failure "GitHub CLI" "GPG key eklenemedi"
+            return 1
+        fi
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
         sudo apt update
-        "${cmd_array[@]}" gh
+        if ! "${cmd_array[@]}" gh; then
+            track_failure "GitHub CLI" "apt install başarısız"
+            return 1
+        fi
 
     elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
         sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-        "${cmd_array[@]}" gh
+        if ! "${cmd_array[@]}" gh; then
+            track_failure "GitHub CLI" "dnf install başarısız"
+            return 1
+        fi
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        "${cmd_array[@]}" github-cli
+        if ! "${cmd_array[@]}" github-cli; then
+            track_failure "GitHub CLI" "pacman install başarısız"
+            return 1
+        fi
     fi
 
     if command -v gh &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kurulumu tamamlandı: $(gh --version)"
+        local version
+        version=$(gh --version 2>/dev/null | head -n1 || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kurulumu tamamlandı: $version"
         echo -e "\n${CYAN}[BİLGİ]${NC} GitHub hesabınızla oturum açmak için:"
         echo -e "  ${GREEN}gh auth login${NC}"
+        track_success "GitHub CLI" "$version"
+        return 0
     else
         echo -e "${RED}[HATA]${NC} GitHub CLI kurulumu başarısız!"
+        track_failure "GitHub CLI" "Kurulum tamamlandı ama komut bulunamadı"
         return 1
     fi
 }
@@ -190,15 +343,55 @@ install_qoder_cli() {
     echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI indiriliyor ve kuruluyor..."
-    curl -fsSL "$QODER_INSTALL_URL" | bash
-
-    reload_shell_configs
-
+    # Check if already installed
     if command -v qoder &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Qoder CLI kurulumu tamamlandı!"
+        local version
+        version=$(qoder --version 2>/dev/null | head -n1 || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Qoder CLI zaten kurulu: $version"
+        track_skip "Qoder CLI" "Zaten kurulu"
+        return 0
+    fi
+
+    echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI indiriliyor: $QODER_INSTALL_URL"
+
+    # Download installer to temp file for better error handling
+    local temp_installer
+    temp_installer=$(mktemp)
+
+    if curl -fsSL "$QODER_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+
+        # Run installer
+        if bash "$temp_installer"; then
+            rm -f "$temp_installer"
+            reload_shell_configs
+
+            if command -v qoder &> /dev/null; then
+                local version
+                version=$(qoder --version 2>/dev/null | head -n1 || echo "unknown")
+                echo -e "${GREEN}[BAŞARILI]${NC} Qoder CLI kurulumu tamamlandı: $version"
+                track_success "Qoder CLI" "$version"
+                return 0
+            else
+                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama qoder komutu bulunamadı!"
+                echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
+                track_failure "Qoder CLI" "Komut bulunamadı (shell reload gerekli)"
+                return 1
+            fi
+        else
+            rm -f "$temp_installer"
+            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
+            track_failure "Qoder CLI" "Kurulum scripti başarısız"
+            return 1
+        fi
     else
-        echo -e "${RED}[HATA]${NC} Qoder CLI kurulumu başarısız!"
+        rm -f "$temp_installer"
+        echo -e "${RED}[HATA]${NC} Qoder CLI indirilemedi!"
+        echo -e "${YELLOW}[!]${NC} URL: $QODER_INSTALL_URL"
+        echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
+        echo -e "    - URL geçersiz olabilir (404)"
+        echo -e "    - İnternet bağlantısı sorunu"
+        track_failure "Qoder CLI" "İndirme başarısız (URL veya ağ sorunu)"
         return 1
     fi
 }
