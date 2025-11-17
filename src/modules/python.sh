@@ -16,11 +16,14 @@ install_python() {
     fi
 
     if command -v python3 &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Python zaten kurulu: $(python3 --version)"
+        local version
+        version=$(python3 --version 2>&1 | awk '{print $2}')
+        echo -e "${CYAN}[!]${NC} Python zaten kurulu: $version"
 
         # Check if pip module is available
         if python3 -m pip --version &>/dev/null; then
             echo -e "${GREEN}[✓]${NC} pip modülü mevcut"
+            track_skip "Python" "Zaten kurulu ($version)"
         else
             echo -e "${YELLOW}[!]${NC} pip modülü eksik, python3-pip kuruluyor..."
 
@@ -28,6 +31,9 @@ install_python() {
             if ! install_package_with_retry "python3-pip python3-venv"; then
                 echo -e "${RED}[✗]${NC} python3-pip kurulumu başarısız!"
                 echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y python3-pip python3-venv"
+                track_failure "Python (pip modülü)" "pip kurulumu başarısız"
+            else
+                track_skip "Python" "Zaten kurulu ($version, pip eklendi)"
             fi
         fi
         return 0
@@ -43,7 +49,9 @@ install_python() {
     fi
 
     if command -v python3 &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Python kurulumu tamamlandı: $(python3 --version)"
+        local version
+        version=$(python3 --version 2>&1 | awk '{print $2}')
+        echo -e "${GREEN}[BAŞARILI]${NC} Python kurulumu tamamlandı: $version"
 
         # Verify pip module
         if python3 -m pip --version &>/dev/null; then
@@ -51,8 +59,10 @@ install_python() {
         else
             echo -e "${YELLOW}[!]${NC} pip modülü kontrol edilemiyor, devam ediliyor..."
         fi
+        track_success "Python" "$version"
     else
         echo -e "${RED}[HATA]${NC} Python kurulumu başarısız!"
+        track_failure "Python" "Kurulum başarısız"
         return 1
     fi
 }
@@ -97,9 +107,21 @@ install_pipx() {
     echo -e "${YELLOW}[BİLGİ]${NC} Pipx kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if already installed
+    if command -v pipx &> /dev/null; then
+        local version
+        version=$(pipx --version 2>/dev/null || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Pipx zaten kurulu: $version"
+        track_skip "Pipx" "Zaten kurulu ($version)"
+        return 0
+    fi
+
     if ! command -v python3 &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Python kurulu değil, önce Python kuruluyor..."
-        install_python
+        if ! install_python; then
+            track_failure "Pipx" "Python gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Sistem paket yöneticisi ile pipx kuruluyor..."
@@ -173,15 +195,19 @@ install_pipx() {
     reload_shell_configs
 
     if command -v pipx &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Pipx kurulumu tamamlandı: $(pipx --version 2>/dev/null || echo 'kuruldu')"
+        local version
+        version=$(pipx --version 2>/dev/null || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Pipx kurulumu tamamlandı: $version"
         echo -e "\n${CYAN}[BİLGİ]${NC} Pipx Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Paket kurma: ${GREEN}pipx install paket_adi${NC}"
         echo -e "  ${GREEN}•${NC} Paket listesi: ${GREEN}pipx list${NC}"
         echo -e "  ${GREEN}•${NC} Paket kaldırma: ${GREEN}pipx uninstall paket_adi${NC}"
         echo -e "  ${GREEN}•${NC} Tüm paketleri güncelle: ${GREEN}pipx upgrade-all${NC}"
+        track_success "Pipx" "$version"
     else
         echo -e "${RED}[HATA]${NC} Pipx kurulumu başarısız!"
         echo -e "${YELLOW}[BİLGİ]${NC} Manuel kurulum için: sudo apt install pipx"
+        track_failure "Pipx" "Kurulum başarısız"
         return 1
     fi
 }
@@ -191,6 +217,15 @@ install_uv() {
     echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
     echo -e "${YELLOW}[BİLGİ]${NC} UV (Ultra-fast Python package installer) kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+
+    # Check if already installed
+    if command -v uv &> /dev/null; then
+        local version
+        version=$(uv --version 2>/dev/null || echo "unknown")
+        echo -e "${CYAN}[!]${NC} UV zaten kurulu: $version"
+        track_skip "UV" "Zaten kurulu ($version)"
+        return 0
+    fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} UV kuruluyor..."
     curl -LsSf "$UV_INSTALL_URL" | sh
@@ -212,13 +247,17 @@ install_uv() {
     source "$HOME/.cargo/env" 2>/dev/null || true
 
     if command -v uv &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} UV kurulumu tamamlandı: $(uv --version)"
+        local version
+        version=$(uv --version 2>/dev/null || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} UV kurulumu tamamlandı: $version"
         echo -e "\n${CYAN}[BİLGİ]${NC} UV Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Paket kurma: ${GREEN}uv pip install paket_adi${NC}"
         echo -e "  ${GREEN}•${NC} Sanal ortam oluşturma: ${GREEN}uv venv${NC}"
         echo -e "  ${GREEN}•${NC} Python kurma: ${GREEN}uv python install 3.12${NC}"
+        track_success "UV" "$version"
     else
         echo -e "${RED}[HATA]${NC} UV kurulumu başarısız!"
+        track_failure "UV" "Kurulum başarısız"
         return 1
     fi
 }
