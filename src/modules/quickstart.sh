@@ -190,6 +190,9 @@ execute_installation_plan() {
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
+    # Reset tracking for fresh start
+    reset_tracking
+
     # Run pre-flight checks first
     if ! run_preflight_checks; then
         echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
@@ -202,12 +205,41 @@ execute_installation_plan() {
     configure_git
 
     # Install Python + modern CLI tools first (base for all presets)
-    install_python
-    install_pip
-    install_pipx
-    install_uv
-    install_modern_cli_tools
-    setup_custom_shell
+    if install_python; then
+        track_success "Python" "$(python3 --version 2>/dev/null | awk '{print $2}')"
+    else
+        track_failure "Python"
+    fi
+
+    if install_pip; then
+        track_success "pip"
+    else
+        track_failure "pip"
+    fi
+
+    if install_pipx; then
+        track_success "pipx"
+    else
+        track_failure "pipx"
+    fi
+
+    if install_uv; then
+        track_success "UV"
+    else
+        track_failure "UV"
+    fi
+
+    if install_modern_cli_tools; then
+        track_success "Modern CLI Tools" "(bat, eza, starship, etc.)"
+    else
+        track_failure "Modern CLI Tools"
+    fi
+
+    if setup_custom_shell; then
+        track_success "Shell Configuration" "(62 aliases)"
+    else
+        track_failure "Shell Configuration"
+    fi
 
     # Install tools
     for tool in "${tools[@]}"; do
@@ -216,39 +248,67 @@ execute_installation_plan() {
                 # Already installed above
                 ;;
             "nvm")
-                install_nvm
+                if install_nvm; then
+                    track_success "NVM"
+                else
+                    track_failure "NVM"
+                fi
                 ;;
             "node")
                 # Already installed with nvm
                 ;;
             "bun")
-                install_bun
+                if install_bun; then
+                    track_success "Bun.js"
+                else
+                    track_failure "Bun.js"
+                fi
                 ;;
             "php")
                 # Quick Start: Install PHP 8.3 (stable) automatically without menu
                 echo -e "${YELLOW}[QUICK START]${NC} PHP 8.3 otomatik kuruluyor..."
-                if ! install_php_version "8.3"; then
-                    echo -e "${RED}[✗]${NC} PHP 8.3 kurulumu başarısız!"
-                    return 1
+                if install_php_version "8.3"; then
+                    track_success "PHP 8.3"
+                else
+                    track_failure "PHP 8.3"
                 fi
                 ;;
             "composer")
-                install_composer
+                if install_composer; then
+                    track_success "Composer"
+                else
+                    track_failure "Composer"
+                fi
                 ;;
             "go")
-                install_go
+                if install_go; then
+                    track_success "Go"
+                else
+                    track_failure "Go"
+                fi
                 ;;
             "ai_cli")
                 # Quick Start: Install essential AI CLI tools automatically
                 echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
-                if ! install_claude_code || ! install_github_cli; then
-                    echo -e "${YELLOW}[!]${NC} Bazı AI CLI araçları kurulamadı"
+                if install_claude_code; then
+                    track_success "Claude Code CLI"
+                else
+                    track_failure "Claude Code CLI"
+                fi
+                if install_github_cli; then
+                    track_success "GitHub CLI"
+                else
+                    track_failure "GitHub CLI"
                 fi
                 ;;
             "ai_frameworks")
                 # Quick Start: Install SuperClaude framework automatically
                 echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
-                install_superclaude
+                if install_superclaude; then
+                    track_success "SuperClaude Framework"
+                else
+                    track_failure "SuperClaude Framework"
+                fi
                 ;;
             "git_config")
                 # Already configured
@@ -261,11 +321,15 @@ execute_installation_plan() {
     echo -e "${GREEN}║                  ✅ KURULUM TAMAMLANDI!                      ║${NC}"
     echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
+
+    # Show installation summary
+    show_installation_summary
+
     echo -e "${YELLOW}🎉 Tebrikler! Geliştirme ortamınız hazır!${NC}"
     echo ""
     echo -e "${CYAN}💡 Sonraki adımlar:${NC}"
     echo -e "  1. ${GREEN}source ~/.bashrc${NC} (ya da terminali yeniden başlat)"
-    echo -e "  2. ${GREEN}Python --version${NC} ile test edin"
+    echo -e "  2. ${GREEN}python --version${NC} ile test edin"
     echo -e "  3. ${GREEN}node --version${NC} ile test edin"
     echo -e "  4. 🚀 Kodlamaya başlayın!"
     echo ""

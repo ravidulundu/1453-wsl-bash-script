@@ -34,6 +34,9 @@ source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=lib/package-manager.sh
 source "${SCRIPT_DIR}/lib/package-manager.sh"
 
+# shellcheck source=lib/installation-tracker.sh
+source "${SCRIPT_DIR}/lib/installation-tracker.sh"
+
 # Phase 4: Load feature modules
 # shellcheck source=modules/python.sh
 source "${SCRIPT_DIR}/modules/python.sh"

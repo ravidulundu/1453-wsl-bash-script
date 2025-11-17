@@ -9,6 +9,12 @@ install_python() {
     echo -e "${YELLOW}[BİLGİ]${NC} Python kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Ensure package manager is detected
+    if [ -z "$INSTALL_CMD" ]; then
+        echo -e "${YELLOW}[!]${NC} Paket yöneticisi tespit ediliyor..."
+        detect_package_manager
+    fi
+
     if command -v python3 &> /dev/null; then
         echo -e "${GREEN}[BAŞARILI]${NC} Python zaten kurulu: $(python3 --version)"
 
@@ -17,22 +23,23 @@ install_python() {
             echo -e "${GREEN}[✓]${NC} pip modülü mevcut"
         else
             echo -e "${YELLOW}[!]${NC} pip modülü eksik, python3-pip kuruluyor..."
-            local cmd_array
-            IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-            "${cmd_array[@]}" python3-pip python3-venv
+
+            # Use install_package_with_retry for safer installation
+            if ! install_package_with_retry "python3-pip python3-venv"; then
+                echo -e "${RED}[✗]${NC} python3-pip kurulumu başarısız!"
+                echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y python3-pip python3-venv"
+            fi
         fi
         return 0
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Python3, pip ve venv kuruluyor..."
-    # Safe execution without eval (prevents command injection)
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
 
-    if ! "${cmd_array[@]}" python3 python3-pip python3-venv; then
-        echo -e "${RED}[✗]${NC} Paket kurulumu başarısız, tekrar deneniyor..."
-        sleep 2
-        "${cmd_array[@]}" python3 python3-pip python3-venv
+    # Use install_package_with_retry instead of direct command
+    if ! install_package_with_retry "python3 python3-pip python3-venv"; then
+        echo -e "${RED}[✗]${NC} Python kurulumu başarısız!"
+        echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y python3 python3-pip python3-venv"
+        return 1
     fi
 
     if command -v python3 &> /dev/null; then
