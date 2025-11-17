@@ -205,23 +205,33 @@ install_go() {
 
     # Check if already installed
     if is_go_installed; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Go zaten kurulu: $(go version)"
+        local version
+        version=$(go version 2>/dev/null | awk '{print $3}' || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Go zaten kurulu: $version"
+        track_skip "Go" "Zaten kurulu ($version)"
         return 0
     fi
 
     # Try package manager first (faster), fallback to official binary
     echo -e "${YELLOW}[BİLGİ]${NC} Önce paket yöneticisi ile kurulum deneniyor..."
-    
+
     if install_go_package; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Go paket yöneticisi ile başarıyla kuruldu!"
+        local version
+        version=$(go version 2>/dev/null | awk '{print $3}' || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Go paket yöneticisi ile başarıyla kuruldu: $version"
+        track_success "Go" "$version (paket yöneticisi)"
         return 0
     else
         echo -e "${YELLOW}[UYARI]${NC} Paket yöneticisi kurulumu başarısız, resmi binary deneniyor..."
         if install_go_official; then
-            echo -e "${GREEN}[BAŞARILI]${NC} Go resmi binary ile başarıyla kuruldu!"
+            local version
+            version=$(go version 2>/dev/null | awk '{print $3}' || echo "unknown")
+            echo -e "${GREEN}[BAŞARILI]${NC} Go resmi binary ile başarıyla kuruldu: $version"
+            track_success "Go" "$version (resmi binary)"
             return 0
         else
             echo -e "${RED}[HATA]${NC} Go kurulumu başarısız!"
+            track_failure "Go" "Hem paket yöneticisi hem resmi binary başarısız"
             return 1
         fi
     fi

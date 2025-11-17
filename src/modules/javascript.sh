@@ -9,6 +9,31 @@ install_nvm() {
     echo -e "${YELLOW}[BİLGİ]${NC} NVM kurulumu başlatılıyor..."
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
+    # Check if NVM is already installed
+    export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+    if [ -s "$NVM_DIR/nvm.sh" ]; then
+        \. "$NVM_DIR/nvm.sh"
+        local nvm_version
+        nvm_version=$(nvm --version 2>/dev/null || echo "unknown")
+
+        # Check if Node is also installed
+        if command -v node &> /dev/null; then
+            local node_version
+            node_version=$(node -v 2>/dev/null || echo "unknown")
+            echo -e "${CYAN}[!]${NC} NVM zaten kurulu: v$nvm_version"
+            echo -e "${CYAN}[!]${NC} Node.js: $node_version"
+            track_skip "NVM + Node.js" "Zaten kurulu (NVM: v$nvm_version, Node: $node_version)"
+        else
+            echo -e "${CYAN}[!]${NC} NVM kurulu (v$nvm_version) ama Node.js yok, LTS kuruluyor..."
+            nvm install --lts
+            nvm use --lts
+            local node_version
+            node_version=$(node -v 2>/dev/null || echo "unknown")
+            track_success "NVM + Node.js" "NVM mevcut, Node.js eklendi ($node_version)"
+        fi
+        return 0
+    fi
+
     # Download and install NVM (using centralized version from config/tool-versions.sh)
     echo -e "${YELLOW}[BİLGİ]${NC} NVM ${NVM_VERSION} indiriliyor..."
     curl -o- "$NVM_INSTALL_URL" | bash
@@ -33,11 +58,27 @@ install_nvm() {
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     echo -e "${YELLOW}[BİLGİ]${NC} Node.js LTS sürümü kuruluyor..."
-    nvm install --lts
-    nvm use --lts
-
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Node.js sürümü: $(node -v)"
-    echo -e "${GREEN}[BAŞARILI]${NC} NPM sürümü: $(npm -v)"
+    if nvm install --lts && nvm use --lts; then
+        if command -v node &> /dev/null; then
+            local node_version npm_version nvm_version
+            node_version=$(node -v 2>/dev/null || echo "unknown")
+            npm_version=$(npm -v 2>/dev/null || echo "unknown")
+            nvm_version=$(nvm --version 2>/dev/null || echo "unknown")
+            echo -e "\n${GREEN}[BAŞARILI]${NC} NVM kurulumu tamamlandı!"
+            echo -e "${GREEN}[BAŞARILI]${NC} NVM sürümü: v$nvm_version"
+            echo -e "${GREEN}[BAŞARILI]${NC} Node.js sürümü: $node_version"
+            echo -e "${GREEN}[BAŞARILI]${NC} NPM sürümü: $npm_version"
+            track_success "NVM + Node.js" "NVM: v$nvm_version, Node: $node_version"
+        else
+            echo -e "${RED}[HATA]${NC} NVM kuruldu ama Node.js bulunamadı!"
+            track_failure "NVM + Node.js" "Node.js kurulumu başarısız"
+            return 1
+        fi
+    else
+        echo -e "${RED}[HATA]${NC} NVM veya Node.js kurulumu başarısız!"
+        track_failure "NVM + Node.js" "Kurulum başarısız"
+        return 1
+    fi
 }
 
 # Install Bun.js
@@ -48,7 +89,10 @@ install_bun() {
 
     # Check if already installed
     if command -v bun &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Bun.js zaten kurulu: $(bun --version)"
+        local version
+        version=$(bun --version 2>/dev/null || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Bun.js zaten kurulu: $version"
+        track_skip "Bun.js" "Zaten kurulu ($version)"
         return 0
     fi
 
@@ -95,14 +139,18 @@ install_bun() {
     reload_shell_configs
 
     if command -v bun &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Bun.js kurulumu tamamlandı: $(bun --version)"
+        local version
+        version=$(bun --version 2>/dev/null || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Bun.js kurulumu tamamlandı: $version"
         echo -e "\n${CYAN}[BİLGİ]${NC} Bun.js Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Proje başlatma: ${GREEN}bun init${NC}"
         echo -e "  ${GREEN}•${NC} Paket kurma: ${GREEN}bun add paket_adi${NC}"
         echo -e "  ${GREEN}•${NC} Script çalıştırma: ${GREEN}bun run start${NC}"
         echo -e "  ${GREEN}•${NC} Güncelleme: ${GREEN}bun upgrade${NC}"
+        track_success "Bun.js" "$version"
     else
         echo -e "${RED}[HATA]${NC} Bun.js kurulumu başarısız!"
+        track_failure "Bun.js" "Kurulum başarısız"
         return 1
     fi
 }

@@ -217,15 +217,15 @@ fi
 # FZF configuration
 if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
     source /usr/share/doc/fzf/examples/key-bindings.bash
-    if [ -f /usr/share/doc/fzf/examples/completion.bash ]; then
-        source /usr/share/doc/fzf/examples/completion.bash
-    fi
+fi
 
-    export FZF_DEFAULT_OPTS='
-      --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
-      --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
-      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
-      --border=rounded --height=80% --layout=reverse'
+if [ -f /usr/share/doc/fzf/examples/completion.bash ]; then
+    source /usr/share/doc/fzf/examples/completion.bash
+fi
+
+# FZF default options (modern theme)
+if command -v fzf &> /dev/null; then
+    export FZF_DEFAULT_OPTS='--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 --border=rounded --height=80% --layout=reverse'
 fi
 
 # Add ~/.local/bin to PATH

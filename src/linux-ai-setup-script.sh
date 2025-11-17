@@ -92,6 +92,37 @@ if [ -e /dev/tty ]; then
     exec 0</dev/tty
 fi
 
-# Phase 6: Display banner and run main program
+# Phase 6: Sudo authentication and keep-alive
+# Request sudo password once at the start
+echo -e "${YELLOW}[BİLGİ]${NC} Script bazı işlemler için sudo yetkisi gerektirir."
+echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
+
+if sudo -v; then
+    echo -e "${GREEN}[✓]${NC} Sudo yetkisi alındı"
+
+    # Keep-alive: update sudo timestamp in background every 60 seconds
+    # This prevents repeated password prompts during long installations
+    (
+        while true; do
+            sleep 60
+            sudo -v
+        done
+    ) &
+    SUDO_KEEPALIVE_PID=$!
+
+    # Cleanup function to kill background process on exit
+    cleanup_sudo() {
+        if [ -n "$SUDO_KEEPALIVE_PID" ]; then
+            kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
+        fi
+    }
+    trap cleanup_sudo EXIT
+else
+    echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
+fi
+
+echo ""
+
+# Phase 7: Display banner and run main program
 show_banner
 main "$@"

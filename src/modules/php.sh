@@ -58,12 +58,16 @@ install_composer() {
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if command -v composer &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} Composer zaten kurulu: $(composer --version)"
+        local version
+        version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Composer zaten kurulu: $version"
+        track_skip "Composer" "Zaten kurulu ($version)"
         return 0
     fi
 
     if ! command -v php &> /dev/null; then
         echo -e "${RED}[HATA]${NC} Composer kurulumu için PHP gereklidir. Lütfen önce PHP kurun."
+        track_failure "Composer" "PHP gereksinimi karşılanamadı"
         return 1
     fi
 
@@ -109,14 +113,23 @@ install_composer() {
     fi
 
     rm -rf "$temp_dir"
-    echo -e "${GREEN}[BAŞARILI]${NC} Composer kurulumu tamamlandı: $(composer --version)"
-    echo -e "\n${CYAN}[BİLGİ]${NC} Composer Kullanım İpuçları:"
-    echo -e "  ${GREEN}•${NC} Proje bağımlılıklarını kurma: ${GREEN}composer install${NC}"
-    echo -e "  ${GREEN}•${NC} Paket ekleme: ${GREEN}composer require paket/adi${NC}"
-    echo -e "  ${GREEN}•${NC} Laravel kurulumu: ${GREEN}composer global require laravel/installer${NC}"
-    echo -e "  ${GREEN}•${NC} Paketleri güncelleme: ${GREEN}composer update${NC}"
 
-    return 0
+    if command -v composer &> /dev/null; then
+        local version
+        version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Composer kurulumu tamamlandı: $version"
+        echo -e "\n${CYAN}[BİLGİ]${NC} Composer Kullanım İpuçları:"
+        echo -e "  ${GREEN}•${NC} Proje bağımlılıklarını kurma: ${GREEN}composer install${NC}"
+        echo -e "  ${GREEN}•${NC} Paket ekleme: ${GREEN}composer require paket/adi${NC}"
+        echo -e "  ${GREEN}•${NC} Laravel kurulumu: ${GREEN}composer global require laravel/installer${NC}"
+        echo -e "  ${GREEN}•${NC} Paketleri güncelleme: ${GREEN}composer update${NC}"
+        track_success "Composer" "$version"
+        return 0
+    else
+        echo -e "${RED}[HATA]${NC} Composer kurulumu başarısız!"
+        track_failure "Composer" "Kurulum başarısız"
+        return 1
+    fi
 }
 
 # Install a specific PHP version with extensions
