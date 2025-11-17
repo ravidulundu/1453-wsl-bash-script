@@ -90,6 +90,8 @@ main() {
         "src/lib/common.sh:Ortak araçlar"
         "src/lib/package-manager.sh:Paket yöneticisi tespiti"
         "src/config/colors.sh:Renk tanımlamaları"
+        "src/config/constants.sh:Global sabitler (CRITICAL)"
+        "src/config/tool-versions.sh:Araç versiyonları"
         "src/config/php-versions.sh:PHP yapılandırması"
         "src/config/banner.sh:Banner gösterimi"
         "src/modules/python.sh:Python ekosistemi"
