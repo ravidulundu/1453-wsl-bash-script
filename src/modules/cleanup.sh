@@ -424,7 +424,12 @@ cleanup_shell_configs() {
         echo -e "${GREEN}[BAŞARILI]${NC} .bashrc yedeklendi"
     fi
 
-    # Remove .bash_aliases completely
+    if [ -f ~/.bash_aliases ]; then
+        cp ~/.bash_aliases ~/.bash_aliases.backup.$(date +%Y%m%d_%H%M%S)
+        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases yedeklendi"
+    fi
+
+    # Remove .bash_aliases completely (script creates this entire file)
     if [ -f ~/.bash_aliases ]; then
         rm -f ~/.bash_aliases
         echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi"

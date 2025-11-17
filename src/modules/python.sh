@@ -11,17 +11,39 @@ install_python() {
 
     if command -v python3 &> /dev/null; then
         echo -e "${GREEN}[BAŞARILI]${NC} Python zaten kurulu: $(python3 --version)"
+
+        # Check if pip module is available
+        if python3 -m pip --version &>/dev/null; then
+            echo -e "${GREEN}[✓]${NC} pip modülü mevcut"
+        else
+            echo -e "${YELLOW}[!]${NC} pip modülü eksik, python3-pip kuruluyor..."
+            local cmd_array
+            IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
+            "${cmd_array[@]}" python3-pip python3-venv
+        fi
         return 0
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Python3 kuruluyor..."
+    echo -e "${YELLOW}[BİLGİ]${NC} Python3, pip ve venv kuruluyor..."
     # Safe execution without eval (prevents command injection)
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-    "${cmd_array[@]}" python3 python3-pip python3-venv
+
+    if ! "${cmd_array[@]}" python3 python3-pip python3-venv; then
+        echo -e "${RED}[✗]${NC} Paket kurulumu başarısız, tekrar deneniyor..."
+        sleep 2
+        "${cmd_array[@]}" python3 python3-pip python3-venv
+    fi
 
     if command -v python3 &> /dev/null; then
         echo -e "${GREEN}[BAŞARILI]${NC} Python kurulumu tamamlandı: $(python3 --version)"
+
+        # Verify pip module
+        if python3 -m pip --version &>/dev/null; then
+            echo -e "${GREEN}[✓]${NC} pip modülü başarıyla kuruldu"
+        else
+            echo -e "${YELLOW}[!]${NC} pip modülü kontrol edilemiyor, devam ediliyor..."
+        fi
     else
         echo -e "${RED}[HATA]${NC} Python kurulumu başarısız!"
         return 1
