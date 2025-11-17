@@ -52,6 +52,23 @@ install_bun() {
         return 0
     fi
 
+    # Ensure package manager is detected
+    if [ -z "$INSTALL_CMD" ]; then
+        echo -e "${YELLOW}[!]${NC} Paket yöneticisi tespit ediliyor..."
+        detect_package_manager
+    fi
+
+    # Check if unzip is installed (required by Bun installer)
+    if ! command -v unzip &>/dev/null; then
+        echo -e "${YELLOW}[!]${NC} unzip gerekli, kuruluyor..."
+        if ! install_package_with_retry "unzip"; then
+            echo -e "${RED}[✗]${NC} unzip kurulumu başarısız!"
+            echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y unzip"
+            return 1
+        fi
+        echo -e "${GREEN}[✓]${NC} unzip kuruldu"
+    fi
+
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js (curl) ile kuruluyor..."
     if ! curl -fsSL https://bun.sh/install | bash; then
         echo -e "${RED}[HATA]${NC} Bun.js indirme/kurulum başarısız!"
