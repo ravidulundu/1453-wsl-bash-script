@@ -697,7 +697,7 @@ format = "[$symbol($version )]($style)"
 EOF
 
     # Inject Nerd Font icons for JetBrainsMono Nerd Font Mono
-    # FIX BUG-031: Copilot AI found critical issues:
+    # FIX: Copilot AI found critical issues:
     # 1. sed syntax: 0,/pattern/,/end/ is MALFORMED → use /start/,/end/{s//./}
     # 2. No error handling → add if/else with rollback
     # 3. Not idempotent → sed only replaces " " (safe to re-run)
@@ -708,7 +708,10 @@ EOF
     local temp_config="${STARSHIP_CONFIG}.tmp"
 
     # Backup original config for rollback
-    cp "$STARSHIP_CONFIG" "$backup_config"
+    if ! cp "$STARSHIP_CONFIG" "$backup_config"; then
+        echo -e "${RED}[HATA]${NC} Yedekleme başarısız! Disk alanı, izin veya dosya eksikliği olabilir."
+        return 1
+    fi
 
     # Apply all 7 icon injections in SINGLE atomic operation
     # Pattern: /\[section\]/,/^$/{s/old/new/} = range substitution
