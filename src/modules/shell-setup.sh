@@ -220,6 +220,10 @@ PROMPT_COMMAND="history -a; history -c; history -r; ${PROMPT_COMMAND}"
 export TERM=xterm-256color
 
 # Modern tool configurations
+# NOTE: eval usage here is SAFE (official pattern from tool documentation)
+# - starship/zoxide init: trusted binary, hardcoded command, no user input
+# - Different from package installation eval (which had command injection risk)
+# - Official recommended method: https://starship.rs/guide/
 if command -v starship &>/dev/null; then
     eval "$(starship init bash)"
 fi
@@ -692,7 +696,35 @@ format = "[$symbol($version )]($style)"
 
 EOF
 
+    # Inject Nerd Font icons for JetBrainsMono Nerd Font Mono
+    # Replace empty icon placeholders with actual Nerd Font characters
+    echo -e "${YELLOW}[BİLGİ]${NC} Nerd Font ikonları enjekte ediliyor..."
+
+    local temp_config="${STARSHIP_CONFIG}.tmp"
+
+    # Git Branch icon (U+E0A0 = )
+    sed '0,/\[git_branch\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x82\xa0')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # Node.js icon (U+E718 = )
+    sed '0,/\[nodejs\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\x98')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # Python icon (U+E73C = )
+    sed '0,/\[python\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbc')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # Golang icon (U+E626 = )
+    sed '0,/\[golang\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x98\xa6')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # PHP icon (U+E73D = )
+    sed '0,/\[php\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbd')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # Ruby icon (U+E791 = )
+    sed '0,/\[ruby\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9e\x91')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
+    # Docker icon (U+F308 = )
+    sed '0,/\[docker_context\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xef\x8c\x88')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+
     echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
+    echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"
     return 0
 }
 
