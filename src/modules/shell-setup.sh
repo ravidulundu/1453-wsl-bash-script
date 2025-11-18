@@ -347,7 +347,7 @@ disabled = false
 # Shell Level
 [shlvl]
 disabled = false
-symbol = "↕️ "
+symbol = "↕ "
 style = "bold yellow"
 threshold = 2
 format = "[$symbol$shlvl]($style) "
@@ -378,13 +378,13 @@ format = "[$symbol$branch]($style) "
 [git_status]
 style = "bold red"
 format = "([$all_status$ahead_behind]($style) )"
-conflicted = "🏳"
+conflicted = "✖"
 ahead = "⇡${count}"
 behind = "⇣${count}"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"
 up_to_date = "✓"
 untracked = "?${count}"
-stashed = "📦"
+stashed = "$"
 modified = "!${count}"
 staged = "[++${count}](green)"
 renamed = "»${count}"
@@ -393,7 +393,7 @@ deleted = "✘${count}"
 # Git Commit
 [git_commit]
 commit_hash_length = 7
-tag_symbol = " 🏷️ "
+tag_symbol = "  "
 style = "bold green"
 format = '[\($hash$tag\)]($style) '
 
@@ -429,7 +429,7 @@ style = "bold green"
 format = "[$symbol($version )]($style)"
 
 [bun]
-symbol = "🍞 "
+symbol = "󰛢 "
 style = "bold peach"
 format = "[$symbol($version )]($style)"
 
@@ -479,7 +479,7 @@ style = "bold mauve"
 format = "[$symbol($version )]($style)"
 
 [rlang]
-symbol = "📐 "
+symbol = "R "
 style = "bold blue"
 format = "[$symbol($version )]($style)"
 
@@ -536,7 +536,7 @@ style = "bold yellow"
 format = '[$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
 
 [gcloud]
-symbol = "☁️ "
+symbol = "󱇶 "
 style = "bold blue"
 format = '[$symbol$account(@$domain)(\($region\))]($style) '
 
@@ -670,7 +670,7 @@ format = '[$symbol($version )(\($switch_indicator$switch_name\) )]($style)'
 
 [purescript]
 symbol = " "
-style = "bold white"
+style = "bold text"
 format = "[$symbol($version )]($style)"
 
 [raku]
