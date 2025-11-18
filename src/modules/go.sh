@@ -58,12 +58,21 @@ install_go_official() {
         return 0
     fi
 
-    # Detect architecture
+    # FIX BUG-015: Expand architecture support
+    # Detect architecture (Go supports: amd64, arm64, armv6l, 386, ppc64le, s390x)
     local arch="amd64"
     case $(uname -m) in
         "x86_64") arch="amd64" ;;
-        "aarch64") arch="arm64" ;;
-        *) echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"; return 1 ;;
+        "aarch64" | "arm64") arch="arm64" ;;
+        "armv7l" | "armv6l") arch="armv6l" ;;
+        "i686" | "i386") arch="386" ;;
+        "ppc64le") arch="ppc64le" ;;
+        "s390x") arch="s390x" ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"
+            echo -e "${YELLOW}[BİLGİ]${NC} Desteklenen mimariler: x86_64, aarch64, armv7l, i686, ppc64le, s390x"
+            return 1
+            ;;
     esac
 
     # Get latest version with retry and fallback

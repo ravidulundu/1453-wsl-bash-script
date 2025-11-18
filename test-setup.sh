@@ -17,6 +17,13 @@
 # Note: -e not used because tests should continue even if checks fail
 set -o pipefail
 
+# FIX BUG-013: Ensure running with bash, not sh
+if [ -z "${BASH_VERSION:-}" ]; then
+    echo "Error: This script must be run with bash, not sh"
+    echo "Usage: bash test-setup.sh"
+    exit 1
+fi
+
 # ===================================================================================================
 # Renkler ve Global Değişkenler
 # ===================================================================================================

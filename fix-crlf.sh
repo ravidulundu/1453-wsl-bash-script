@@ -3,6 +3,12 @@
 # FIX BUG-002: Add safety flags for robust error handling
 set -eo pipefail
 
+# FIX BUG-013: Ensure running with bash, not sh
+if [ -z "${BASH_VERSION:-}" ]; then
+    echo "Error: This script must be run with bash, not sh"
+    exit 1
+fi
+
 # CRLF to LF converter for the linux-ai-setup-script.sh
 # This helper script fixes Windows line endings before running bash -n
 

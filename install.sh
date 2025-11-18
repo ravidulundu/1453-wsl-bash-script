@@ -6,6 +6,13 @@
 # FIX BUG-002: Add safety flags for robust error handling
 set -euo pipefail
 
+# FIX BUG-013: Ensure running with bash, not sh
+if [ -z "${BASH_VERSION:-}" ]; then
+    echo "Error: This script must be run with bash, not sh"
+    echo "Usage: bash install.sh"
+    exit 1
+fi
+
 # CRITICAL: Redirect stdin to /dev/tty at the very beginning
 if [ -e /dev/tty ]; then
     exec 0</dev/tty
