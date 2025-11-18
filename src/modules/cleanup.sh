@@ -327,11 +327,15 @@ cleanup_php() {
     # Remove PHP packages installed via APT
     if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
+        # FIX BUG-005: Properly quote package list to prevent word splitting issues
         # Get list of installed PHP packages safely using dpkg
         local php_packages
         php_packages=$(dpkg -l | grep '^ii' | grep -E 'php[0-9]' | awk '{print $2}')
         if [ -n "$php_packages" ]; then
-            sudo apt remove -y $php_packages 2>/dev/null
+            # Use array for safe package handling
+            local -a pkg_array
+            mapfile -t pkg_array <<< "$php_packages"
+            sudo apt remove -y "${pkg_array[@]}" 2>/dev/null
             sudo apt autoremove -y 2>/dev/null
         fi
 

@@ -126,6 +126,8 @@ install_pipx() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} Sistem paket yöneticisi ile pipx kuruluyor..."
 
+    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+    # WARNING: This won't handle INSTALL_CMD with quoted arguments
     # Try installing pipx using the system package manager (safe execution)
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"

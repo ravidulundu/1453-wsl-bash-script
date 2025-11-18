@@ -82,12 +82,15 @@ check_internet_connection() {
 
 # Start sudo keepalive in background
 # Keeps sudo cache fresh throughout script execution
+# FIX BUG-003: Pass parent_pid via environment variable to subshell for proper scoping
 start_sudo_keepalive() {
     # Store parent PID before launching subshell
     local parent_pid=$$
 
     # Background process that refreshes sudo cache every 60 seconds
+    # Use environment variable to pass parent_pid to subshell
     (
+        PARENT_PROCESS_PID="$parent_pid"
         while true; do
             # Refresh sudo timestamp (non-interactive)
             sudo -n true 2>/dev/null
@@ -95,7 +98,7 @@ start_sudo_keepalive() {
 
             # Check if parent process still exists
             # If parent died, exit gracefully
-            kill -0 $parent_pid 2>/dev/null || exit 0
+            kill -0 "$PARENT_PROCESS_PID" 2>/dev/null || exit 0
         done
     ) &
 

@@ -37,6 +37,7 @@ detect_package_manager() {
 
 # Install package with retry mechanism
 # Usage: install_package_with_retry "package_name" [max_retries]
+# FIX BUG-002: Safely handle package names with proper quoting to prevent command injection
 install_package_with_retry() {
     local packages="$1"
     local max_retries="${2:-$MAX_PACKAGE_RETRIES}"
@@ -49,9 +50,13 @@ install_package_with_retry() {
         fi
 
         # Use array to safely execute INSTALL_CMD without eval
-        local cmd_array
+        local -a cmd_array
+        local -a pkg_array
         IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-        if "${cmd_array[@]}" $packages; then
+        IFS=' ' read -ra pkg_array <<< "$packages"
+
+        # SAFE: Both command and packages are properly expanded as arrays
+        if "${cmd_array[@]}" "${pkg_array[@]}"; then
             return 0
         fi
 

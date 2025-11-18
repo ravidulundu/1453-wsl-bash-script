@@ -132,7 +132,9 @@ install_go_package() {
         return 0
     fi
 
-    # Safe execution without eval (prevents command injection)
+    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+    # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
+    # INSTALL_CMD must not contain shell quoting - use arrays instead
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
 
