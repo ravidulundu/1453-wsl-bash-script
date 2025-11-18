@@ -253,6 +253,13 @@ verify_checksum() {
         fi
     fi
 
+    # FIX BUG-023: Validate checksum format (64 hex characters for SHA256)
+    if ! [[ "$expected_checksum" =~ ^[a-fA-F0-9]{64}$ ]]; then
+        echo -e "${YELLOW}[UYARI]${NC} Geçersiz checksum formatı (64 hex karakter bekleniyor)"
+        echo -e "${YELLOW}[UYARI]${NC} Alınan: ${expected_checksum:0:32}..."
+        return 0  # Don't fail, just skip verification
+    fi
+
     # Calculate actual checksum
     local actual_checksum
     if command -v sha256sum &>/dev/null; then

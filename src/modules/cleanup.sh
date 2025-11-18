@@ -332,11 +332,11 @@ cleanup_php() {
         # FIX BUG-005: Properly quote package list to prevent word splitting issues
         # Get list of installed PHP packages safely using dpkg
         local php_packages
-        php_packages=$(dpkg -l | grep '^ii' | grep -E 'php[0-9]' | awk '{print $2}')
-        if [ -n "$php_packages" ]; then
-            # Use array for safe package handling
-            local -a pkg_array
-            mapfile -t pkg_array <<< "$php_packages"
+        # FIX BUG-021: Use mapfile directly from command substitution (more efficient)
+        # FIX BUG-022: Improve regex to match PHP packages with multiple digits (php8, php10, php8.3)
+        local -a pkg_array
+        mapfile -t pkg_array < <(dpkg -l | grep '^ii' | grep -E 'php[0-9]+(\.[0-9]+)?' | awk '{print $2}')
+        if [ "${#pkg_array[@]}" -gt 0 ]; then
             sudo apt remove -y "${pkg_array[@]}" 2>/dev/null
             sudo apt autoremove -y 2>/dev/null
         fi

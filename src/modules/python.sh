@@ -150,33 +150,27 @@ install_pipx() {
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Sistem paketi bulunamadı, manuel kurulum yapılıyor..."
 
-        # Handle PEP 668 externally-managed-environment error
-        if python3 -m pip install --user pipx 2>&1 | grep -q "externally-managed-environment"; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, alternatif yöntem deneniyor..."
+        # FIX BUG-024: Improved PEP 668 detection - check before attempting install
+        local pep668_marker="/usr/lib/python3*/EXTERNALLY-MANAGED"
+        if compgen -G "$pep668_marker" > /dev/null 2>&1; then
+            echo -e "${YELLOW}[BİLGİ]${NC} PEP 668 detected (externally-managed environment)"
+            echo -e "${YELLOW}[BİLGİ]${NC} Using venv approach for safe installation..."
 
-            # Use temporary venv for installation
-            TEMP_VENV="/tmp/pipx_install_venv"
-            rm -rf "$TEMP_VENV"
+            # Use temporary venv for installation (preferred method)
+            local TEMP_VENV="/tmp/pipx_install_venv_$$"
             python3 -m venv "$TEMP_VENV"
-
-            "$TEMP_VENV/bin/pip" install pipx
+            "$TEMP_VENV/bin/pip" install --quiet pipx
 
             # Copy pipx to user's local bin
             mkdir -p "$HOME/.local/bin"
             cp "$TEMP_VENV/bin/pipx" "$HOME/.local/bin/"
 
-            mkdir -p "$HOME/.local/pipx"
-            cp -r "$TEMP_VENV/lib/python"*"/site-packages/pipx" "$HOME/.local/pipx/" 2>/dev/null || true
-
+            # Cleanup
             rm -rf "$TEMP_VENV"
-
-            # If still not available, try with break-system-packages
-            if ! command -v pipx &> /dev/null; then
-                echo -e "${YELLOW}[UYARI]${NC} --break-system-packages ile kurulum deneniyor..."
-                python3 -m pip install --user --break-system-packages pipx
-            fi
         else
-            python3 -m pip install --user pipx
+            # No PEP 668 restriction, safe to install directly
+            python3 -m pip install --user pipx 2>/dev/null || \
+                python3 -m pip install --user --break-system-packages pipx
         fi
 
         # Ensure pipx path
