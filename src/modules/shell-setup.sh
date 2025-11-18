@@ -170,12 +170,14 @@ setup_custom_functions() {
 
 # ===== START: Custom Functions - 1453 WSL Setup =====
 # Create directory and cd into it
+# FIX BUG-008: Use 'return' instead of 'exit' to avoid killing the shell
 mcd() {
-    mkdir -p "$1" && cd "$1" || exit
+    mkdir -p "$1" && cd "$1" || return 1
 }
 
 # Make file executable
-make() {
+# FIX BUG-007: Renamed from 'make()' to 'mkexec()' to avoid shadowing system 'make' command
+mkexec() {
     chmod +x "$1"
 }
 # ===== END: Custom Functions - 1453 WSL Setup =====

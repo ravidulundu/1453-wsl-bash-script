@@ -81,14 +81,18 @@ install_pip() {
     echo -e "${YELLOW}[BİLGİ]${NC} Pip güncelleniyor..."
 
     # Handle PEP 668 externally-managed-environment error
+    # FIX BUG-011: Capture exit code properly from pip install, not from if/else or grep
+    local pip_exit_code=0
     if python3 -m pip install --upgrade pip 2>&1 | grep -q "externally-managed-environment"; then
         echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, --break-system-packages ile deneniyor..."
         python3 -m pip install --upgrade pip --break-system-packages
+        pip_exit_code=$?
     else
         python3 -m pip install --upgrade pip
+        pip_exit_code=$?
     fi
 
-    if [ $? -eq 0 ]; then
+    if [ $pip_exit_code -eq 0 ]; then
         echo -e "${GREEN}[BAŞARILI]${NC} Pip sürümü: $(python3 -m pip --version)"
         echo -e "\n${CYAN}[BİLGİ]${NC} Pip Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Paket kurma: ${GREEN}pip install paket_adi${NC}"

@@ -66,13 +66,27 @@ install_go_official() {
         *) echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"; return 1 ;;
     esac
 
-    # Get latest version
+    # Get latest version with retry and fallback
+    # FIX BUG-009: Add retry mechanism and fallback version
     echo -e "${YELLOW}[BİLGİ]${NC} Son Go sürümü kontrol ediliyor..."
-    local go_version=$(curl -s https://go.dev/VERSION?m=text | head -n1)
-    
+    local go_version
+    local attempt=1
+    local max_attempts=3
+
+    while [ $attempt -le $max_attempts ]; do
+        go_version=$(curl -s --connect-timeout 5 https://go.dev/VERSION?m=text 2>/dev/null | head -n1)
+        [ -n "$go_version" ] && break
+        ((attempt++))
+        [ $attempt -le $max_attempts ] && sleep 2
+    done
+
     if [ -z "$go_version" ]; then
-        echo -e "${RED}[HATA]${NC} Go sürüm bilgisi alınamadı!"
-        return 1
+        echo -e "${YELLOW}[UYARI]${NC} Go sürüm bilgisi alınamadı, varsayılan sürüm kullanılıyor..."
+        # Fallback to known stable version
+        go_version="go1.21.5"
+        echo -e "${CYAN}[BİLGİ]${NC} Kullanılacak sürüm: $go_version"
+    else
+        echo -e "${GREEN}[✓]${NC} Son sürüm bulundu: $go_version"
     fi
 
     local go_tarball="go${go_version}.linux-${arch}.tar.gz"
