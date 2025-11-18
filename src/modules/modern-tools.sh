@@ -294,7 +294,10 @@ install_modern_tools_apt() {
             return 1
         fi
 
-        bash "$temp_script"
+        if ! bash "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
+            return 1
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazydocker zaten kurulu."
     fi
@@ -392,7 +395,10 @@ install_lazydocker_generic() {
             return 1
         fi
 
-        bash "$temp_script"
+        if ! bash "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
+            return 1
+        fi
     fi
 }
 

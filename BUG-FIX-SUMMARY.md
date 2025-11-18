@@ -2,7 +2,7 @@
 **Date**: 2025-11-18
 **Session**: claude/shell-bug-analysis-fixes-013BuKWP4K9qxA2EHUyYmMUj
 **Bugs Fixed**: 5 out of 20 identified
-**Files Modified**: 8
+**Files Modified**: 9
 
 ---
 
@@ -100,14 +100,15 @@ elif [ "$choice" -ge 1 ] && [ "$choice" -le "$array_length" ]; then
 ---
 
 ### ✅ BUG-001: Unverified Remote Code Execution via Curl Piping (CRITICAL)
-**Files**: 3 files, 4 instances
+**Files**: 3 files, 5 instances
 **Impact**: Man-in-the-middle attacks, no integrity verification, immediate RCE
 
 **Instances Fixed**:
 1. `src/modules/python.sh:230` - UV installer
 2. `src/modules/javascript.sh:39` - NVM installer
 3. `src/modules/javascript.sh:132` - Bun.js installer
-4. `src/modules/modern-tools.sh:286, 395` - Lazydocker installer (2 locations)
+4. `src/modules/modern-tools.sh:286` - Lazydocker installer (location 1)
+5. `src/modules/modern-tools.sh:395` - Lazydocker installer (location 2)
 
 **Fix Pattern Applied**:
 ```bash
@@ -285,7 +286,7 @@ Before deploying, test:
 ## Impact Assessment
 
 ### Security Improvements
-- ✅ **Eliminated 4 instances of unverified curl|bash** (BUG-001)
+- ✅ **Eliminated 5 instances of unverified curl|bash** (BUG-001)
 - ✅ **Eliminated ~10 instances of command injection vulnerability** (BUG-004)
 - **Risk Reduction**: HIGH → MEDIUM (major security holes patched)
 
@@ -307,8 +308,8 @@ Before deploying, test:
 Fix: Shell security and functional bugs (BUG-001, 003, 004, 007, 012)
 
 SECURITY FIXES:
-- BUG-001 (CRITICAL): Replace curl|bash with temp file approach (4 instances)
-  - Fixed: UV, NVM, Bun.js, Lazydocker installers
+- BUG-001 (CRITICAL): Replace curl|bash with temp file approach (5 instances)
+  - Fixed: UV, NVM, Bun.js, Lazydocker (2 locations) installers
   - Download to temp file → verify → execute → cleanup
   - Reduces MITM attack surface
 
@@ -330,7 +331,7 @@ FUNCTIONAL FIXES:
   - Set trap BEFORE starting background process
   - Prevents orphaned processes on unexpected exit
 
-FILES MODIFIED (8):
+FILES MODIFIED (9):
 - src/config/tool-versions.sh
 - src/linux-ai-setup-script.sh
 - src/lib/package-manager.sh

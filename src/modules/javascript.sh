@@ -48,7 +48,11 @@ install_nvm() {
         return 1
     fi
 
-    bash "$temp_script"
+    if ! bash "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} NVM kurulum başarısız!"
+        track_failure "NVM" "Kurulum başarısız"
+        return 1
+    fi
 
     # Set up NVM directory
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"

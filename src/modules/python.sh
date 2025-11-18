@@ -235,7 +235,11 @@ install_uv() {
         return 1
     fi
 
-    sh "$temp_script"
+    if ! sh "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} UV kurulum başarısız!"
+        track_failure "UV" "Kurulum başarısız"
+        return 1
+    fi
 
     # Add Cargo bin to PATH
     export PATH="$HOME/.cargo/bin:$PATH"
