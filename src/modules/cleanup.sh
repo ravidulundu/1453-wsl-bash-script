@@ -5,7 +5,12 @@
 
 # Backup configurations before cleanup
 backup_configs() {
-    local backup_dir="$HOME/.1453-backup-$(date +%Y%m%d_%H%M%S)"
+    local backup_root="$HOME/.1453-backups"
+    local backup_name="backup-$(date +%Y%m%d_%H%M%S)"
+    local backup_dir="$backup_root/$backup_name"
+
+    # Create backup root directory
+    mkdir -p "$backup_root"
     mkdir -p "$backup_dir"
 
     echo -e "${CYAN}[BİLGİ]${NC} Yedek oluşturuluyor: $backup_dir"
@@ -20,6 +25,33 @@ backup_configs() {
     [ -d ~/.1453-wsl-setup ] && cp -r ~/.1453-wsl-setup "$backup_dir/"
 
     echo -e "${GREEN}[BAŞARILI]${NC} Yedek oluşturuldu: $backup_dir"
+
+    # Cleanup old backups (keep only last 3)
+    cleanup_old_backups "$backup_root"
+}
+
+# Cleanup old backups (keep only last 3)
+cleanup_old_backups() {
+    local backup_root="$1"
+
+    # Count backups
+    local backup_count=$(find "$backup_root" -maxdepth 1 -type d -name "backup-*" 2>/dev/null | wc -l)
+
+    if [ "$backup_count" -gt 3 ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Eski yedekler temizleniyor (son 3 korunuyor)..."
+
+        # List backups sorted by date (oldest first), skip last 3, delete rest
+        find "$backup_root" -maxdepth 1 -type d -name "backup-*" -printf "%T@ %p\n" 2>/dev/null | \
+            sort -n | \
+            head -n -3 | \
+            cut -d' ' -f2- | \
+            while IFS= read -r old_backup; do
+                echo -e "${CYAN}[SİLİNİYOR]${NC} $(basename "$old_backup")"
+                rm -rf "$old_backup"
+            done
+
+        echo -e "${GREEN}[BAŞARILI]${NC} Eski yedekler temizlendi (son 3 korundu)"
+    fi
 }
 
 # Confirmation mechanism
@@ -932,6 +964,7 @@ show_cleanup_menu() {
 
 # Export functions
 export -f backup_configs
+export -f cleanup_old_backups
 export -f confirm_cleanup
 export -f show_installed_items
 export -f cleanup_system_packages
