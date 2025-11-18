@@ -138,7 +138,8 @@ main() {
 
     # Kullanışlı bir başlatıcı betiği oluştur
     echo -e "${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
-    cat > "${INSTALL_DIR}/1453-setup" << 'LAUNCHER'
+    # FIX BUG-017: Use unique heredoc delimiter to prevent conflicts
+    cat > "${INSTALL_DIR}/1453-setup" << 'END_OF_LAUNCHER_SCRIPT'
 #!/bin/bash
 # 1453.AI WSL Kurulum Başlatıcı
 
@@ -155,7 +156,7 @@ if [ ! -t 0 ] && [ -e /dev/tty ]; then
 else
     bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 fi
-LAUNCHER
+END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
     echo -e "${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
