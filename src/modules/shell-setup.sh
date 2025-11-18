@@ -141,7 +141,7 @@ setup_custom_functions() {
     local BASHRC="$HOME/.bashrc"
 
     # Check if functions already exist
-    if grep -q "# Custom Functions - 1453 WSL Setup" "$BASHRC" 2>/dev/null; then
+    if grep -q "===== START: Custom Functions - 1453 WSL Setup =====" "$BASHRC" 2>/dev/null; then
         echo -e "${CYAN}[BİLGİ]${NC} Özel fonksiyonlar zaten mevcut."
         return 0
     fi
@@ -149,10 +149,7 @@ setup_custom_functions() {
     # Add custom functions to .bashrc
     cat >> "$BASHRC" << 'EOF'
 
-# ============================================================================
-# Custom Functions - 1453 WSL Setup
-# ============================================================================
-
+# ===== START: Custom Functions - 1453 WSL Setup =====
 # Create directory and cd into it
 mcd() {
     mkdir -p "$1" && cd "$1" || exit
@@ -162,6 +159,7 @@ mcd() {
 make() {
     chmod +x "$1"
 }
+# ===== END: Custom Functions - 1453 WSL Setup =====
 
 EOF
 
@@ -175,7 +173,7 @@ setup_bashrc_enhancements() {
     local BASHRC="$HOME/.bashrc"
 
     # Check if enhancements already exist
-    if grep -q "# Enhanced Bash Config - 1453 WSL Setup" "$BASHRC" 2>/dev/null; then
+    if grep -q "===== START: Enhanced Bash Config - 1453 WSL Setup =====" "$BASHRC" 2>/dev/null; then
         echo -e "${CYAN}[BİLGİ]${NC} Bash geliştirmeleri zaten mevcut."
         return 0
     fi
@@ -183,9 +181,7 @@ setup_bashrc_enhancements() {
     # Add enhanced configuration
     cat >> "$BASHRC" << 'EOF'
 
-# ============================================================================
-# Enhanced Bash Config - 1453 WSL Setup
-# ============================================================================
+# ===== START: Enhanced Bash Config - 1453 WSL Setup =====
 
 # History settings
 export HISTCONTROL=ignoreboth:erasedups
@@ -233,6 +229,8 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # WSL specific settings
 export BROWSER=wslview
+
+# ===== END: Enhanced Bash Config - 1453 WSL Setup =====
 
 EOF
 

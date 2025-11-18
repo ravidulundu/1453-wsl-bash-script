@@ -446,20 +446,25 @@ cleanup_shell_configs() {
             ((line_num++))
             local skip_line=0
 
-            # Skip 1453 WSL Setup comment blocks
-            if [[ "$line" =~ "# Custom Functions - 1453 WSL Setup" ]] || \
-               [[ "$line" =~ "# Enhanced Bash Config - 1453 WSL Setup" ]] || \
-               [[ "$line" =~ "# 1453 WSL Setup" ]]; then
+            # Detect START of 1453 WSL Setup blocks
+            if [[ "$line" =~ "===== START: Custom Functions - 1453 WSL Setup =====" ]] || \
+               [[ "$line" =~ "===== START: Enhanced Bash Config - 1453 WSL Setup =====" ]] || \
+               [[ "$line" =~ "===== START:".*"1453 WSL Setup =====" ]]; then
                 in_1453_block=1
                 skip_line=1
             fi
 
-            # If in 1453 block, skip until empty line
+            # Detect END of 1453 WSL Setup blocks
+            if [[ "$line" =~ "===== END: Custom Functions - 1453 WSL Setup =====" ]] || \
+               [[ "$line" =~ "===== END: Enhanced Bash Config - 1453 WSL Setup =====" ]] || \
+               [[ "$line" =~ "===== END:".*"1453 WSL Setup =====" ]]; then
+                in_1453_block=0
+                skip_line=1
+            fi
+
+            # If in 1453 block, skip all lines
             if [ $in_1453_block -eq 1 ]; then
                 skip_line=1
-                if [[ -z "$line" ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
-                    in_1453_block=0
-                fi
             fi
 
             # Skip specific lines we added (exact matches only)

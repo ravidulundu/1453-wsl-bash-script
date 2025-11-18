@@ -205,35 +205,12 @@ execute_installation_plan() {
     configure_git
 
     # Install Python + modern CLI tools first (base for all presets)
-    if install_python; then
-        track_success "Python" "$(python3 --version 2>/dev/null | awk '{print $2}')"
-    else
-        track_failure "Python"
-    fi
-
-    if install_pip; then
-        track_success "pip"
-    else
-        track_failure "pip"
-    fi
-
-    if install_pipx; then
-        track_success "pipx"
-    else
-        track_failure "pipx"
-    fi
-
-    if install_uv; then
-        track_success "UV"
-    else
-        track_failure "UV"
-    fi
-
-    if install_modern_cli_tools; then
-        track_success "Modern CLI Tools" "(bat, eza, starship, etc.)"
-    else
-        track_failure "Modern CLI Tools"
-    fi
+    # Note: These functions already handle tracking internally
+    install_python
+    install_pip
+    install_pipx
+    install_uv
+    install_modern_cli_tools
 
     if setup_custom_shell; then
         track_success "Shell Configuration" "(62 aliases)"
@@ -248,21 +225,15 @@ execute_installation_plan() {
                 # Already installed above
                 ;;
             "nvm")
-                if install_nvm; then
-                    track_success "NVM"
-                else
-                    track_failure "NVM"
-                fi
+                # Note: install_nvm() already handles tracking internally
+                install_nvm
                 ;;
             "node")
                 # Already installed with nvm
                 ;;
             "bun")
-                if install_bun; then
-                    track_success "Bun.js"
-                else
-                    track_failure "Bun.js"
-                fi
+                # Note: install_bun() already handles tracking internally
+                install_bun
                 ;;
             "php")
                 # Quick Start: Install PHP 8.3 (stable) automatically without menu
@@ -274,18 +245,12 @@ execute_installation_plan() {
                 fi
                 ;;
             "composer")
-                if install_composer; then
-                    track_success "Composer"
-                else
-                    track_failure "Composer"
-                fi
+                # Note: install_composer() already handles tracking internally
+                install_composer
                 ;;
             "go")
-                if install_go; then
-                    track_success "Go"
-                else
-                    track_failure "Go"
-                fi
+                # Note: install_go() already handles tracking internally
+                install_go
                 ;;
             "ai_cli")
                 # Quick Start: Install essential AI CLI tools automatically
