@@ -186,8 +186,8 @@ setup_bashrc_enhancements() {
 
 # History settings
 export HISTCONTROL=ignoreboth:erasedups
-export HISTSIZE=$BASH_HISTSIZE
-export HISTFILESIZE=$BASH_HISTFILESIZE
+export HISTSIZE=100000
+export HISTFILESIZE=200000
 export HISTTIMEFORMAT="%F %T "
 export HISTIGNORE="ls:ll:la:pwd:exit:history:clear:cd"
 shopt -s histappend
@@ -196,7 +196,7 @@ shopt -s histappend
 PROMPT_COMMAND="history -a; history -c; history -r; ${PROMPT_COMMAND}"
 
 # Terminal settings
-export TERM=$TERM_COLOR_MODE
+export TERM=xterm-256color
 
 # Modern tool configurations
 if command -v starship &>/dev/null; then
