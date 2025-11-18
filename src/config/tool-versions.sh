@@ -45,6 +45,9 @@ CLAUDE_CODE_INSTALL_URL="https://claude.ai/install.sh"
 # Qoder CLI
 QODER_INSTALL_URL="https://qoder.com/install"
 
+# Kiro CLI
+KIRO_INSTALL_URL="https://cli.kiro.dev/install"
+
 # ==========================================
 # Python Tools
 # ==========================================
