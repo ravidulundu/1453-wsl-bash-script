@@ -147,17 +147,12 @@ install_go_package() {
         return 0
     fi
 
-    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-    # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
-    # INSTALL_CMD must not contain shell quoting - use arrays instead
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-
+    # FIX BUG-004: Use safe_install_packages() to prevent command injection
     # Detect package manager and install
     case "$PKG_MANAGER" in
         "apt")
             echo -e "${YELLOW}[BİLGİ]${NC} APT ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang-go; then
+            if safe_install_packages golang-go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go APT ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} APT ile Go kurulumu başarısız!"
@@ -166,7 +161,7 @@ install_go_package() {
             ;;
         "dnf")
             echo -e "${YELLOW}[BİLGİ]${NC} DNF ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang; then
+            if safe_install_packages golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go DNF ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} DNF ile Go kurulumu başarısız!"
@@ -175,7 +170,7 @@ install_go_package() {
             ;;
         "yum")
             echo -e "${YELLOW}[BİLGİ]${NC} YUM ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang; then
+            if safe_install_packages golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go YUM ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} YUM ile Go kurulumu başarısız!"
@@ -184,7 +179,7 @@ install_go_package() {
             ;;
         "pacman")
             echo -e "${YELLOW}[BİLGİ]${NC} Pacman ile Go kuruluyor..."
-            if "${cmd_array[@]}" go; then
+            if safe_install_packages go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go Pacman ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} Pacman ile Go kurulumu başarısız!"
