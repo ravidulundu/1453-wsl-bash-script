@@ -697,31 +697,44 @@ format = "[$symbol($version )]($style)"
 EOF
 
     # Inject Nerd Font icons for JetBrainsMono Nerd Font Mono
-    # Replace empty icon placeholders with actual Nerd Font characters
+    # FIX: Copilot AI found critical issues:
+    # 1. sed syntax: 0,/pattern/,/end/ is MALFORMED → use /start/,/end/{s//./}
+    # 2. No error handling → add if/else with rollback
+    # 3. Not idempotent → sed only replaces " " (safe to re-run)
+    # 4. Not atomic → backup + single-pass sed + rollback on failure
     echo -e "${YELLOW}[BİLGİ]${NC} Nerd Font ikonları enjekte ediliyor..."
 
+    local backup_config="${STARSHIP_CONFIG}.backup"
     local temp_config="${STARSHIP_CONFIG}.tmp"
 
-    # Git Branch icon (U+E0A0 = )
-    sed '0,/\[git_branch\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x82\xa0')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+    # Backup original config for rollback
+    if ! cp "$STARSHIP_CONFIG" "$backup_config"; then
+        echo -e "${RED}[HATA]${NC} Yedekleme başarısız! Disk alanı, izin veya dosya eksikliği olabilir."
+        return 1
+    fi
 
-    # Node.js icon (U+E718 = )
-    sed '0,/\[nodejs\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\x98')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
-
-    # Python icon (U+E73C = )
-    sed '0,/\[python\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbc')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
-
-    # Golang icon (U+E626 = )
-    sed '0,/\[golang\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x98\xa6')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
-
-    # PHP icon (U+E73D = )
-    sed '0,/\[php\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbd')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
-
-    # Ruby icon (U+E791 = )
-    sed '0,/\[ruby\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xee\x9e\x91')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
-
-    # Docker icon (U+F308 = )
-    sed '0,/\[docker_context\]/,/^$/s/symbol = " "/symbol = "'$(echo -ne '\xef\x8c\x88')' "/' "$STARSHIP_CONFIG" > "$temp_config" && mv "$temp_config" "$STARSHIP_CONFIG"
+    # Apply all 7 icon injections in SINGLE atomic operation
+    # Pattern: /\[section\]/,/^$/{s/old/new/} = range substitution
+    if sed \
+        -e '/\[git_branch\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x82\xa0')' "/}' \
+        -e '/\[nodejs\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\x98')' "/}' \
+        -e '/\[python\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbc')' "/}' \
+        -e '/\[golang\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x98\xa6')' "/}' \
+        -e '/\[php\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbd')' "/}' \
+        -e '/\[ruby\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9e\x91')' "/}' \
+        -e '/\[docker_context\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xef\x8c\x88')' "/}' \
+        "$STARSHIP_CONFIG" > "$temp_config"; then
+        # Success: replace original with injected version
+        mv "$temp_config" "$STARSHIP_CONFIG"
+        rm -f "$backup_config"
+        echo -e "${GREEN}[BAŞARILI]${NC} 7 Nerd Font ikonu enjekte edildi"
+    else
+        # Failure: rollback to backup
+        echo -e "${RED}[HATA]${NC} İkon enjektesi başarısız, config geri alınıyor..."
+        mv "$backup_config" "$STARSHIP_CONFIG"
+        rm -f "$temp_config"
+        return 1
+    fi
 
     echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
     echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"

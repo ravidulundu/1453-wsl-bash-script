@@ -312,10 +312,11 @@ install_ai_cli_tools_menu() {
     echo -e "  ${CYAN}5${NC}) GitHub Copilot CLI"
     echo -e "  ${CYAN}6${NC}) GitHub CLI"
     echo -e "  ${CYAN}7${NC}) Qoder CLI"
-    echo -e "  ${CYAN}8${NC}) Tümünü Kur"
-    echo -e "  ${CYAN}9${NC}) Ana menüye dön"
+    echo -e "  ${CYAN}8${NC}) Kiro CLI"
+    echo -e "  ${CYAN}9${NC}) Tümünü Kur"
+    echo -e "  ${CYAN}10${NC}) Ana menüye dön"
 
-    echo -ne "\n${YELLOW}Seçiminizi yapın (1-9): ${NC}"
+    echo -ne "\n${YELLOW}Seçiminizi yapın (1-10): ${NC}"
     read -r choice </dev/tty
 
     case $choice in
@@ -326,7 +327,8 @@ install_ai_cli_tools_menu() {
         5) install_copilot_cli ;;
         6) install_github_cli ;;
         7) install_qoder_cli ;;
-        8)
+        8) install_kiro_cli ;;
+        9)
             install_claude_code
             install_gemini_cli
             install_opencode_cli
@@ -334,8 +336,9 @@ install_ai_cli_tools_menu() {
             install_copilot_cli
             install_github_cli
             install_qoder_cli
+            install_kiro_cli
             ;;
-        9) return ;;
+        10) return ;;
         *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
     esac
 }
@@ -398,7 +401,68 @@ install_qoder_cli() {
         return 1
     fi
 }
+
+# Install Kiro CLI
+install_kiro_cli() {
+    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo -e "${YELLOW}[BİLGİ]${NC} Kiro CLI kurulumu başlatılıyor..."
+    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+
+    # Check if already installed
+    if command -v kiro &> /dev/null; then
+        local version
+        version=$(kiro --version 2>/dev/null | head -n1 || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Kiro CLI zaten kurulu: $version"
+        track_skip "Kiro CLI" "Zaten kurulu"
+        return 0
+    fi
+
+    echo -e "${YELLOW}[BİLGİ]${NC} Kiro CLI indiriliyor: $KIRO_INSTALL_URL"
+
+    # Download installer to temp file for better error handling
+    local temp_installer
+    temp_installer=$(mktemp)
+
+    if curl -fsSL "$KIRO_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
+        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+
+        # Run installer
+        if bash "$temp_installer"; then
+            rm -f "$temp_installer"
+            reload_shell_configs
+
+            if command -v kiro &> /dev/null; then
+                local version
+                version=$(kiro --version 2>/dev/null | head -n1 || echo "unknown")
+                echo -e "${GREEN}[BAŞARILI]${NC} Kiro CLI kurulumu tamamlandı: $version"
+                track_success "Kiro CLI" "$version"
+                return 0
+            else
+                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama kiro komutu bulunamadı!"
+                echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
+                track_failure "Kiro CLI" "Komut bulunamadı (shell reload gerekli)"
+                return 1
+            fi
+        else
+            rm -f "$temp_installer"
+            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
+            track_failure "Kiro CLI" "Kurulum scripti başarısız"
+            return 1
+        fi
+    else
+        rm -f "$temp_installer"
+        echo -e "${RED}[HATA]${NC} Kiro CLI indirilemedi!"
+        echo -e "${YELLOW}[!]${NC} URL: $KIRO_INSTALL_URL"
+        echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
+        echo -e "    - URL geçersiz olabilir (404)"
+        echo -e "    - İnternet bağlantısı sorunu"
+        track_failure "Kiro CLI" "İndirme başarısız (URL veya ağ sorunu)"
+        return 1
+    fi
+}
+
 # Export functions for use in other modules
+export -f install_kiro_cli
 export -f install_qoder_cli
 export -f install_claude_code
 export -f install_gemini_cli

@@ -26,7 +26,9 @@ LAZYDOCKER_FALLBACK_VERSION="0.23.3"
 LAZYDOCKER_VERSION="${LAZYDOCKER_VERSION:-}"
 
 # Starship (prompt)
-STARSHIP_INSTALL_URL="https://starship.rs/install.sh"
+# FIX: Starship install URL changed (https://starship.rs/install.sh returns 403)
+# Using GitHub raw URL instead (verified working)
+STARSHIP_INSTALL_URL="https://raw.githubusercontent.com/starship/starship/master/install/install.sh"
 
 # Zoxide (smart cd)
 ZOXIDE_INSTALL_URL="https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh"
@@ -42,6 +44,9 @@ CLAUDE_CODE_INSTALL_URL="https://claude.ai/install.sh"
 
 # Qoder CLI
 QODER_INSTALL_URL="https://qoder.com/install"
+
+# Kiro CLI
+KIRO_INSTALL_URL="https://cli.kiro.dev/install"
 
 # ==========================================
 # Python Tools
