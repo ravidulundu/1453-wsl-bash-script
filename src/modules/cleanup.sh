@@ -560,8 +560,23 @@ cleanup_ai_tools() {
     echo -e "${BLUE}║      AI CLI Tools Temizleniyor         ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
 
+    # Tools installed via native installers (curl | bash)
+    # These are NOT installed via pipx, they use their own installers
+    local native_tools=("claude" "qoder" "kiro")
+
+    for tool in "${native_tools[@]}"; do
+        if command -v "$tool" &>/dev/null; then
+            local tool_path
+            tool_path=$(command -v "$tool")
+            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor (native installer)..."
+            sudo rm -f "$tool_path" 2>/dev/null
+            echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı: $tool_path"
+        fi
+    done
+
     # Tools installed via pipx
-    local pipx_tools=("claude" "qoder" "gemini-cli" "opencode" "qwen")
+    # Only gemini-cli, opencode, and qwen use pipx
+    local pipx_tools=("gemini-cli" "opencode" "qwen")
 
     for tool in "${pipx_tools[@]}"; do
         if command -v pipx &>/dev/null && pipx list 2>/dev/null | grep -q "$tool"; then
