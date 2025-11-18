@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# FIX BUG-002: Add safety flags for robust error handling
+set -eo pipefail
+
 # CRLF to LF converter for the linux-ai-setup-script.sh
 # This helper script fixes Windows line endings before running bash -n
 

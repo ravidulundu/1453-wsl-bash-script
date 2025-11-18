@@ -4,6 +4,10 @@
 # Version: 2.0 - Modular Architecture
 # GitHub: https://github.com/altudev/1453-wsl-bash-script
 
+# FIX BUG-002: Add safety flags for robust error handling
+# Note: set -e may affect sourced modules, but this is an entry point script
+set -eo pipefail
+
 # Get the directory where this script resides
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

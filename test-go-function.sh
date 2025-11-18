@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# FIX BUG-002: Add safety flags for robust error handling
+set -eo pipefail
+
 # Test script to verify install_go_menu function is available
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

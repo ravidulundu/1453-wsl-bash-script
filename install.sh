@@ -3,7 +3,8 @@
 # 1453.AI WSL Kurulum Betiği Yükleyici
 # Bu betik modüler WSL kurulum betiğini indirir ve kurar
 
-set -e
+# FIX BUG-002: Add safety flags for robust error handling
+set -euo pipefail
 
 # CRITICAL: Redirect stdin to /dev/tty at the very beginning
 if [ -e /dev/tty ]; then
