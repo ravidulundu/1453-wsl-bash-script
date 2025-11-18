@@ -249,13 +249,19 @@ install_php_version_menu() {
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
     read -r choice </dev/tty
 
+    # FIX BUG-018: Validate numeric input before comparison
+    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen bir sayı girin."
+        return
+    fi
+
     if [ "$choice" = "$((index+1))" ]; then
         return
     elif [ "$choice" = "$index" ]; then
         for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
             install_php_version "$ver"
         done
-    elif [ "$choice" -ge 1 ] && [ "$choice" -lt "$index" ] 2>/dev/null; then
+    elif [ "$choice" -ge 1 ] && [ "$choice" -lt "$index" ]; then
         local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
         install_php_version "$selected_version"
     else

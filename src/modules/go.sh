@@ -330,7 +330,8 @@ show_go_info() {
         echo -e "${GREEN}Kurulu Sürüm:${NC} $(go version)"
         echo -e "${GREEN}Go Dizini:${NC} $(go env GOROOT)"
         echo -e "${GREEN}GOPATH:${NC} $(go env GOPATH)"
-        echo -e "${GREEN}PATH:${NC} $(echo $PATH | grep -o '[^:]*go/bin[^:]*' | head -n1)"
+        # FIX BUG-019: Quote PATH variable to handle spaces
+        echo -e "${GREEN}PATH:${NC} $(echo "$PATH" | grep -o '[^:]*go/bin[^:]*' | head -n1)"
     else
         echo -e "${YELLOW}Go henüz kurulu değil.${NC}"
     fi

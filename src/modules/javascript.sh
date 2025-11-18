@@ -47,9 +47,12 @@ install_nvm() {
         if [ -f "$rc_file" ]; then
             if ! grep -q 'NVM_DIR' "$rc_file"; then
                 echo -e "${YELLOW}[BİLGİ]${NC} NVM $rc_file dosyasına ekleniyor..."
-                echo '' >> "$rc_file"
-                echo "export NVM_DIR=\"\$([ -z \"\${XDG_CONFIG_HOME-}\" ] && printf %s \"\${HOME}/.nvm\" || printf %s \"\${XDG_CONFIG_HOME}/nvm\")\"" >> "$rc_file"
-                echo "[ -s \"\$NVM_DIR/nvm.sh\" ] && \\. \"\$NVM_DIR/nvm.sh\"" >> "$rc_file"
+                # FIX BUG-020: Simplify NVM PATH escaping using cat with heredoc
+                cat >> "$rc_file" << 'END_NVM_CONFIG'
+
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+END_NVM_CONFIG
             fi
         fi
     done
