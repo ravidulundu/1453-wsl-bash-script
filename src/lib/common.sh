@@ -67,10 +67,11 @@ mask_secret() {
 check_internet_connection() {
     echo -e "${CYAN}[✓]${NC} İnternet bağlantısı kontrol ediliyor..."
 
-    # Try multiple methods
-    if ping -c 1 -W 2 8.8.8.8 &>/dev/null || \
-       ping -c 1 -W 2 1.1.1.1 &>/dev/null || \
-       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" https://www.google.com &>/dev/null; then
+    # FIX BUG-015: Use configurable DNS servers instead of hardcoded values
+    # Try multiple methods: primary DNS, secondary DNS, and fallback URL
+    if ping -c 1 -W 2 "$PRIMARY_DNS_SERVER" &>/dev/null || \
+       ping -c 1 -W 2 "$SECONDARY_DNS_SERVER" &>/dev/null || \
+       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" "$DNS_TEST_URL" &>/dev/null; then
         echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
         return 0
     else

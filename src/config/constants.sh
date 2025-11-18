@@ -26,6 +26,19 @@ declare -rx APT_UPDATE_TIMEOUT_SECONDS=10
 declare -rx SUDO_KEEPALIVE_INTERVAL=60
 
 # ==========================================
+# Network Configuration
+# ==========================================
+# FIX BUG-015: Make DNS servers configurable
+# Primary DNS server for internet connectivity checks (Google DNS)
+declare -rx PRIMARY_DNS_SERVER="8.8.8.8"
+
+# Secondary DNS server for internet connectivity checks (Cloudflare DNS)
+declare -rx SECONDARY_DNS_SERVER="1.1.1.1"
+
+# Fallback DNS test URL
+declare -rx DNS_TEST_URL="https://www.google.com"
+
+# ==========================================
 # Disk Space Requirements
 # ==========================================
 # Recommended minimum disk space (MB)
