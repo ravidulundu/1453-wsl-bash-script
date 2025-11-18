@@ -26,7 +26,9 @@ LAZYDOCKER_FALLBACK_VERSION="0.23.3"
 LAZYDOCKER_VERSION="${LAZYDOCKER_VERSION:-}"
 
 # Starship (prompt)
-STARSHIP_INSTALL_URL="https://starship.rs/install.sh"
+# FIX BUG-030: Old URL (https://starship.rs/install.sh) returns 403 Forbidden
+# Using GitHub raw URL instead
+STARSHIP_INSTALL_URL="https://raw.githubusercontent.com/starship/starship/master/install/install.sh"
 
 # Zoxide (smart cd)
 ZOXIDE_INSTALL_URL="https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh"
