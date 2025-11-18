@@ -14,6 +14,7 @@ setup_custom_shell() {
     setup_bashrc_enhancements
     setup_starship_config
 
+    track_success "Shell Configuration" "(62 aliases, starship, enhancements)"
     echo -e "\n${GREEN}[BAŞARILI]${NC} Shell ortamı yapılandırması tamamlandı!"
     echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için: ${GREEN}source ~/.bashrc${NC}"
 }
