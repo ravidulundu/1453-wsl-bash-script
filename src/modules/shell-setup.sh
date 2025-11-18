@@ -561,21 +561,6 @@ symbol = " "
 style = "bold cyan"
 format = "[$symbol($version )]($style)"
 
-[maven]
-symbol = " "
-style = "bold red"
-format = "[$symbol($version )]($style)"
-
-[composer]
-symbol = " "
-style = "bold mauve"
-format = "[$symbol$version]($style) "
-
-[pip]
-symbol = " "
-style = "bold yellow"
-format = '[$symbol$version]($style) '
-
 # Less Common Languages & Tools
 [buf]
 symbol = " "
