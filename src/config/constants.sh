@@ -4,6 +4,13 @@
 # NOTE: Using 'declare -rx' to combine readonly (immutability) and export (subprocess availability)
 #       This prevents accidental modification while ensuring proper variable propagation
 
+# FIX BUG-016: Prevent re-declaration of readonly variables
+# Guard to prevent sourcing this file multiple times
+if [ -n "${_CONSTANTS_SOURCED:-}" ]; then
+    return 0
+fi
+readonly _CONSTANTS_SOURCED=1
+
 # ==========================================
 # Retry and Timeout Configuration
 # ==========================================
