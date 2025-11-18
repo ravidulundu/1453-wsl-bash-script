@@ -81,14 +81,20 @@ install_pip() {
     echo -e "${YELLOW}[BİLGİ]${NC} Pip güncelleniyor..."
 
     # Handle PEP 668 externally-managed-environment error
-    if python3 -m pip install --upgrade pip 2>&1 | grep -q "externally-managed-environment"; then
+    # FIX BUG-011: Capture exit code properly from pip install, not from if/else or grep
+    # FIX BUG-028: Capture output first, only run pip once (not twice)
+    local pip_output
+    pip_output=$(python3 -m pip install --upgrade pip 2>&1)
+    local pip_exit_code=$?
+
+    # If PEP 668 error detected, retry with --break-system-packages
+    if echo "$pip_output" | grep -q "externally-managed-environment"; then
         echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, --break-system-packages ile deneniyor..."
         python3 -m pip install --upgrade pip --break-system-packages
-    else
-        python3 -m pip install --upgrade pip
+        pip_exit_code=$?
     fi
 
-    if [ $? -eq 0 ]; then
+    if [ $pip_exit_code -eq 0 ]; then
         echo -e "${GREEN}[BAŞARILI]${NC} Pip sürümü: $(python3 -m pip --version)"
         echo -e "\n${CYAN}[BİLGİ]${NC} Pip Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Paket kurma: ${GREEN}pip install paket_adi${NC}"
@@ -126,6 +132,8 @@ install_pipx() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} Sistem paket yöneticisi ile pipx kuruluyor..."
 
+    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+    # WARNING: This won't handle INSTALL_CMD with quoted arguments
     # Try installing pipx using the system package manager (safe execution)
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
@@ -144,33 +152,24 @@ install_pipx() {
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Sistem paketi bulunamadı, manuel kurulum yapılıyor..."
 
-        # Handle PEP 668 externally-managed-environment error
-        if python3 -m pip install --user pipx 2>&1 | grep -q "externally-managed-environment"; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, alternatif yöntem deneniyor..."
+        # FIX BUG-024: Improved PEP 668 detection - check before attempting install
+        # FIX BUG-027: Use --user instead of copying from temp venv (preserves dependencies)
+        local pep668_marker="/usr/lib/python3*/EXTERNALLY-MANAGED"
+        if compgen -G "$pep668_marker" > /dev/null 2>&1; then
+            echo -e "${YELLOW}[BİLGİ]${NC} PEP 668 detected (externally-managed environment)"
+            echo -e "${YELLOW}[BİLGİ]${NC} Using --user approach for safe installation..."
 
-            # Use temporary venv for installation
-            TEMP_VENV="/tmp/pipx_install_venv"
-            rm -rf "$TEMP_VENV"
+            # Use temporary venv to bootstrap user installation (preserves all dependencies)
+            local TEMP_VENV="/tmp/pipx_install_venv_$$"
             python3 -m venv "$TEMP_VENV"
+            "$TEMP_VENV/bin/pip" install --quiet --user pipx
 
-            "$TEMP_VENV/bin/pip" install pipx
-
-            # Copy pipx to user's local bin
-            mkdir -p "$HOME/.local/bin"
-            cp "$TEMP_VENV/bin/pipx" "$HOME/.local/bin/"
-
-            mkdir -p "$HOME/.local/pipx"
-            cp -r "$TEMP_VENV/lib/python"*"/site-packages/pipx" "$HOME/.local/pipx/" 2>/dev/null || true
-
+            # Cleanup temp venv (user installation is in ~/.local)
             rm -rf "$TEMP_VENV"
-
-            # If still not available, try with break-system-packages
-            if ! command -v pipx &> /dev/null; then
-                echo -e "${YELLOW}[UYARI]${NC} --break-system-packages ile kurulum deneniyor..."
-                python3 -m pip install --user --break-system-packages pipx
-            fi
         else
-            python3 -m pip install --user pipx
+            # No PEP 668 restriction, safe to install directly
+            python3 -m pip install --user pipx 2>/dev/null || \
+                python3 -m pip install --user --break-system-packages pipx
         fi
 
         # Ensure pipx path

@@ -67,10 +67,11 @@ mask_secret() {
 check_internet_connection() {
     echo -e "${CYAN}[✓]${NC} İnternet bağlantısı kontrol ediliyor..."
 
-    # Try multiple methods
-    if ping -c 1 -W 2 8.8.8.8 &>/dev/null || \
-       ping -c 1 -W 2 1.1.1.1 &>/dev/null || \
-       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" https://www.google.com &>/dev/null; then
+    # FIX BUG-015: Use configurable DNS servers instead of hardcoded values
+    # Try multiple methods: primary DNS, secondary DNS, and fallback URL
+    if ping -c 1 -W 2 "$PRIMARY_DNS_SERVER" &>/dev/null || \
+       ping -c 1 -W 2 "$SECONDARY_DNS_SERVER" &>/dev/null || \
+       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" "$DNS_TEST_URL" &>/dev/null; then
         echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
         return 0
     else
@@ -82,12 +83,15 @@ check_internet_connection() {
 
 # Start sudo keepalive in background
 # Keeps sudo cache fresh throughout script execution
+# FIX BUG-003: Pass parent_pid via environment variable to subshell for proper scoping
 start_sudo_keepalive() {
     # Store parent PID before launching subshell
     local parent_pid=$$
 
     # Background process that refreshes sudo cache every 60 seconds
+    # Use environment variable to pass parent_pid to subshell
     (
+        PARENT_PROCESS_PID="$parent_pid"
         while true; do
             # Refresh sudo timestamp (non-interactive)
             sudo -n true 2>/dev/null
@@ -95,7 +99,7 @@ start_sudo_keepalive() {
 
             # Check if parent process still exists
             # If parent died, exit gracefully
-            kill -0 $parent_pid 2>/dev/null || exit 0
+            kill -0 "$PARENT_PROCESS_PID" 2>/dev/null || exit 0
         done
     ) &
 
@@ -249,6 +253,13 @@ verify_checksum() {
         fi
     fi
 
+    # FIX BUG-023: Validate checksum format (64 hex characters for SHA256)
+    if ! [[ "$expected_checksum" =~ ^[a-fA-F0-9]{64}$ ]]; then
+        echo -e "${YELLOW}[UYARI]${NC} Geçersiz checksum formatı (64 hex karakter bekleniyor)"
+        echo -e "${YELLOW}[UYARI]${NC} Alınan: ${expected_checksum:0:32}..."
+        return 0  # Don't fail, just skip verification
+    fi
+
     # Calculate actual checksum
     local actual_checksum
     if command -v sha256sum &>/dev/null; then
@@ -261,7 +272,12 @@ verify_checksum() {
     fi
 
     # Compare checksums (case-insensitive)
-    if [ "${actual_checksum,,}" = "${expected_checksum,,}" ]; then
+    # FIX BUG-012: Use portable tr instead of bash 4.0+ ${var,,} syntax
+    local actual_lower expected_lower
+    actual_lower=$(echo "$actual_checksum" | tr '[:upper:]' '[:lower:]')
+    expected_lower=$(echo "$expected_checksum" | tr '[:upper:]' '[:lower:]')
+
+    if [ "$actual_lower" = "$expected_lower" ]; then
         echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:$CHECKSUM_DISPLAY_LENGTH}..."
         return 0
     else

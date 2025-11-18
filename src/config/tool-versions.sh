@@ -61,8 +61,9 @@ fetch_github_version() {
     local api_url="https://api.github.com/repos/${repo}/releases/latest"
 
     # Try to fetch latest version
+    # FIX BUG-013: Use portable sed instead of GNU grep -P
     local version
-    version=$(curl -s "$api_url" | grep -Po '"tag_name": "v\K[^"]*' 2>/dev/null)
+    version=$(curl -s "$api_url" 2>/dev/null | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -n1)
 
     if [ -n "$version" ]; then
         echo "$version"

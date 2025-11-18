@@ -33,14 +33,15 @@ if [ "$has_crlf" = true ]; then
         dos2unix "$SCRIPT_PATH"
         echo "Fixed using dos2unix"
     elif command -v sed &> /dev/null; then
-        sed -i 's/\r$//' "$SCRIPT_PATH"
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
+        sed 's/\r$//' "$SCRIPT_PATH" > "${SCRIPT_PATH}.tmp" && mv "${SCRIPT_PATH}.tmp" "$SCRIPT_PATH"
         echo "Fixed using sed"
     elif command -v tr &> /dev/null; then
         tr -d '\r' < "$SCRIPT_PATH" > "${SCRIPT_PATH}.tmp" && mv "${SCRIPT_PATH}.tmp" "$SCRIPT_PATH"
         echo "Fixed using tr"
     else
         echo "Error: No suitable tool found for conversion (need dos2unix, sed, or tr)"
-        echo "Manual fix: sed -i 's/\r$//' $SCRIPT_PATH"
+        echo "Manual fix: sed 's/\r$//' \$SCRIPT_PATH > \$SCRIPT_PATH.tmp && mv \$SCRIPT_PATH.tmp \$SCRIPT_PATH"
         exit 1
     fi
 

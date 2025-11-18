@@ -66,13 +66,28 @@ install_go_official() {
         *) echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"; return 1 ;;
     esac
 
-    # Get latest version
+    # Get latest version with retry and fallback
+    # FIX BUG-009: Add retry mechanism and fallback version
     echo -e "${YELLOW}[BİLGİ]${NC} Son Go sürümü kontrol ediliyor..."
-    local go_version=$(curl -s https://go.dev/VERSION?m=text | head -n1)
-    
+    local go_version
+    local attempt=1
+    local max_attempts=3
+
+    while [ $attempt -le $max_attempts ]; do
+        go_version=$(curl -s --connect-timeout 5 https://go.dev/VERSION?m=text 2>/dev/null | head -n1)
+        [ -n "$go_version" ] && break
+        ((attempt++))
+        [ $attempt -le $max_attempts ] && sleep 2
+    done
+
     if [ -z "$go_version" ]; then
-        echo -e "${RED}[HATA]${NC} Go sürüm bilgisi alınamadı!"
-        return 1
+        echo -e "${YELLOW}[UYARI]${NC} Go sürüm bilgisi alınamadı, varsayılan sürüm kullanılıyor..."
+        # FIX BUG-026: Remove 'go' prefix - it's added in tarball name construction
+        # Fallback to known stable version (without 'go' prefix)
+        go_version="1.21.5"
+        echo -e "${CYAN}[BİLGİ]${NC} Kullanılacak sürüm: go$go_version"
+    else
+        echo -e "${GREEN}[✓]${NC} Son sürüm bulundu: $go_version"
     fi
 
     local go_tarball="go${go_version}.linux-${arch}.tar.gz"
@@ -132,7 +147,9 @@ install_go_package() {
         return 0
     fi
 
-    # Safe execution without eval (prevents command injection)
+    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+    # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
+    # INSTALL_CMD must not contain shell quoting - use arrays instead
     local cmd_array
     IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
 
@@ -284,16 +301,17 @@ remove_go() {
 
     # Remove Go from PATH in shell RC files
     local rc_files=("$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile")
-    
+
     for rc_file in "${rc_files[@]}"; do
         if [ -f "$rc_file" ]; then
+            # FIX BUG-014: Use portable temp file approach instead of sed -i
             # Remove Go PATH configuration
-            sed -i '/export PATH=\$PATH:\/usr\/local\/go\/bin/d' "$rc_file" 2>/dev/null
-            sed -i '/# Go binary path/d' "$rc_file" 2>/dev/null
-            
+            sed '/export PATH=\$PATH:\/usr\/local\/go\/bin/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+            sed '/# Go binary path/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+
             # Remove GOPATH configuration
-            sed -i '/export GOPATH=\$HOME\/go/d' "$rc_file" 2>/dev/null
-            sed -i '/export PATH=\$PATH:\$GOPATH\/bin/d' "$rc_file" 2>/dev/null
+            sed '/export GOPATH=\$HOME\/go/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+            sed '/export PATH=\$PATH:\$GOPATH\/bin/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
         fi
     done
 
@@ -313,7 +331,8 @@ show_go_info() {
         echo -e "${GREEN}Kurulu Sürüm:${NC} $(go version)"
         echo -e "${GREEN}Go Dizini:${NC} $(go env GOROOT)"
         echo -e "${GREEN}GOPATH:${NC} $(go env GOPATH)"
-        echo -e "${GREEN}PATH:${NC} $(echo $PATH | grep -o '[^:]*go/bin[^:]*' | head -n1)"
+        # FIX BUG-019: Quote PATH variable to handle spaces
+        echo -e "${GREEN}PATH:${NC} $(echo "$PATH" | grep -o '[^:]*go/bin[^:]*' | head -n1)"
     else
         echo -e "${YELLOW}Go henüz kurulu değil.${NC}"
     fi

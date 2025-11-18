@@ -4,6 +4,13 @@
 # NOTE: Using 'declare -rx' to combine readonly (immutability) and export (subprocess availability)
 #       This prevents accidental modification while ensuring proper variable propagation
 
+# FIX BUG-016: Prevent re-declaration of readonly variables
+# Guard to prevent sourcing this file multiple times
+if [ -n "${_CONSTANTS_SOURCED:-}" ]; then
+    return 0
+fi
+readonly _CONSTANTS_SOURCED=1
+
 # ==========================================
 # Retry and Timeout Configuration
 # ==========================================
@@ -24,6 +31,19 @@ declare -rx APT_UPDATE_TIMEOUT_SECONDS=10
 
 # Sudo keepalive refresh interval (seconds)
 declare -rx SUDO_KEEPALIVE_INTERVAL=60
+
+# ==========================================
+# Network Configuration
+# ==========================================
+# FIX BUG-015: Make DNS servers configurable
+# Primary DNS server for internet connectivity checks (Google DNS)
+declare -rx PRIMARY_DNS_SERVER="8.8.8.8"
+
+# Secondary DNS server for internet connectivity checks (Cloudflare DNS)
+declare -rx SECONDARY_DNS_SERVER="1.1.1.1"
+
+# Fallback DNS test URL
+declare -rx DNS_TEST_URL="https://www.google.com"
 
 # ==========================================
 # Disk Space Requirements

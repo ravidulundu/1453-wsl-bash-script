@@ -7,7 +7,9 @@
 ensure_php_repository() {
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "\n${YELLOW}[BİLGİ]${NC} PHP için Ondřej Surý deposu kontrol ediliyor..."
-        # Safe execution without eval (prevents command injection)
+        # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+        # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
+        # INSTALL_CMD must not contain shell quoting - use arrays instead
         local cmd_array
         IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
         "${cmd_array[@]}" software-properties-common ca-certificates apt-transport-https lsb-release gnupg
@@ -200,7 +202,8 @@ install_php_version() {
             ;;
         pacman)
             echo -e "${YELLOW}[UYARI]${NC} Arch Linux için PHP kurulumu manuel olarak yapılandırılmalıdır."
-            # Safe execution without eval
+            # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+            # WARNING: This won't handle INSTALL_CMD with quoted arguments
             local cmd_array
             IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
             "${cmd_array[@]}" php php-fpm
@@ -214,7 +217,9 @@ install_php_version() {
 
     if [ ${#pkgs_to_install[@]} -gt 0 ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak paketler: ${pkgs_to_install[*]}"
-        # Safe execution without eval (prevents command injection)
+        # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
+        # WARNING: This won't handle INSTALL_CMD with quoted arguments
+        # Package array is properly quoted, only cmd_array has potential issues
         local cmd_array
         IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
         "${cmd_array[@]}" "${pkgs_to_install[@]}"
@@ -244,13 +249,19 @@ install_php_version_menu() {
     echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
     read -r choice </dev/tty
 
+    # FIX BUG-018: Validate numeric input before comparison
+    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen bir sayı girin."
+        return
+    fi
+
     if [ "$choice" = "$((index+1))" ]; then
         return
     elif [ "$choice" = "$index" ]; then
         for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
             install_php_version "$ver"
         done
-    elif [ "$choice" -ge 1 ] && [ "$choice" -lt "$index" ] 2>/dev/null; then
+    elif [ "$choice" -ge 1 ] && [ "$choice" -lt "$index" ]; then
         local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
         install_php_version "$selected_version"
     else

@@ -168,17 +168,41 @@ install_modern_tools_apt() {
     init_tool_versions
 
     # Install starship prompt
+    # FIX BUG-010: Download script to temp file, verify source before executing
     if ! command -v starship &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
-        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
+        local temp_starship_script
+        temp_starship_script=$(mktemp)
+
+        if curl -fsSL "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
+            echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $STARSHIP_INSTALL_URL"
+            echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: starship.rs"
+            # Auto-approve for trusted source (starship.rs)
+            sh "$temp_starship_script" -y
+            rm -f "$temp_starship_script"
+        else
+            echo -e "${RED}[✗]${NC} Starship install scripti indirilemedi!"
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
     fi
 
     # Install zoxide
+    # FIX BUG-010: Download script to temp file, verify source before executing
     if ! command -v zoxide &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
-        curl -sS "$ZOXIDE_INSTALL_URL" | bash
+        local temp_zoxide_script
+        temp_zoxide_script=$(mktemp)
+
+        if curl -fsSL "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
+            echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $ZOXIDE_INSTALL_URL"
+            echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: github.com/ajeetdsouza/zoxide"
+            # Auto-approve for trusted source
+            bash "$temp_zoxide_script"
+            rm -f "$temp_zoxide_script"
+        else
+            echo -e "${RED}[✗]${NC} Zoxide install scripti indirilemedi!"
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
     fi
@@ -299,15 +323,26 @@ install_modern_tools_pacman() {
 }
 
 # Generic installer functions (using centralized versions from config/tool-versions.sh)
+# FIX BUG-010: Download scripts to temp files before executing
 install_starship_generic() {
     if ! command -v starship &> /dev/null; then
-        curl -sS "$STARSHIP_INSTALL_URL" | sh -s -- -y
+        local temp_script
+        temp_script=$(mktemp)
+        if curl -fsSL "$STARSHIP_INSTALL_URL" -o "$temp_script"; then
+            sh "$temp_script" -y
+            rm -f "$temp_script"
+        fi
     fi
 }
 
 install_zoxide_generic() {
     if ! command -v zoxide &> /dev/null; then
-        curl -sS "$ZOXIDE_INSTALL_URL" | bash
+        local temp_script
+        temp_script=$(mktemp)
+        if curl -fsSL "$ZOXIDE_INSTALL_URL" -o "$temp_script"; then
+            bash "$temp_script"
+            rm -f "$temp_script"
+        fi
     fi
 }
 

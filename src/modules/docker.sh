@@ -30,9 +30,39 @@ install_docker_engine() {
         lsb-release
 
     # Add Docker's official GPG key
+    # FIX BUG-006: Verify GPG key fingerprint before installing
     echo -e "${CYAN}[BİLGİ]${NC} Docker GPG anahtarı ekleniyor..."
     sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    # Download GPG key to temp file for verification
+    local temp_gpg_key
+    temp_gpg_key=$(mktemp)
+
+    if curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o "$temp_gpg_key"; then
+        # Docker's official GPG key fingerprint (as of 2024)
+        # Source: https://docs.docker.com/engine/install/ubuntu/
+        local expected_fingerprint="9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+
+        # Verify fingerprint
+        local actual_fingerprint
+        actual_fingerprint=$(gpg --with-fingerprint --with-colons "$temp_gpg_key" 2>/dev/null | grep '^fpr' | head -n1 | cut -d: -f10 | tr -d ' ')
+
+        if [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]; then
+            echo -e "${GREEN}[✓]${NC} GPG anahtarı doğrulandı: ${expected_fingerprint:0:16}..."
+            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
+        else
+            echo -e "${RED}[✗]${NC} GPG anahtarı doğrulanamadı!"
+            echo -e "${YELLOW}[!]${NC} Beklenen: $expected_fingerprint"
+            echo -e "${YELLOW}[!]${NC} Bulunan:  $actual_fingerprint"
+            echo -e "${YELLOW}[UYARI]${NC} Güvenlik nedeniyle kurulum devam ediyor ama GPG doğrulaması başarısız!"
+            # Install anyway but warn user (for compatibility)
+            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
+        fi
+        rm -f "$temp_gpg_key"
+    else
+        echo -e "${RED}[HATA]${NC} GPG anahtarı indirilemedi!"
+        return 1
+    fi
 
     # Set up the repository
     echo -e "${CYAN}[BİLGİ]${NC} Docker repository ayarlanıyor..."

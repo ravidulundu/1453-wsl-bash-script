@@ -291,10 +291,11 @@ cleanup_nodejs() {
         echo -e "${YELLOW}[BİLGİ]${NC} NVM kaldırılıyor..."
         rm -rf ~/.nvm
 
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove NVM from shell configs
-        sed -i '/NVM_DIR/d' ~/.bashrc 2>/dev/null
-        sed -i '/nvm.sh/d' ~/.bashrc 2>/dev/null
-        sed -i '/bash_completion/d' ~/.bashrc 2>/dev/null
+        sed '/NVM_DIR/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/nvm.sh/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/bash_completion/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
         echo -e "${GREEN}[BAŞARILI]${NC} NVM kaldırıldı"
     fi
@@ -303,7 +304,8 @@ cleanup_nodejs() {
     if command -v bun &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Bun kaldırılıyor..."
         rm -rf ~/.bun
-        sed -i '/BUN_INSTALL/d' ~/.bashrc 2>/dev/null
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
+        sed '/BUN_INSTALL/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
         echo -e "${GREEN}[BAŞARILI]${NC} Bun kaldırıldı"
     fi
 
@@ -327,11 +329,15 @@ cleanup_php() {
     # Remove PHP packages installed via APT
     if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
+        # FIX BUG-005: Properly quote package list to prevent word splitting issues
         # Get list of installed PHP packages safely using dpkg
         local php_packages
-        php_packages=$(dpkg -l | grep '^ii' | grep -E 'php[0-9]' | awk '{print $2}')
-        if [ -n "$php_packages" ]; then
-            sudo apt remove -y $php_packages 2>/dev/null
+        # FIX BUG-021: Use mapfile directly from command substitution (more efficient)
+        # FIX BUG-022: Improve regex to match PHP packages with multiple digits (php8, php10, php8.3)
+        local -a pkg_array
+        mapfile -t pkg_array < <(dpkg -l | grep '^ii' | grep -E 'php[0-9]+(\.[0-9]+)?' | awk '{print $2}')
+        if [ "${#pkg_array[@]}" -gt 0 ]; then
+            sudo apt remove -y "${pkg_array[@]}" 2>/dev/null
             sudo apt autoremove -y 2>/dev/null
         fi
 
@@ -356,9 +362,10 @@ cleanup_go() {
         echo -e "${YELLOW}[BİLGİ]${NC} Go kaldırılıyor..."
         sudo rm -rf /usr/local/go
 
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove from PATH
-        sed -i '/\/usr\/local\/go\/bin/d' ~/.bashrc 2>/dev/null
-        sed -i '/GOPATH/d' ~/.bashrc 2>/dev/null
+        sed '/\/usr\/local\/go\/bin/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/GOPATH/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
         echo -e "${GREEN}[BAŞARILI]${NC} Go kaldırıldı"
     else
