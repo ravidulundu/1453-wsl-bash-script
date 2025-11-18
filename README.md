@@ -43,7 +43,7 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 - **👤 USER-REPORTED: 3 bugs → 0 bugs** (100% FIXED) - v2.2.1
 - **Güvenlik Riski:** HIGH → **LOW** ✅
 - **Compliance:** Production-ready ✅
-- **Current Version:** v2.2.1 (2025-11-18)
+- **Current Version:** v2.2.2 (2025-11-18)
 
 #### Güvenlik Özellikleri
 - **Command Injection Koruması** - 16 eval kullanımı kaldırıldı, güvenli array-based execution
@@ -82,7 +82,7 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 - **eza** - Modern ls alternatifi
 - **ripgrep (rg)** - Süper hızlı içerik arama
 - **fd** - Modern find alternatifi
-- **starship** - Akıllı cross-shell prompt
+- **starship** - Cross-shell prompt (Catppuccin Mocha temalı, 60+ modül)
 - **zoxide** - Akıllı cd komutu (z)
 - **fzf** - Fuzzy finder (bulanık arama)
 - **vivid** - LS_COLORS generator
@@ -109,7 +109,13 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 - **62+ Özel Alias** - Git, navigasyon, Docker, NPM, Python aliasları
 - **Özel Fonksiyonlar** - mcd (mkdir + cd), gelişmiş make
 - **Bashrc Geliştirmeleri** - Geçmiş ayarları, FZF entegrasyonu
-- **Starship Yapılandırması** - Özel prompt teması
+- **Starship Prompt Teması** - Catppuccin Mocha temalı, 60+ modül desteği
+  - 🎨 Catppuccin Mocha renk paleti (28 renk)
+  - 📦 60+ dil ve araç desteği (Bun, Deno, Python, Go, Rust, PHP, Docker, K8s, vb.)
+  - 🔤 Nerd Font icon'ları (JetBrainsMono Nerd Font uyumlu)
+  - 🌳 Git entegrasyonu (branch, status, commit, state)
+  - 💻 Sistem göstergeleri (username, hostname, jobs, cmd_duration, time)
+  - 🎯 Özel box-drawing prompt formatı
 
 ### 🎮 İki Kurulum Modu
 
@@ -454,6 +460,13 @@ source ~/.bashrc
 ```bash
 # Starship prompt aktif mi kontrol edin
 echo $STARSHIP_CONFIG
+# Beklenen: /home/<user>/.config/starship.toml
+
+# Starship config'i görüntüle
+cat ~/.config/starship.toml
+
+# Starship modüllerini listele
+starship module --list
 
 # Modern ls (eza)
 ll
@@ -466,6 +479,43 @@ cat test-setup.sh
 # Akıllı cd (zoxide)
 z ~
 ```
+
+#### Starship Prompt Özellikleri
+
+Kurulum sonrası terminalinizde göreceğiniz prompt:
+
+```
+┌───────────────────────────────────>
+│ ~/project  main ✓
+│  v18 󰛢 v1.0  3.11  1.21
+└─> ❯                                    took 2.5s 14:30
+```
+
+**Gösterilen Bilgiler:**
+- 📂 Mevcut dizin (renkli, truncated)
+- 🌳 Git branch (mor) + status (kırmızı) + commit hash
+- 💻 Aktif dil versiyonları (Node, Bun, Python, Go, Rust, PHP, Java, Ruby, Lua, vb.)
+- ☁️ DevOps araçları (Docker, Kubernetes, Terraform, AWS, GCloud, Azure)
+- ⏱️ Komut süresi (500ms üzeri)
+- 🕐 Saat (sağ üst köşe)
+- ✦ Background jobs sayısı
+- ❯ Prompt simgesi (yeşil = success, kırmızı = error)
+
+**Desteklenen Diller (60+):**
+- **JavaScript/TypeScript**: Node.js, Bun, Deno
+- **Python**: CPython, PyPy, virtualenv desteği
+- **Systems**: Go, Rust, C, C++, Zig
+- **JVM**: Java, Kotlin, Gradle, Scala
+- **Web**: PHP, Ruby, Elixir, Erlang
+- **Functional**: Haskell, OCaml, Elm, PureScript
+- **Other**: Lua, Perl, R, Crystal, Nim, Swift, Dart, ve daha fazlası
+
+**Nerd Font Gereksinimi:**
+JetBrainsMono Nerd Font (veya başka bir Nerd Font) kullanmanız önerilir. İcon'ların doğru görünmesi için gereklidir.
+
+Windows Terminal'de font ayarı:
+1. Settings > Defaults > Appearance > Font face
+2. "JetBrainsMono Nerd Font" seçin
 
 ### 4. Git Yapılandırmasını Kontrol Edin
 
@@ -794,6 +844,92 @@ MIT Lisansı - Detaylar için [LICENSE.md](LICENSE.md) dosyasına bakın.
 
 ## 🔐 Güvenlik Güncellemeleri
 
+### v2.2.2 - Starship Prompt Enhancements (2025-11-18)
+
+**🎨 Catppuccin Mocha teması ve kapsamlı modül desteği eklendi**
+
+#### ✨ Yeni Özellikler
+
+**Starship Prompt (3 commit)**
+- ✅ **Catppuccin Mocha Teması** (Commit: dac4e37)
+  - 28 renkli palette tanımlandı (#f5e0dc - #11111b)
+  - Özel box-drawing prompt formatı
+  - Git enhancements: commit hash, git state (REBASING, MERGING, vb.)
+  - Sistem göstergeleri: username, hostname, shlvl, jobs, character
+
+- ✅ **60+ Modül Desteği** (Commit: 42902ee)
+  - 13 yeni programlama dili: Bun🍞, Deno🦕, Ruby, Lua, Kotlin, R, Perl, Zig, V, Crystal, Erlang, OCaml, +10
+  - 9 DevOps aracı: Kubernetes☸, Terraform💠, Container, Vagrant, GCloud☁️, Azure
+  - 5 build tool: Composer, Pip, Gradle, Maven, CMake
+  - Toplam: 60+ modül (önceden 15)
+
+- ✅ **Nerd Font Icon'ları** (Commit: 4895785)
+  - Emoji selector'lar kaldırıldı (cross-terminal uyumluluk)
+  - Tüm icon'lar Nerd Font ile değiştirildi
+  - JetBrainsMono Nerd Font uyumlu
+  - 8 symbol düzeltmesi (shlvl, git tag, conflicted, stashed, bun, rlang, gcloud, purescript)
+
+- ✅ **Unsupported Modül Temizliği** (Commit: d25aa61)
+  - maven, composer, pip kaldırıldı (Starship'te desteklenmiyor)
+  - Starship config warning'leri düzeltildi
+
+#### 📊 İstatistikler
+
+| Kategori | Değişiklik |
+|----------|-----------|
+| Starship Modülleri | 15 → 60+ (4x artış) |
+| Renk Paleti | Yok → 28 renk |
+| Symbol Düzeltmeleri | 8 emoji → Nerd Font |
+| Desteklenen Diller | 6 → 50+ |
+| DevOps Araçları | 2 → 11 |
+| Commits | 4 commit |
+| Satır Değişikliği | +438, -59 |
+
+### v2.2.1 - Kullanıcı Deneyimi İyileştirmeleri (2025-11-18)
+
+**🐛 3 kullanıcı tarafından raporlanan bug düzeltildi**
+
+#### ✅ Düzeltilen Bug'lar
+
+**USER-001: Bashrc Syntax Error (Commit: 1f44139)**
+- ✅ cleanup_shell_configs() syntax error düzeltildi
+- START/END marker'ları eklendi
+- "fi token error" problemi çözüldü
+
+**USER-002: Duplicate Tracking (Commit: d94a3e2, 434c9e6, f27551e, 2b1b5de)**
+- ✅ Tüm 15 modülde duplicate tracking önlendi
+- AI framework'lere tracking eklendi
+- Quickstart.sh duplicate wrapper'ları kaldırıldı
+
+**USER-003: Multiple Sudo Prompts (Commit: c7b2af9)**
+- ✅ Background sudo keepalive implementasyonu
+- Tek şifre girişi ile tüm kurulum
+- Her 60 saniyede otomatik refresh
+
+**CRITICAL: TERM Variable Undefined (Commit: 689d577)**
+- ✅ Heredoc variable expansion bug'ı düzeltildi
+- $TERM_COLOR_MODE → xterm-256color (literal)
+- Terminal komutları (clear, reset) çalışıyor
+
+**Smart Backup System (Commit: 01599e1)**
+- ✅ Centralized ~/.1453-backups/ dizini
+- Son 3 backup korunuyor, eskiler otomatik siliniyor
+- Disk dolma problemi çözüldü
+
+**Error Handling (Commit: 5ace53c)**
+- ✅ Tüm shell setup fonksiyonlarına return statements eklendi
+- Error checking ve track_failure entegrasyonu
+- AI framework pattern'ine uyumlu
+
+#### 📊 İstatistikler
+
+| Kategori | Önce | Sonra | Sonuç |
+|----------|------|-------|-------|
+| 👤 USER-REPORTED | 3 | 0 | **100% FIXED** |
+| 🟢 MEDIUM | 3 | 0 | **100% FIXED** |
+| Commits | - | 10 | - |
+| Satır Değişikliği | - | +120, -95 | - |
+
 ### v2.2.0 - Tüm Kritik Bug'lar Düzeltildi (2025-11-15)
 
 **🎉 35 bug'ın tamamı analiz edildi, kritik ve yüksek öncelikli tüm bug'lar düzeltildi!**
@@ -840,7 +976,7 @@ Detaylı analiz için: [BUG-REPORT.md](BUG-REPORT.md)
 
 ---
 
-**Versiyon**: 2.2.0
+**Versiyon**: 2.2.2
 **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
 **Platform**: WSL (Windows Subsystem for Linux)
 **Dil**: Bash + Türkçe Arayüz
