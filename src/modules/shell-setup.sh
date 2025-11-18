@@ -276,13 +276,143 @@ setup_starship_config() {
 
     mkdir -p "$HOME/.config"
 
-    # Create Starship configuration with Nerd Font icons
+    # Create Starship configuration with Catppuccin Mocha theme + Nerd Font icons
     cat > "$STARSHIP_CONFIG" << 'EOF'
 # Starship Configuration - 1453 WSL Setup
+# Theme: Catppuccin Mocha
+
+# Catppuccin Mocha Color Palette
+palette = "catppuccin_mocha"
+
+[palettes.catppuccin_mocha]
+rosewater = "#f5e0dc"
+flamingo = "#f2cdcd"
+pink = "#f5c2e7"
+mauve = "#cba6f7"
+red = "#f38ba8"
+maroon = "#eba0ac"
+peach = "#fab387"
+yellow = "#f9e2af"
+green = "#a6e3a1"
+teal = "#94e2d5"
+sky = "#89dceb"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+lavender = "#b4befe"
+text = "#cdd6f4"
+subtext1 = "#bac2de"
+subtext0 = "#a6adc8"
+overlay2 = "#9399b2"
+overlay1 = "#7f849c"
+overlay0 = "#6c7086"
+surface2 = "#585b70"
+surface1 = "#45475a"
+surface0 = "#313244"
+base = "#1e1e2e"
+mantle = "#181825"
+crust = "#11111b"
+
+# Format
+format = """
+[┌───────────────────────────────────>](bold green)
+[│](bold green)$directory$git_branch$git_status
+[│](bold green)$nodejs$python$golang$rust$php$java
+[└─>](bold green) """
+
+# Right format
+right_format = """$cmd_duration $time"""
+
+# Directory
+[directory]
+style = "bold blue"
+read_only = " 󰌾"
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+
+# Git Branch
+[git_branch]
+symbol = " "
+style = "bold mauve"
+format = "[$symbol$branch]($style) "
+
+# Git Status
+[git_status]
+style = "bold red"
+format = "([$all_status$ahead_behind]($style) )"
+conflicted = "🏳"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = "✓"
+untracked = "?${count}"
+stashed = "📦"
+modified = "!${count}"
+staged = "[++${count}](green)"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# Time
+[time]
+disabled = false
+time_format = "%R"
+style = "bold yellow"
+format = '[$time]($style) '
+
+# Command Duration
+[cmd_duration]
+min_time = 500
+style = "bold yellow"
+format = "[took $duration]($style)"
+
+# Programming Languages
+[nodejs]
+symbol = " "
+style = "bold green"
+format = "[$symbol($version )]($style)"
+
+[python]
+symbol = " "
+style = "bold yellow"
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+[golang]
+symbol = " "
+style = "bold cyan"
+format = "[$symbol($version )]($style)"
+
+[rust]
+symbol = "󱘗 "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+[php]
+symbol = " "
+style = "bold mauve"
+format = "[$symbol($version )]($style)"
+
+[java]
+symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+# Other Tools
+[docker_context]
+symbol = " "
+style = "bold blue"
+format = "[$symbol$context]($style) "
 
 [aws]
 symbol = "  "
+style = "bold yellow"
+format = '[$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
 
+[package]
+symbol = "󰏗 "
+style = "bold peach"
+format = "[$symbol$version]($style) "
+
+# Less common
 [buf]
 symbol = " "
 
@@ -295,31 +425,16 @@ symbol = " "
 [dart]
 symbol = " "
 
-[directory]
-read_only = " 󰌾"
-
-[docker_context]
-symbol = " "
-
 [elixir]
 symbol = " "
 
 [elm]
 symbol = " "
 
-[git_branch]
-symbol = " "
-
-[golang]
-symbol = " "
-
 [haskell]
 symbol = " "
 
 [hg_branch]
-symbol = " "
-
-[java]
 symbol = " "
 
 [julia]
@@ -333,18 +448,6 @@ symbol = "󰆥 "
 
 [nix_shell]
 symbol = " "
-
-[nodejs]
-symbol = " "
-
-[package]
-symbol = "󰏗 "
-
-[python]
-symbol = " "
-
-[rust]
-symbol = "󱘗 "
 
 [scala]
 symbol = " "
