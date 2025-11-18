@@ -315,12 +315,50 @@ crust = "#11111b"
 # Format
 format = """
 [┌───────────────────────────────────>](bold green)
-[│](bold green)$directory$git_branch$git_status
-[│](bold green)$nodejs$python$golang$rust$php$java
-[└─>](bold green) """
+[│](bold green)$username$hostname$shlvl$directory$git_branch$git_status$git_commit$git_state
+[│](bold green)$nodejs$bun$deno$python$golang$rust$php$java$ruby$lua
+[│](bold green)$docker_context$kubernetes$terraform$cmake$conda
+[└─>](bold green)$character"""
 
 # Right format
-right_format = """$cmd_duration $time"""
+right_format = """$jobs $cmd_duration $time"""
+
+# Character (Prompt symbol)
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+# Username
+[username]
+style_user = "bold yellow"
+style_root = "bold red"
+format = "[$user]($style) "
+disabled = false
+show_always = false
+
+# Hostname
+[hostname]
+ssh_only = true
+style = "bold green"
+format = "[@$hostname]($style) "
+disabled = false
+
+# Shell Level
+[shlvl]
+disabled = false
+symbol = "↕️ "
+style = "bold yellow"
+threshold = 2
+format = "[$symbol$shlvl]($style) "
+
+# Jobs
+[jobs]
+symbol = "✦ "
+style = "bold blue"
+number_threshold = 1
+symbol_threshold = 1
+format = "[$symbol$number]($style) "
 
 # Directory
 [directory]
@@ -352,6 +390,25 @@ staged = "[++${count}](green)"
 renamed = "»${count}"
 deleted = "✘${count}"
 
+# Git Commit
+[git_commit]
+commit_hash_length = 7
+tag_symbol = " 🏷️ "
+style = "bold green"
+format = '[\($hash$tag\)]($style) '
+
+# Git State
+[git_state]
+format = '[\($state( $progress_current of $progress_total)\)]($style) '
+style = "bold yellow"
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+
 # Time
 [time]
 disabled = false
@@ -368,6 +425,16 @@ format = "[took $duration]($style)"
 # Programming Languages
 [nodejs]
 symbol = " "
+style = "bold green"
+format = "[$symbol($version )]($style)"
+
+[bun]
+symbol = "🍞 "
+style = "bold peach"
+format = "[$symbol($version )]($style)"
+
+[deno]
+symbol = "🦕 "
 style = "bold green"
 format = "[$symbol($version )]($style)"
 
@@ -396,64 +463,245 @@ symbol = " "
 style = "bold red"
 format = "[$symbol($version )]($style)"
 
-# Other Tools
+[ruby]
+symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+[lua]
+symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
+
+[kotlin]
+symbol = " "
+style = "bold mauve"
+format = "[$symbol($version )]($style)"
+
+[rlang]
+symbol = "📐 "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
+
+[perl]
+symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
+
+[zig]
+symbol = " "
+style = "bold yellow"
+format = "[$symbol($version )]($style)"
+
+[vlang]
+symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
+
+[crystal]
+symbol = " "
+style = "bold teal"
+format = "[$symbol($version )]($style)"
+
+# DevOps & Infrastructure Tools
 [docker_context]
 symbol = " "
 style = "bold blue"
 format = "[$symbol$context]($style) "
+
+[container]
+symbol = "⬢ "
+style = "bold blue"
+format = "[$symbol \\[$name\\]]($style) "
+
+[kubernetes]
+symbol = "☸ "
+style = "bold blue"
+format = '[$symbol$context( \($namespace\))]($style) '
+disabled = false
+
+[terraform]
+symbol = "💠 "
+style = "bold mauve"
+format = "[$symbol$workspace]($style) "
+
+[vagrant]
+symbol = "⍱ "
+style = "bold cyan"
+format = "[$symbol($version )]($style)"
 
 [aws]
 symbol = "  "
 style = "bold yellow"
 format = '[$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
 
+[gcloud]
+symbol = "☁️ "
+style = "bold blue"
+format = '[$symbol$account(@$domain)(\($region\))]($style) '
+
+[azure]
+symbol = "󰠅 "
+style = "bold blue"
+format = "[$symbol($subscription)]($style) "
+
+# Package Managers & Build Tools
 [package]
 symbol = "󰏗 "
 style = "bold peach"
 format = "[$symbol$version]($style) "
 
-# Less common
+[cmake]
+symbol = "△ "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
+
+[gradle]
+symbol = " "
+style = "bold cyan"
+format = "[$symbol($version )]($style)"
+
+[maven]
+symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+[composer]
+symbol = " "
+style = "bold mauve"
+format = "[$symbol$version]($style) "
+
+[pip]
+symbol = " "
+style = "bold yellow"
+format = '[$symbol$version]($style) '
+
+# Less Common Languages & Tools
 [buf]
 symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
 
 [c]
 symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
 
 [conda]
 symbol = " "
+style = "bold green"
+format = "[$symbol$environment]($style) "
 
 [dart]
 symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
 
 [elixir]
 symbol = " "
+style = "bold mauve"
+format = '[$symbol($version \(OTP $otp_version\) )]($style)'
 
 [elm]
 symbol = " "
+style = "bold cyan"
+format = "[$symbol($version )]($style)"
+
+[erlang]
+symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+[fennel]
+symbol = " "
+style = "bold green"
+format = "[$symbol($version )]($style)"
+
+[fossil_branch]
+symbol = " "
+style = "bold mauve"
+format = "[$symbol$branch]($style) "
 
 [haskell]
 symbol = " "
+style = "bold mauve"
+format = "[$symbol($version )]($style)"
+
+[haxe]
+symbol = " "
+style = "bold peach"
+format = "[$symbol($version )]($style)"
 
 [hg_branch]
 symbol = " "
+style = "bold mauve"
+format = "[$symbol$branch]($style) "
 
 [julia]
 symbol = " "
+style = "bold mauve"
+format = "[$symbol($version )]($style)"
 
 [memory_usage]
 symbol = "󰍛 "
+style = "bold yellow"
+format = "$symbol[$ram( | $swap)]($style) "
+disabled = true
+
+[meson]
+symbol = "⬢ "
+style = "bold blue"
+format = "[$symbol$project]($style) "
 
 [nim]
 symbol = "󰆥 "
+style = "bold yellow"
+format = "[$symbol($version )]($style)"
 
 [nix_shell]
 symbol = " "
+style = "bold blue"
+format = '[$symbol$state( \($name\))]($style) '
+
+[ocaml]
+symbol = " "
+style = "bold yellow"
+format = '[$symbol($version )(\($switch_indicator$switch_name\) )]($style)'
+
+[purescript]
+symbol = " "
+style = "bold white"
+format = "[$symbol($version )]($style)"
+
+[raku]
+symbol = " "
+style = "bold blue"
+format = "[$symbol($version-$vm_version )]($style)"
+
+[red]
+symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
 
 [scala]
 symbol = " "
+style = "bold red"
+format = "[$symbol($version )]($style)"
+
+[solidity]
+symbol = " "
+style = "bold blue"
+format = "[$symbol($version )]($style)"
 
 [swift]
 symbol = " "
+style = "bold peach"
+format = "[$symbol($version )]($style)"
+
+[typst]
+symbol = " "
+style = "bold peach"
+format = "[$symbol($version )]($style)"
 
 EOF
 
