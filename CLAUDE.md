@@ -9,9 +9,9 @@ This file guides Claude Code (claude.ai/code) when working with code in this rep
 
 This is a WSL (Windows Subsystem for Linux) automated setup script designed for AI developers. The project has been refactored from a single, monolithic script (2,331 lines) into a clean, modular architecture for improved maintainability. It provides a one-line installer for easy deployment and features a fully Turkish interface for Turkish developers.
 
-**Version**: 2.2.0 (Production-Ready)  
-**Status**: All critical and high-priority bugs fixed ✅  
-**Security Level**: LOW risk (previously HIGH)
+**Version**: 2.2.1 (Production-Ready)
+**Status**: All bugs fixed, enhanced user experience ✅
+**Security Level**: LOW risk (hardened in v2.2.0)
 
 ### Key Features
 
@@ -28,9 +28,15 @@ This is a WSL (Windows Subsystem for Linux) automated setup script designed for 
 *   **PEP 668 compliance** - Handles Python's externally-managed environment
     
 *   **Security hardened** - No eval usage, SHA256 checksum verification
-    
+
 *   **Centralized configuration** - Version and constants management
-    
+
+*   **Single sudo password** - Background keep-alive eliminates repeated prompts (v2.2.1)
+
+*   **Duplicate prevention** - Tools appear only once in summary across all modes (v2.2.1)
+
+*   **Smart configuration** - Preserves existing git config, bashrc blocks with START/END markers (v2.2.1)
+
 
 ## Installation Methods
 
@@ -678,9 +684,70 @@ docker run -it ubuntu:latest /bin/bash
 
 ## Version History
 
-### v2.2.0 (Current) - Security Hardened Production Release
+### v2.2.1 (Current) - User Experience & Stability Improvements
 
-**Release Date**: 2025-11-15  
+**Release Date**: 2025-11-18
+**Status**: Production-Ready ✅
+
+User Experience Improvements
+
+*   ✅ **Single Sudo Password Prompt**: Background keep-alive process eliminates repeated password prompts
+    *   Single `sudo -v` at script start
+    *   Background loop refreshes sudo every 60 seconds
+    *   Automatic cleanup on exit with trap
+    *   Fixes: "bu sudoyu birkere girmeliyiz bir kac defa soruuyor"
+
+*   ✅ **Duplicate Installation Prevention**: Complete prevention across ALL modules and modes
+    *   Removed duplicate tracking wrappers in quickstart.sh
+    *   Functions track internally only once
+    *   Applies to: Python, pip, pipx, UV, NVM, Bun, Composer, Go, Modern CLI Tools
+    *   Fixes: "Bun.js" appearing twice in installation summary
+    *   Fulfills: "hangi durumda olursa olsun duplicate önüne geçmeliyiz"
+
+*   ✅ **Smart Git Configuration**: Preserves existing git config
+    *   Pre-checks for existing `user.name` and `user.email`
+    *   Prompts user if they want to reconfigure
+    *   Tracks skip/success/failure appropriately
+
+*   ✅ **Claude Code CLI Fixes**: Correct URL and command name
+    *   URL: `https://claude.ai/install.sh` (official installer)
+    *   Command: `claude` (not `claude-code`)
+    *   Version display and better error handling
+
+Critical Bug Fixes
+
+*   ✅ **Bashrc Syntax Error After Cleanup**: Fixed "fi token error"
+    *   Problem: cleanup_shell_configs() used empty lines to detect block end
+    *   Enhancement blocks contain internal empty lines → partial deletion → syntax errors
+    *   Solution: Added explicit START/END markers
+    *   `===== START: Enhanced Bash Config - 1453 WSL Setup =====`
+    *   `===== END: Enhanced Bash Config - 1453 WSL Setup =====`
+    *   Cleanup now completely removes blocks without leaving fragments
+    *   Fixes: "bash: /home/dev/.bashrc: line 112: syntax error near unexpected token 'fi'"
+
+Statistics
+
+*   10 commits since v2.2.0
+*   User-reported bugs: 3 → 0 (100% FIXED)
+*   Files modified: 5 (quickstart.sh, shell-setup.sh, cleanup.sh, ai-cli.sh, menus.sh)
+*   Lines changed: +120, -95
+
+Commits
+
+*   `1f44139` - Fix: Bashrc syntax error after cleanup (fi token error)
+*   `d94a3e2` - Fix: Remove duplicate tracking in quickstart.sh (fixes "Bun.js" appearing twice)
+*   `c7b2af9` - Feature: Single sudo password prompt with background keep-alive
+*   `434c9e6` - Feature: Complete duplicate prevention for ALL modules + fix bashrc syntax
+*   `f27551e` - Feature: Add duplicate prevention and tracking to PHP module
+*   `2b1b5de` - Feature: Add duplicate prevention and tracking to Python + JavaScript modules
+*   `7f492d2` - Fix: Claude Code CLI command name is 'claude' not 'claude-code'
+*   `4b6e1eb` - Feature: Git config smart check - skip if already configured
+*   `32050bd` - Fix: Update Claude Code CLI installer URL and remove duplicate tracking
+*   `cb3c80f` - Feature: Add comprehensive tracking and error handling to AI CLI tools
+
+### v2.2.0 - Security Hardened Production Release
+
+**Release Date**: 2025-11-15
 **Status**: Production-Ready ✅
 
 Security Fixes

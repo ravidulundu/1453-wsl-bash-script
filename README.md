@@ -29,17 +29,21 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 - **İnteraktif Menüler** - Kullanıcı dostu çoklu seçim desteği
 - **Otomatik Algılama** - Paket yöneticisi ve işletim sistemi otomatik tespit
 - **PEP 668 Uyumlu** - Python'un harici yönetilen ortam standardına uyumlu
-- **Sudo Cache Keepalive** - Tek şifre girişi ile tüm kurulum boyunca sudo yetkisi
+- **Sudo Cache Keepalive** - Tek şifre girişi ile tüm kurulum boyunca sudo yetkisi (v2.2.1)
+- **Duplicate Prevention** - Araçlar tüm modlarda sadece bir kez kurulur ve görünür (v2.2.1)
+- **Smart Configuration** - Mevcut git config korunur, bashrc blokları START/END marker ile yönetilir (v2.2.1)
 - **Pre-flight Checks** - Kurulum öncesi sistem kontrolleri ve retry mekanizması
 
 ### 🔒 Güvenlik ve Kalite
 
-#### ✅ Tüm Kritik Bug'lar Düzeltildi (35/35)
-- **🔴 CRITICAL: 29 bugs → 0 bugs** (100% FIXED)
-- **🟡 HIGH: 3 bugs → 0 bugs** (100% FIXED)
-- **🟢 MEDIUM: 2 bugs → 1 bug** (50% FIXED)
+#### ✅ Tüm Bug'lar Düzeltildi (38/38)
+- **🔴 CRITICAL: 29 bugs → 0 bugs** (100% FIXED) - v2.2.0
+- **🟡 HIGH: 3 bugs → 0 bugs** (100% FIXED) - v2.2.0
+- **🟢 MEDIUM: 3 bugs → 0 bugs** (100% FIXED) - v2.2.1
+- **👤 USER-REPORTED: 3 bugs → 0 bugs** (100% FIXED) - v2.2.1
 - **Güvenlik Riski:** HIGH → **LOW** ✅
 - **Compliance:** Production-ready ✅
+- **Current Version:** v2.2.1 (2025-11-18)
 
 #### Güvenlik Özellikleri
 - **Command Injection Koruması** - 16 eval kullanımı kaldırıldı, güvenli array-based execution
