@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# FIX BUG-002: Add safety flags for robust error handling
+set -eo pipefail
+
 # Simple test to verify Go module integration
 echo "🔍 Testing Go Module Integration..."
 echo ""

@@ -7,12 +7,8 @@
 ensure_php_repository() {
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "\n${YELLOW}[BİLGİ]${NC} PHP için Ondřej Surý deposu kontrol ediliyor..."
-        # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-        # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
-        # INSTALL_CMD must not contain shell quoting - use arrays instead
-        local cmd_array
-        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-        "${cmd_array[@]}" software-properties-common ca-certificates apt-transport-https lsb-release gnupg
+        # FIX BUG-004: Use safe_install_packages() to prevent command injection
+        safe_install_packages software-properties-common ca-certificates apt-transport-https lsb-release gnupg
         if ! grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
             echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA ekleniyor..."
             sudo add-apt-repository -y ppa:ondrej/php
@@ -202,11 +198,8 @@ install_php_version() {
             ;;
         pacman)
             echo -e "${YELLOW}[UYARI]${NC} Arch Linux için PHP kurulumu manuel olarak yapılandırılmalıdır."
-            # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-            # WARNING: This won't handle INSTALL_CMD with quoted arguments
-            local cmd_array
-            IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-            "${cmd_array[@]}" php php-fpm
+            # FIX BUG-004: Use safe_install_packages() to prevent command injection
+            safe_install_packages php php-fpm
             ;;
     esac
 
@@ -217,12 +210,8 @@ install_php_version() {
 
     if [ ${#pkgs_to_install[@]} -gt 0 ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak paketler: ${pkgs_to_install[*]}"
-        # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-        # WARNING: This won't handle INSTALL_CMD with quoted arguments
-        # Package array is properly quoted, only cmd_array has potential issues
-        local cmd_array
-        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-        "${cmd_array[@]}" "${pkgs_to_install[@]}"
+        # FIX BUG-004: Use safe_install_packages() to prevent command injection
+        safe_install_packages "${pkgs_to_install[@]}"
     fi
 
     if [ ${#skipped_exts[@]} -gt 0 ]; then
@@ -255,17 +244,23 @@ install_php_version_menu() {
         return
     fi
 
+    # FIX BUG-007: Explicit array bounds checking for safety
+    local array_length="${#PHP_SUPPORTED_VERSIONS[@]}"
+
     if [ "$choice" = "$((index+1))" ]; then
+        # Ana menüye dön
         return
     elif [ "$choice" = "$index" ]; then
+        # Tüm sürümleri kur
         for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
             install_php_version "$ver"
         done
-    elif [ "$choice" -ge 1 ] && [ "$choice" -lt "$index" ]; then
+    elif [ "$choice" -ge 1 ] && [ "$choice" -le "$array_length" ]; then
+        # Individual version - validate bounds explicitly
         local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
         install_php_version "$selected_version"
     else
-        echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
+        echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen 1-$((index+1)) arası bir sayı girin."
     fi
 }
 

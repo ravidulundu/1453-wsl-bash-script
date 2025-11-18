@@ -4,6 +4,10 @@
 # Version: 2.0 - Modular Architecture
 # GitHub: https://github.com/altudev/1453-wsl-bash-script
 
+# FIX BUG-002: Add safety flags for robust error handling
+# Note: set -e may affect sourced modules, but this is an entry point script
+set -eo pipefail
+
 # Get the directory where this script resides
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -100,6 +104,15 @@ echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
 if sudo -v; then
     echo -e "${GREEN}[✓]${NC} Sudo yetkisi alındı"
 
+    # FIX BUG-012: Set trap BEFORE starting background process to prevent race condition
+    # Cleanup function to kill background process on exit
+    cleanup_sudo() {
+        if [ -n "${SUDO_KEEPALIVE_PID:-}" ]; then
+            kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
+        fi
+    }
+    trap cleanup_sudo EXIT INT TERM
+
     # Keep-alive: update sudo timestamp in background every 60 seconds
     # This prevents repeated password prompts during long installations
     (
@@ -109,14 +122,6 @@ if sudo -v; then
         done
     ) &
     SUDO_KEEPALIVE_PID=$!
-
-    # Cleanup function to kill background process on exit
-    cleanup_sudo() {
-        if [ -n "$SUDO_KEEPALIVE_PID" ]; then
-            kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
-        fi
-    }
-    trap cleanup_sudo EXIT
 else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
 fi

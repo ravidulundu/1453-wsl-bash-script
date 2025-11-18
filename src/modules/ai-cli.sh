@@ -254,10 +254,7 @@ install_github_cli() {
         detect_package_manager
     fi
 
-    # Safe execution without eval (prevents command injection)
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-
+    # FIX BUG-004: Use safe_install_packages() to prevent command injection
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} GitHub GPG key ekleniyor..."
         if ! curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; then
@@ -266,20 +263,20 @@ install_github_cli() {
         fi
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
         sudo apt update
-        if ! "${cmd_array[@]}" gh; then
+        if ! safe_install_packages gh; then
             track_failure "GitHub CLI" "apt install başarısız"
             return 1
         fi
 
     elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
         sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-        if ! "${cmd_array[@]}" gh; then
+        if ! safe_install_packages gh; then
             track_failure "GitHub CLI" "dnf install başarısız"
             return 1
         fi
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        if ! "${cmd_array[@]}" github-cli; then
+        if ! safe_install_packages github-cli; then
             track_failure "GitHub CLI" "pacman install başarısız"
             return 1
         fi

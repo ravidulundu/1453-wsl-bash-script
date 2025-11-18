@@ -108,6 +108,24 @@ declare -rx CHECKSUM_DISPLAY_LENGTH=16
 # Checksum compare length (characters)
 declare -rx CHECKSUM_FULL_DISPLAY=32
 
+# ==========================================
+# Bashrc Block Markers
+# ==========================================
+# FIX BUG-017: Centralized magic strings for bashrc blocks
+# These markers are used in shell-setup.sh and cleanup.sh to manage
+# custom configuration blocks in ~/.bashrc
+
+# Custom Functions block markers
+declare -rx BASHRC_MARKER_FUNCTIONS_START="===== START: Custom Functions - 1453 WSL Setup ====="
+declare -rx BASHRC_MARKER_FUNCTIONS_END="===== END: Custom Functions - 1453 WSL Setup ====="
+
+# Enhanced Bash Config block markers
+declare -rx BASHRC_MARKER_CONFIG_START="===== START: Enhanced Bash Config - 1453 WSL Setup ====="
+declare -rx BASHRC_MARKER_CONFIG_END="===== END: Enhanced Bash Config - 1453 WSL Setup ====="
+
+# Generic pattern for any 1453 WSL Setup block
+declare -rx BASHRC_MARKER_GENERIC_PATTERN="===== START:.*1453 WSL Setup ====="
+
 # Note: All constants use 'declare -rx' for atomic readonly+export declaration.
 # This ensures immutability (prevents accidental modification) while maintaining
 # availability in sourced scripts and subprocesses.

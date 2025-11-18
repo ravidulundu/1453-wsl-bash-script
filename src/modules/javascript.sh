@@ -36,7 +36,23 @@ install_nvm() {
 
     # Download and install NVM (using centralized version from config/tool-versions.sh)
     echo -e "${YELLOW}[BİLGİ]${NC} NVM ${NVM_VERSION} indiriliyor..."
-    curl -o- "$NVM_INSTALL_URL" | bash
+
+    # FIX BUG-001: Download to temp file first instead of piping directly to shell
+    local temp_script
+    temp_script=$(mktemp)
+    trap 'rm -f "$temp_script"' RETURN
+
+    if ! curl -fsSL "$NVM_INSTALL_URL" -o "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} NVM installer indirilirken hata oluştu"
+        track_failure "NVM" "İndirme hatası"
+        return 1
+    fi
+
+    if ! bash "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} NVM kurulum başarısız!"
+        track_failure "NVM" "Kurulum başarısız"
+        return 1
+    fi
 
     # Set up NVM directory
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
@@ -117,8 +133,20 @@ install_bun() {
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js (curl) ile kuruluyor..."
-    if ! curl -fsSL https://bun.sh/install | bash; then
-        echo -e "${RED}[HATA]${NC} Bun.js indirme/kurulum başarısız!"
+
+    # FIX BUG-001: Download to temp file first instead of piping directly to shell
+    local temp_script
+    temp_script=$(mktemp)
+    trap 'rm -f "$temp_script"' RETURN
+
+    if ! curl -fsSL https://bun.sh/install -o "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} Bun.js installer indirilirken hata oluştu"
+        track_failure "Bun.js" "İndirme hatası"
+        return 1
+    fi
+
+    if ! bash "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} Bun.js kurulum başarısız!"
         echo -e "${YELLOW}[UYARI]${NC} Network bağlantısını ve https://bun.sh erişilebilirliğini kontrol edin."
         return 1
     fi

@@ -159,8 +159,9 @@ setup_custom_functions() {
 
     local BASHRC="$HOME/.bashrc"
 
+    # FIX BUG-017: Use constant instead of hardcoded magic string
     # Check if functions already exist
-    if grep -q "===== START: Custom Functions - 1453 WSL Setup =====" "$BASHRC" 2>/dev/null; then
+    if grep -q "$BASHRC_MARKER_FUNCTIONS_START" "$BASHRC" 2>/dev/null; then
         echo -e "${CYAN}[BİLGİ]${NC} Özel fonksiyonlar zaten mevcut."
         return 0
     fi
@@ -194,8 +195,9 @@ setup_bashrc_enhancements() {
 
     local BASHRC="$HOME/.bashrc"
 
+    # FIX BUG-017: Use constant instead of hardcoded magic string
     # Check if enhancements already exist
-    if grep -q "===== START: Enhanced Bash Config - 1453 WSL Setup =====" "$BASHRC" 2>/dev/null; then
+    if grep -q "$BASHRC_MARKER_CONFIG_START" "$BASHRC" 2>/dev/null; then
         echo -e "${CYAN}[BİLGİ]${NC} Bash geliştirmeleri zaten mevcut."
         return 0
     fi

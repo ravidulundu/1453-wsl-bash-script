@@ -132,20 +132,16 @@ install_pipx() {
 
     echo -e "${YELLOW}[BİLGİ]${NC} Sistem paket yöneticisi ile pipx kuruluyor..."
 
-    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-    # WARNING: This won't handle INSTALL_CMD with quoted arguments
-    # Try installing pipx using the system package manager (safe execution)
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-
+    # FIX BUG-004: Use safe_install_packages() to prevent command injection
+    # Try installing pipx using the system package manager
     if [ "$PKG_MANAGER" = "apt" ]; then
-        "${cmd_array[@]}" pipx
+        safe_install_packages pipx
     elif [ "$PKG_MANAGER" = "dnf" ]; then
-        "${cmd_array[@]}" pipx
+        safe_install_packages pipx
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        "${cmd_array[@]}" python-pipx
+        safe_install_packages python-pipx
     elif [ "$PKG_MANAGER" = "yum" ]; then
-        "${cmd_array[@]}" pipx
+        safe_install_packages pipx
     fi
 
     # If system package manager failed, try manual installation
@@ -227,7 +223,23 @@ install_uv() {
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} UV kuruluyor..."
-    curl -LsSf "$UV_INSTALL_URL" | sh
+
+    # FIX BUG-001: Download to temp file first instead of piping directly to shell
+    local temp_script
+    temp_script=$(mktemp)
+    trap 'rm -f "$temp_script"' RETURN
+
+    if ! curl -fsSL "$UV_INSTALL_URL" -o "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} UV installer indirilirken hata oluştu"
+        track_failure "UV" "İndirme hatası"
+        return 1
+    fi
+
+    if ! sh "$temp_script"; then
+        echo -e "${RED}[HATA]${NC} UV kurulum başarısız!"
+        track_failure "UV" "Kurulum başarısız"
+        return 1
+    fi
 
     # Add Cargo bin to PATH
     export PATH="$HOME/.cargo/bin:$PATH"

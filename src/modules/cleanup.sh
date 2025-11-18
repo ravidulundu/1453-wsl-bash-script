@@ -332,10 +332,10 @@ cleanup_php() {
         # FIX BUG-005: Properly quote package list to prevent word splitting issues
         # Get list of installed PHP packages safely using dpkg
         local php_packages
-        # FIX BUG-021: Use mapfile directly from command substitution (more efficient)
-        # FIX BUG-022: Improve regex to match PHP packages with multiple digits (php8, php10, php8.3)
+        # FIX BUG-016: Improved regex to match ALL PHP packages
+        # Matches: php8, php8.3, php8.3-cli, php8.3-fpm, php-common, etc.
         local -a pkg_array
-        mapfile -t pkg_array < <(dpkg -l | grep '^ii' | grep -E 'php[0-9]+(\.[0-9]+)?' | awk '{print $2}')
+        mapfile -t pkg_array < <(dpkg -l | grep '^ii' | grep -E 'php[0-9]*(\.[0-9]+)?(-[a-z0-9]+)?' | awk '{print $2}')
         if [ "${#pkg_array[@]}" -gt 0 ]; then
             sudo apt remove -y "${pkg_array[@]}" 2>/dev/null
             sudo apt autoremove -y 2>/dev/null
@@ -474,6 +474,21 @@ cleanup_shell_configs() {
         echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi"
     fi
 
+    # FIX BUG-008: Validate marker integrity before cleanup
+    # Count START and END markers to ensure they're balanced
+    if [ -f ~/.bashrc ]; then
+        local start_count=$(grep -c "$BASHRC_MARKER_GENERIC_PATTERN" ~/.bashrc 2>/dev/null || echo "0")
+        local end_count=$(grep -c "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0")
+
+        if [ "$start_count" -ne "$end_count" ]; then
+            echo -e "${RED}[UYARI]${NC} .bashrc'de eşleşmeyen START/END marker'ları bulundu!"
+            echo -e "${YELLOW}[BİLGİ]${NC} START marker'ları: $start_count, END marker'ları: $end_count"
+            echo -e "${YELLOW}[BİLGİ]${NC} Elle kontrol etmeniz önerilir: ~/.bashrc"
+            echo -e "${YELLOW}[!]${NC} Temizleme atlanıyor (güvenlik için)."
+            return 1
+        fi
+    fi
+
     # Remove 1453 Setup related lines from .bashrc - SAFE CLEANUP
     if [ -f ~/.bashrc ]; then
         # Create a temp file for safe editing
@@ -486,16 +501,18 @@ cleanup_shell_configs() {
             local skip_line=0
 
             # Detect START of 1453 WSL Setup blocks
-            if [[ "$line" =~ "===== START: Custom Functions - 1453 WSL Setup =====" ]] || \
-               [[ "$line" =~ "===== START: Enhanced Bash Config - 1453 WSL Setup =====" ]] || \
-               [[ "$line" =~ "===== START:".*"1453 WSL Setup =====" ]]; then
+            # FIX BUG-017: Use constants instead of hardcoded magic strings
+            if [[ "$line" =~ "$BASHRC_MARKER_FUNCTIONS_START" ]] || \
+               [[ "$line" =~ "$BASHRC_MARKER_CONFIG_START" ]] || \
+               [[ "$line" =~ $BASHRC_MARKER_GENERIC_PATTERN ]]; then
                 in_1453_block=1
                 skip_line=1
             fi
 
             # Detect END of 1453 WSL Setup blocks
-            if [[ "$line" =~ "===== END: Custom Functions - 1453 WSL Setup =====" ]] || \
-               [[ "$line" =~ "===== END: Enhanced Bash Config - 1453 WSL Setup =====" ]] || \
+            # FIX BUG-017: Use constants instead of hardcoded magic strings
+            if [[ "$line" =~ "$BASHRC_MARKER_FUNCTIONS_END" ]] || \
+               [[ "$line" =~ "$BASHRC_MARKER_CONFIG_END" ]] || \
                [[ "$line" =~ "===== END:".*"1453 WSL Setup =====" ]]; then
                 in_1453_block=0
                 skip_line=1

@@ -58,12 +58,21 @@ install_go_official() {
         return 0
     fi
 
-    # Detect architecture
+    # FIX BUG-015: Expand architecture support
+    # Detect architecture (Go supports: amd64, arm64, armv6l, 386, ppc64le, s390x)
     local arch="amd64"
     case $(uname -m) in
         "x86_64") arch="amd64" ;;
-        "aarch64") arch="arm64" ;;
-        *) echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"; return 1 ;;
+        "aarch64" | "arm64") arch="arm64" ;;
+        "armv7l" | "armv6l") arch="armv6l" ;;
+        "i686" | "i386") arch="386" ;;
+        "ppc64le") arch="ppc64le" ;;
+        "s390x") arch="s390x" ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Desteklenmeyen mimari: $(uname -m)"
+            echo -e "${YELLOW}[BİLGİ]${NC} Desteklenen mimariler: x86_64, aarch64, armv7l, i686, ppc64le, s390x"
+            return 1
+            ;;
     esac
 
     # Get latest version with retry and fallback
@@ -147,17 +156,12 @@ install_go_package() {
         return 0
     fi
 
-    # FIX BUG-004: IFS splitting - Safe for current INSTALL_CMD values
-    # WARNING: This won't handle INSTALL_CMD with quoted arguments (e.g., -o "foo bar")
-    # INSTALL_CMD must not contain shell quoting - use arrays instead
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-
+    # FIX BUG-004: Use safe_install_packages() to prevent command injection
     # Detect package manager and install
     case "$PKG_MANAGER" in
         "apt")
             echo -e "${YELLOW}[BİLGİ]${NC} APT ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang-go; then
+            if safe_install_packages golang-go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go APT ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} APT ile Go kurulumu başarısız!"
@@ -166,7 +170,7 @@ install_go_package() {
             ;;
         "dnf")
             echo -e "${YELLOW}[BİLGİ]${NC} DNF ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang; then
+            if safe_install_packages golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go DNF ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} DNF ile Go kurulumu başarısız!"
@@ -175,7 +179,7 @@ install_go_package() {
             ;;
         "yum")
             echo -e "${YELLOW}[BİLGİ]${NC} YUM ile Go kuruluyor..."
-            if "${cmd_array[@]}" golang; then
+            if safe_install_packages golang; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go YUM ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} YUM ile Go kurulumu başarısız!"
@@ -184,7 +188,7 @@ install_go_package() {
             ;;
         "pacman")
             echo -e "${YELLOW}[BİLGİ]${NC} Pacman ile Go kuruluyor..."
-            if "${cmd_array[@]}" go; then
+            if safe_install_packages go; then
                 echo -e "${GREEN}[BAŞARILI]${NC} Go Pacman ile kuruldu!"
             else
                 echo -e "${RED}[HATA]${NC} Pacman ile Go kurulumu başarısız!"

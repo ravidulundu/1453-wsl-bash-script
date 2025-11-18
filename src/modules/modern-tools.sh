@@ -283,7 +283,21 @@ install_modern_tools_apt() {
     # Install lazydocker
     if ! command -v lazydocker &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Lazydocker kuruluyor..."
-        curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+        # FIX BUG-001: Download to temp file first instead of piping directly to shell
+        local temp_script
+        temp_script=$(mktemp)
+        trap 'rm -f "$temp_script"' RETURN
+
+        if ! curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
+            return 1
+        fi
+
+        if ! bash "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
+            return 1
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazydocker zaten kurulu."
     fi
@@ -371,7 +385,20 @@ install_lazygit_generic() {
 
 install_lazydocker_generic() {
     if ! command -v lazydocker &> /dev/null; then
-        curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+        # FIX BUG-001: Download to temp file first instead of piping directly to shell
+        local temp_script
+        temp_script=$(mktemp)
+        trap 'rm -f "$temp_script"' RETURN
+
+        if ! curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
+            return 1
+        fi
+
+        if ! bash "$temp_script"; then
+            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
+            return 1
+        fi
     fi
 }
 

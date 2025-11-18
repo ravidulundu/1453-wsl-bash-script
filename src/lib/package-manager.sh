@@ -2,6 +2,59 @@
 # Package Manager Detection and System Updates
 # This file detects the OS package manager and provides system update functions
 
+# FIX BUG-004: Safe package installation wrapper function
+# This prevents command injection by using proper array expansion
+# Usage: safe_install_packages package1 package2 package3
+safe_install_packages() {
+    if [ $# -eq 0 ]; then
+        echo -e "${RED}[HATA]${NC} safe_install_packages: Paket adı gerekli"
+        return 1
+    fi
+
+    case "$PKG_MANAGER" in
+        "apt")
+            sudo DEBIAN_FRONTEND=noninteractive apt install -y "$@"
+            ;;
+        "dnf")
+            sudo dnf install -y "$@"
+            ;;
+        "yum")
+            sudo yum install -y "$@"
+            ;;
+        "pacman")
+            sudo pacman -S --noconfirm "$@"
+            ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Bilinmeyen paket yöneticisi: $PKG_MANAGER"
+            return 1
+            ;;
+    esac
+}
+
+# FIX BUG-004: Safe system update wrapper function
+# This prevents command injection for complex update commands (e.g., apt update && apt upgrade)
+safe_update_system() {
+    case "$PKG_MANAGER" in
+        "apt")
+            sudo DEBIAN_FRONTEND=noninteractive apt update && \
+            sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
+            ;;
+        "dnf")
+            sudo dnf upgrade -y
+            ;;
+        "yum")
+            sudo yum update -y
+            ;;
+        "pacman")
+            sudo pacman -Syu --noconfirm
+            ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Bilinmeyen paket yöneticisi: $PKG_MANAGER"
+            return 1
+            ;;
+    esac
+}
+
 # Detect the system package manager and set global variables
 detect_package_manager() {
     echo -e "${YELLOW}[BİLGİ]${NC} İşletim sistemi ve paket yöneticisi tespit ediliyor..."
@@ -9,18 +62,22 @@ detect_package_manager() {
     if command -v dnf &> /dev/null; then
         PKG_MANAGER="dnf"
         UPDATE_CMD="sudo dnf upgrade -y"
+        # NOTE: INSTALL_CMD kept for backward compatibility, but safe_install_packages() is preferred
         INSTALL_CMD="sudo dnf install -y"
     elif command -v apt &> /dev/null; then
         PKG_MANAGER="apt"
         UPDATE_CMD="sudo DEBIAN_FRONTEND=noninteractive apt update && sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y"
+        # NOTE: INSTALL_CMD kept for backward compatibility, but safe_install_packages() is preferred
         INSTALL_CMD="sudo DEBIAN_FRONTEND=noninteractive apt install -y"
     elif command -v yum &> /dev/null; then
         PKG_MANAGER="yum"
         UPDATE_CMD="sudo yum update -y"
+        # NOTE: INSTALL_CMD kept for backward compatibility, but safe_install_packages() is preferred
         INSTALL_CMD="sudo yum install -y"
     elif command -v pacman &> /dev/null; then
         PKG_MANAGER="pacman"
         UPDATE_CMD="sudo pacman -Syu --noconfirm"
+        # NOTE: INSTALL_CMD kept for backward compatibility, but safe_install_packages() is preferred
         INSTALL_CMD="sudo pacman -S --noconfirm"
     else
         echo -e "${RED}[HATA]${NC} Desteklenen bir paket yöneticisi bulunamadı!"
@@ -29,19 +86,25 @@ detect_package_manager() {
 
     echo -e "${GREEN}[BAŞARILI]${NC} Paket yöneticisi: $PKG_MANAGER"
 
-    # Export variables for use in other modules
+    # Export variables and functions for use in other modules
     export PKG_MANAGER
-    export UPDATE_CMD
-    export INSTALL_CMD
+    export UPDATE_CMD  # Backward compatibility
+    export INSTALL_CMD  # Backward compatibility
+    export -f safe_install_packages
+    export -f safe_update_system
 }
 
 # Install package with retry mechanism
 # Usage: install_package_with_retry "package_name" [max_retries]
-# FIX BUG-002: Safely handle package names with proper quoting to prevent command injection
+# FIX BUG-004: Use safe_install_packages() to prevent command injection
 install_package_with_retry() {
     local packages="$1"
     local max_retries="${2:-$MAX_PACKAGE_RETRIES}"
     local attempt=1
+
+    # Convert space-separated packages to array for safe expansion
+    local -a pkg_array
+    IFS=' ' read -ra pkg_array <<< "$packages"
 
     while [ $attempt -le $max_retries ]; do
         if [ $attempt -gt 1 ]; then
@@ -49,14 +112,8 @@ install_package_with_retry() {
             sleep "$RETRY_DELAY_SECONDS"
         fi
 
-        # Use array to safely execute INSTALL_CMD without eval
-        local -a cmd_array
-        local -a pkg_array
-        IFS=' ' read -ra cmd_array <<< "$INSTALL_CMD"
-        IFS=' ' read -ra pkg_array <<< "$packages"
-
-        # SAFE: Both command and packages are properly expanded as arrays
-        if "${cmd_array[@]}" "${pkg_array[@]}"; then
+        # Use safe wrapper function (prevents command injection)
+        if safe_install_packages "${pkg_array[@]}"; then
             return 0
         fi
 
@@ -70,11 +127,7 @@ install_package_with_retry() {
 update_system() {
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
 
-    # Try system update with retry
-    # Safe execution without eval (prevents command injection)
-    local cmd_array
-    IFS=' ' read -ra cmd_array <<< "$UPDATE_CMD"
-
+    # FIX BUG-004: Use safe wrapper function for system updates
     local update_attempt=1
     while [ $update_attempt -le $MAX_UPDATE_RETRIES ]; do
         if [ $update_attempt -gt 1 ]; then
@@ -82,7 +135,7 @@ update_system() {
             sleep "$RETRY_DELAY_SECONDS"
         fi
 
-        if "${cmd_array[@]}"; then
+        if safe_update_system; then
             echo -e "${GREEN}[✓]${NC} Sistem güncellemesi başarılı!"
             break
         fi
