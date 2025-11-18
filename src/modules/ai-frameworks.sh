@@ -26,12 +26,17 @@ install_supergemini() {
     reload_shell_configs
 
     if command -v supergemini &> /dev/null; then
+        local version
+        version=$(supergemini --version 2>/dev/null | head -n1 || echo "installed")
+        track_success "SuperGemini Framework" "$version"
         echo -e "${GREEN}[BAŞARILI]${NC} SuperGemini kurulumu tamamlandı!"
         echo -e "\n${CYAN}[BİLGİ]${NC} SuperGemini Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Başlatma: ${GREEN}supergemini${NC}"
         echo -e "  ${GREEN}•${NC} Model seçimi: ${GREEN}supergemini --model gemini-pro${NC}"
         echo -e "  ${GREEN}•${NC} Yardım: ${GREEN}supergemini --help${NC}"
+        return 0
     else
+        track_failure "SuperGemini Framework" "Kurulum başarısız"
         echo -e "${RED}[HATA]${NC} SuperGemini kurulumu başarısız!"
         return 1
     fi
@@ -60,12 +65,17 @@ install_superqwen() {
     reload_shell_configs
 
     if command -v superqwen &> /dev/null; then
+        local version
+        version=$(superqwen --version 2>/dev/null | head -n1 || echo "installed")
+        track_success "SuperQwen Framework" "$version"
         echo -e "${GREEN}[BAŞARILI]${NC} SuperQwen kurulumu tamamlandı!"
         echo -e "\n${CYAN}[BİLGİ]${NC} SuperQwen Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Başlatma: ${GREEN}superqwen${NC}"
         echo -e "  ${GREEN}•${NC} Model seçimi: ${GREEN}superqwen --model qwen-turbo${NC}"
         echo -e "  ${GREEN}•${NC} API key ayarlama: ${GREEN}export QWEN_API_KEY='your-api-key'${NC}"
+        return 0
     else
+        track_failure "SuperQwen Framework" "Kurulum başarısız"
         echo -e "${RED}[HATA]${NC} SuperQwen kurulumu başarısız!"
         return 1
     fi
@@ -94,12 +104,17 @@ install_superclaude() {
     reload_shell_configs
 
     if command -v superclaude &> /dev/null; then
+        local version
+        version=$(superclaude --version 2>/dev/null | head -n1 || echo "installed")
+        track_success "SuperClaude Framework" "$version"
         echo -e "${GREEN}[BAŞARILI]${NC} SuperClaude kurulumu tamamlandı!"
         echo -e "\n${CYAN}[BİLGİ]${NC} SuperClaude Kullanım İpuçları:"
         echo -e "  ${GREEN}•${NC} Başlatma: ${GREEN}superclaude${NC}"
         echo -e "  ${GREEN}•${NC} Model seçimi: ${GREEN}superclaude --model claude-3${NC}"
         echo -e "  ${GREEN}•${NC} API key ayarlama: ${GREEN}export ANTHROPIC_API_KEY='your-api-key'${NC}"
+        return 0
     else
+        track_failure "SuperClaude Framework" "Kurulum başarısız"
         echo -e "${RED}[HATA]${NC} SuperClaude kurulumu başarısız!"
         return 1
     fi

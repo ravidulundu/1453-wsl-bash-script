@@ -9,13 +9,31 @@ setup_custom_shell() {
     echo -e "${BLUE}║          SHELL ORTAMI HAZIRLANIYOR            ║${NC}"
     echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
-    setup_bash_aliases
-    setup_custom_functions
-    setup_bashrc_enhancements
-    setup_starship_config
+    # Run setup functions with error checking
+    if ! setup_bash_aliases; then
+        track_failure "Shell Configuration" "Alias kurulumu başarısız"
+        return 1
+    fi
 
+    if ! setup_custom_functions; then
+        track_failure "Shell Configuration" "Fonksiyon kurulumu başarısız"
+        return 1
+    fi
+
+    if ! setup_bashrc_enhancements; then
+        track_failure "Shell Configuration" "Bashrc geliştirmeleri başarısız"
+        return 1
+    fi
+
+    if ! setup_starship_config; then
+        track_failure "Shell Configuration" "Starship config başarısız"
+        return 1
+    fi
+
+    track_success "Shell Configuration" "(62 aliases, starship, enhancements)"
     echo -e "\n${GREEN}[BAŞARILI]${NC} Shell ortamı yapılandırması tamamlandı!"
     echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için: ${GREEN}source ~/.bashrc${NC}"
+    return 0
 }
 
 # Setup custom aliases
@@ -132,6 +150,7 @@ EOF
     fi
 
     echo -e "${GREEN}[BAŞARILI]${NC} Alias'lar yapılandırıldı: $ALIASES_FILE"
+    return 0
 }
 
 # Setup custom functions
@@ -164,6 +183,7 @@ make() {
 EOF
 
     echo -e "${GREEN}[BAŞARILI]${NC} Özel fonksiyonlar eklendi."
+    return 0
 }
 
 # Setup enhanced bashrc configuration
@@ -185,8 +205,8 @@ setup_bashrc_enhancements() {
 
 # History settings
 export HISTCONTROL=ignoreboth:erasedups
-export HISTSIZE=$BASH_HISTSIZE
-export HISTFILESIZE=$BASH_HISTFILESIZE
+export HISTSIZE=100000
+export HISTFILESIZE=200000
 export HISTTIMEFORMAT="%F %T "
 export HISTIGNORE="ls:ll:la:pwd:exit:history:clear:cd"
 shopt -s histappend
@@ -195,7 +215,7 @@ shopt -s histappend
 PROMPT_COMMAND="history -a; history -c; history -r; ${PROMPT_COMMAND}"
 
 # Terminal settings
-export TERM=$TERM_COLOR_MODE
+export TERM=xterm-256color
 
 # Modern tool configurations
 if command -v starship &>/dev/null; then
@@ -235,6 +255,7 @@ export BROWSER=wslview
 EOF
 
     echo -e "${GREEN}[BAŞARILI]${NC} Bash yapılandırması geliştirildi."
+    return 0
 }
 
 # Setup Starship configuration
@@ -334,6 +355,7 @@ symbol = " "
 EOF
 
     echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
+    return 0
 }
 
 # Export functions

@@ -211,12 +211,8 @@ execute_installation_plan() {
     install_pipx
     install_uv
     install_modern_cli_tools
-
-    if setup_custom_shell; then
-        track_success "Shell Configuration" "(62 aliases)"
-    else
-        track_failure "Shell Configuration"
-    fi
+    # Note: setup_custom_shell() already handles tracking internally
+    setup_custom_shell
 
     # Install tools
     for tool in "${tools[@]}"; do
@@ -262,11 +258,8 @@ execute_installation_plan() {
             "ai_frameworks")
                 # Quick Start: Install SuperClaude framework automatically
                 echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
-                if install_superclaude; then
-                    track_success "SuperClaude Framework"
-                else
-                    track_failure "SuperClaude Framework"
-                fi
+                # Note: install_superclaude() already handles tracking internally
+                install_superclaude
                 ;;
             "git_config")
                 # Configure Git (will check existing config first)
