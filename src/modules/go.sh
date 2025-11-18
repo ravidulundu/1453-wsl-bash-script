@@ -300,16 +300,17 @@ remove_go() {
 
     # Remove Go from PATH in shell RC files
     local rc_files=("$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile")
-    
+
     for rc_file in "${rc_files[@]}"; do
         if [ -f "$rc_file" ]; then
+            # FIX BUG-014: Use portable temp file approach instead of sed -i
             # Remove Go PATH configuration
-            sed -i '/export PATH=\$PATH:\/usr\/local\/go\/bin/d' "$rc_file" 2>/dev/null
-            sed -i '/# Go binary path/d' "$rc_file" 2>/dev/null
-            
+            sed '/export PATH=\$PATH:\/usr\/local\/go\/bin/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+            sed '/# Go binary path/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+
             # Remove GOPATH configuration
-            sed -i '/export GOPATH=\$HOME\/go/d' "$rc_file" 2>/dev/null
-            sed -i '/export PATH=\$PATH:\$GOPATH\/bin/d' "$rc_file" 2>/dev/null
+            sed '/export GOPATH=\$HOME\/go/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
+            sed '/export PATH=\$PATH:\$GOPATH\/bin/d' "$rc_file" > "$rc_file.tmp" 2>/dev/null && mv "$rc_file.tmp" "$rc_file"
         fi
     done
 

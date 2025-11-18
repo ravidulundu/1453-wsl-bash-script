@@ -291,10 +291,11 @@ cleanup_nodejs() {
         echo -e "${YELLOW}[BİLGİ]${NC} NVM kaldırılıyor..."
         rm -rf ~/.nvm
 
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove NVM from shell configs
-        sed -i '/NVM_DIR/d' ~/.bashrc 2>/dev/null
-        sed -i '/nvm.sh/d' ~/.bashrc 2>/dev/null
-        sed -i '/bash_completion/d' ~/.bashrc 2>/dev/null
+        sed '/NVM_DIR/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/nvm.sh/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/bash_completion/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
         echo -e "${GREEN}[BAŞARILI]${NC} NVM kaldırıldı"
     fi
@@ -303,7 +304,8 @@ cleanup_nodejs() {
     if command -v bun &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Bun kaldırılıyor..."
         rm -rf ~/.bun
-        sed -i '/BUN_INSTALL/d' ~/.bashrc 2>/dev/null
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
+        sed '/BUN_INSTALL/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
         echo -e "${GREEN}[BAŞARILI]${NC} Bun kaldırıldı"
     fi
 
@@ -360,9 +362,10 @@ cleanup_go() {
         echo -e "${YELLOW}[BİLGİ]${NC} Go kaldırılıyor..."
         sudo rm -rf /usr/local/go
 
+        # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove from PATH
-        sed -i '/\/usr\/local\/go\/bin/d' ~/.bashrc 2>/dev/null
-        sed -i '/GOPATH/d' ~/.bashrc 2>/dev/null
+        sed '/\/usr\/local\/go\/bin/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/GOPATH/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
         echo -e "${GREEN}[BAŞARILI]${NC} Go kaldırıldı"
     else

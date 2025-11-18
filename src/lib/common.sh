@@ -264,7 +264,12 @@ verify_checksum() {
     fi
 
     # Compare checksums (case-insensitive)
-    if [ "${actual_checksum,,}" = "${expected_checksum,,}" ]; then
+    # FIX BUG-012: Use portable tr instead of bash 4.0+ ${var,,} syntax
+    local actual_lower expected_lower
+    actual_lower=$(echo "$actual_checksum" | tr '[:upper:]' '[:lower:]')
+    expected_lower=$(echo "$expected_checksum" | tr '[:upper:]' '[:lower:]')
+
+    if [ "$actual_lower" = "$expected_lower" ]; then
         echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:$CHECKSUM_DISPLAY_LENGTH}..."
         return 0
     else

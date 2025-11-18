@@ -17,12 +17,13 @@ if [ -f "$0" ] && [ "$(basename "$0")" = "linux-ai-setup-script.sh" ]; then
         if command -v dos2unix &> /dev/null; then
             dos2unix "$0"
         elif command -v sed &> /dev/null; then
-            sed -i 's/\r$//' "$0"
+            # FIX BUG-014: Use portable temp file approach instead of sed -i
+            sed 's/\r$//' "$0" > "$0.tmp" && mv "$0.tmp" "$0"
         elif command -v tr &> /dev/null; then
             tr -d '\r' < "$0" > "$0.tmp" && mv "$0.tmp" "$0"
         else
             echo "UYARI: CRLF düzeltme araçları bulunamadı (dos2unix, sed veya tr)"
-            echo "Manuel düzeltme için: sed -i 's/\r$//' $0"
+            echo "Manuel düzeltme için: sed 's/\r$//' \$0 > \$0.tmp && mv \$0.tmp \$0"
             exit 1
         fi
 
@@ -51,7 +52,8 @@ if [ -f "$0" ] && [ "$(basename "$0")" = "linux-ai-setup-script.sh" ]; then
                         if command -v dos2unix &> /dev/null; then
                             dos2unix "$module_file" 2>/dev/null
                         elif command -v sed &> /dev/null; then
-                            sed -i 's/\r$//' "$module_file" 2>/dev/null
+                            # FIX BUG-014: Use portable temp file approach instead of sed -i
+                            sed 's/\r$//' "$module_file" > "$module_file.tmp" 2>/dev/null && mv "$module_file.tmp" "$module_file"
                         elif command -v tr &> /dev/null; then
                             tr -d '\r' < "$module_file" > "$module_file.tmp" && mv "$module_file.tmp" "$module_file"
                         fi
