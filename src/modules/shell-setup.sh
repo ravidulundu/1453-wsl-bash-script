@@ -220,6 +220,10 @@ PROMPT_COMMAND="history -a; history -c; history -r; ${PROMPT_COMMAND}"
 export TERM=xterm-256color
 
 # Modern tool configurations
+# NOTE: eval usage here is SAFE (official pattern from tool documentation)
+# - starship/zoxide init: trusted binary, hardcoded command, no user input
+# - Different from package installation eval (which had command injection risk)
+# - Official recommended method: https://starship.rs/guide/
 if command -v starship &>/dev/null; then
     eval "$(starship init bash)"
 fi
