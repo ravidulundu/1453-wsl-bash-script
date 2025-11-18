@@ -35,8 +35,9 @@ if [ -f "$0" ] && [ "$(basename "$0")" = "linux-ai-setup-script.sh" ]; then
 
     # Also check all sourced module files for CRLF
     if [ -n "${SCRIPT_DIR:-}" ] && [ -d "${SCRIPT_DIR}" ]; then
-        local has_crlf=false
-        local fixed_files=()
+        # FIX BUG-025: Remove 'local' keyword - can only be used in functions
+        has_crlf=false
+        fixed_files=()
 
         # Check each subdirectory separately to avoid syntax issues with brace expansion
         for subdir in lib config modules; do

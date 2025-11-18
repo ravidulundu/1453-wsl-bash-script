@@ -82,9 +82,10 @@ install_go_official() {
 
     if [ -z "$go_version" ]; then
         echo -e "${YELLOW}[UYARI]${NC} Go sürüm bilgisi alınamadı, varsayılan sürüm kullanılıyor..."
-        # Fallback to known stable version
-        go_version="go1.21.5"
-        echo -e "${CYAN}[BİLGİ]${NC} Kullanılacak sürüm: $go_version"
+        # FIX BUG-026: Remove 'go' prefix - it's added in tarball name construction
+        # Fallback to known stable version (without 'go' prefix)
+        go_version="1.21.5"
+        echo -e "${CYAN}[BİLGİ]${NC} Kullanılacak sürüm: go$go_version"
     else
         echo -e "${GREEN}[✓]${NC} Son sürüm bulundu: $go_version"
     fi

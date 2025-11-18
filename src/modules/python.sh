@@ -82,13 +82,15 @@ install_pip() {
 
     # Handle PEP 668 externally-managed-environment error
     # FIX BUG-011: Capture exit code properly from pip install, not from if/else or grep
-    local pip_exit_code=0
-    if python3 -m pip install --upgrade pip 2>&1 | grep -q "externally-managed-environment"; then
+    # FIX BUG-028: Capture output first, only run pip once (not twice)
+    local pip_output
+    pip_output=$(python3 -m pip install --upgrade pip 2>&1)
+    local pip_exit_code=$?
+
+    # If PEP 668 error detected, retry with --break-system-packages
+    if echo "$pip_output" | grep -q "externally-managed-environment"; then
         echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, --break-system-packages ile deneniyor..."
         python3 -m pip install --upgrade pip --break-system-packages
-        pip_exit_code=$?
-    else
-        python3 -m pip install --upgrade pip
         pip_exit_code=$?
     fi
 
@@ -151,21 +153,18 @@ install_pipx() {
         echo -e "${YELLOW}[BİLGİ]${NC} Sistem paketi bulunamadı, manuel kurulum yapılıyor..."
 
         # FIX BUG-024: Improved PEP 668 detection - check before attempting install
+        # FIX BUG-027: Use --user instead of copying from temp venv (preserves dependencies)
         local pep668_marker="/usr/lib/python3*/EXTERNALLY-MANAGED"
         if compgen -G "$pep668_marker" > /dev/null 2>&1; then
             echo -e "${YELLOW}[BİLGİ]${NC} PEP 668 detected (externally-managed environment)"
-            echo -e "${YELLOW}[BİLGİ]${NC} Using venv approach for safe installation..."
+            echo -e "${YELLOW}[BİLGİ]${NC} Using --user approach for safe installation..."
 
-            # Use temporary venv for installation (preferred method)
+            # Use temporary venv to bootstrap user installation (preserves all dependencies)
             local TEMP_VENV="/tmp/pipx_install_venv_$$"
             python3 -m venv "$TEMP_VENV"
-            "$TEMP_VENV/bin/pip" install --quiet pipx
+            "$TEMP_VENV/bin/pip" install --quiet --user pipx
 
-            # Copy pipx to user's local bin
-            mkdir -p "$HOME/.local/bin"
-            cp "$TEMP_VENV/bin/pipx" "$HOME/.local/bin/"
-
-            # Cleanup
+            # Cleanup temp venv (user installation is in ~/.local)
             rm -rf "$TEMP_VENV"
         else
             # No PEP 668 restriction, safe to install directly
