@@ -466,7 +466,7 @@ fi
 
 ### Utility Files
 13. **`install.sh`** - One-line installer (how users install)
-14. **`fix-crlf.sh`** - Helper for Windows line ending issues
+14. **`scripts/fix-crlf.sh`** - Helper for Windows line ending issues
 
 ### Documentation
 15. **`README.md`** - User guide (Turkish)

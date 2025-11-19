@@ -19,8 +19,8 @@ set -o pipefail
 
 # FIX BUG-013: Ensure running with bash, not sh
 if [ -z "${BASH_VERSION:-}" ]; then
-    echo "Error: This script must be run with bash, not sh"
-    echo "Usage: bash test-setup.sh"
+    echo "Hata: Bu betik sh ile değil, bash ile çalıştırılmalıdır."
+    echo "Kullanım: bash test-setup.sh"
     exit 1
 fi
 
@@ -508,9 +508,9 @@ test_ai_cli_tools() {
     # GitHub CLI auth check
     if command -v gh &> /dev/null; then
         if gh auth status &>/dev/null; then
-            record_test "$category" "PASS" "GitHub CLI authenticated"
+            record_test "$category" "PASS" "GitHub CLI kimlik doğrulaması başarılı"
         else
-            record_test "$category" "WARNING" "GitHub CLI kurulu ama authenticated değil"
+            record_test "$category" "WARNING" "GitHub CLI kurulu ama kimlik doğrulaması yapılmamış"
         fi
     fi
 }
@@ -555,14 +555,14 @@ test_docker() {
     local category="Docker"
     show_category "$category"
 
-    check_command "docker" "$category" "Docker Engine"
+    check_command "docker" "$category"    # Docker Service Check
 
     if command -v docker &> /dev/null; then
         # Docker daemon kontrolü
-        if docker ps &>/dev/null; then
-            record_test "$category" "PASS" "Docker daemon çalışıyor"
+        if docker info &>/dev/null; then
+            record_test "$category" "PASS" "Docker Daemon çalışıyor"
         else
-            record_test "$category" "WARNING" "Docker kurulu ama daemon çalışmıyor"
+            record_test "$category" "WARNING" "Docker kurulu ama Daemon çalışmıyor (sudo service docker start gerekebilir)"
         fi
 
         # Docker group kontrolü
@@ -735,7 +735,7 @@ test_missing_installations() {
 
 # 15. Functional Tests - Gerçek Kullanım Testleri
 test_functional() {
-    local category="Functional Tests (Çalışma Testleri)"
+    local category="Fonksiyonel Testler"
     show_category "$category"
 
     # Test dizini oluştur

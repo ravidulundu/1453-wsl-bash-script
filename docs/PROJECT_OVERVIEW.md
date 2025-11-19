@@ -268,7 +268,7 @@ MIT License - See [LICENSE.md](LICENSE.md) for details
 ### Common Issues
 
 1. **Permission Denied**: `chmod +x script.sh`
-2. **CRLF Line Endings**: Use `fix-crlf.sh` or `sed -i 's/\r$//' script.sh`
+2. **CRLF Line Endings**: Use `scripts/fix-crlf.sh` or `sed -i 's/\r$//' script.sh`
 3. **Missing Dependencies**: Script installs prerequisites automatically
 4. **Shell Not Reloading**: Restart terminal or `source ~/.bashrc`
 

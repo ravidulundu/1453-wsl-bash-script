@@ -293,9 +293,10 @@ cleanup_nodejs() {
 
         # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove NVM from shell configs
-        sed '/NVM_DIR/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
-        sed '/nvm.sh/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
-        sed '/bash_completion/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        # FIX BUG-030: Use specific patterns to avoid deleting unrelated lines
+        sed '/export NVM_DIR=/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/NVM_DIR\/nvm.sh/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        sed '/NVM_DIR\/bash_completion/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
         echo -e "${GREEN}[BAŞARILI]${NC} NVM kaldırıldı"
     fi

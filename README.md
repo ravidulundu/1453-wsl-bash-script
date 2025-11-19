@@ -731,7 +731,7 @@ chmod +x src/linux-ai-setup-script.sh
 #### 2. CRLF Satır Sonları
 ```bash
 # Yardımcı script ile
-./fix-crlf.sh src/linux-ai-setup-script.sh
+./scripts/fix-crlf.sh src/linux-ai-setup-script.sh
 
 # Manuel düzeltme
 sed -i 's/\r$//' src/linux-ai-setup-script.sh

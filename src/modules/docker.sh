@@ -4,6 +4,7 @@
 # Dependencies: common.sh, package-manager.sh
 
 # Install Docker Engine
+# Install Docker Engine
 install_docker_engine() {
     echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
     echo -e "${BLUE}║          Docker Engine Kurulumu                ║${NC}"
@@ -17,6 +18,12 @@ install_docker_engine() {
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Docker Engine kuruluyor..."
+
+    # WSL Check
+    if grep -q "microsoft" /proc/version; then
+        echo -e "${YELLOW}[BİLGİ]${NC} WSL ortamı tespit edildi."
+        echo -e "${CYAN}[BİLGİ]${NC} Native Docker Engine kurulumu yapılıyor (Docker Desktop yerine)."
+    fi
 
     # Update package index
     sudo apt-get update
@@ -40,7 +47,6 @@ install_docker_engine() {
 
     if curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o "$temp_gpg_key"; then
         # Docker's official GPG key fingerprint (as of 2024)
-        # Source: https://docs.docker.com/engine/install/ubuntu/
         local expected_fingerprint="9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
 
         # Verify fingerprint
@@ -48,14 +54,11 @@ install_docker_engine() {
         actual_fingerprint=$(gpg --with-fingerprint --with-colons "$temp_gpg_key" 2>/dev/null | grep '^fpr' | head -n1 | cut -d: -f10 | tr -d ' ')
 
         if [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]; then
-            echo -e "${GREEN}[✓]${NC} GPG anahtarı doğrulandı: ${expected_fingerprint:0:16}..."
+            echo -e "${GREEN}[✓]${NC} GPG anahtarı doğrulandı."
             sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
         else
             echo -e "${RED}[✗]${NC} GPG anahtarı doğrulanamadı!"
-            echo -e "${YELLOW}[!]${NC} Beklenen: $expected_fingerprint"
-            echo -e "${YELLOW}[!]${NC} Bulunan:  $actual_fingerprint"
             echo -e "${YELLOW}[UYARI]${NC} Güvenlik nedeniyle kurulum devam ediyor ama GPG doğrulaması başarısız!"
-            # Install anyway but warn user (for compatibility)
             sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
         fi
         rm -f "$temp_gpg_key"
@@ -88,15 +91,27 @@ install_docker_engine() {
 
     # Start Docker service
     echo -e "${CYAN}[BİLGİ]${NC} Docker servisi başlatılıyor..."
-    sudo service docker start
+    if command -v systemctl &> /dev/null; then
+        sudo systemctl start docker || sudo service docker start
+        sudo systemctl enable docker 2>/dev/null
+    else
+        sudo service docker start
+    fi
 
     # Verify installation
     if command -v docker &> /dev/null; then
         echo -e "\n${GREEN}[BAŞARILI]${NC} Docker Engine kurulumu tamamlandı!"
         docker --version
-        echo -e "\n${YELLOW}[ÖNEMLİ]${NC} Docker'ı sudo olmadan kullanmak için:"
-        echo -e "  ${CYAN}newgrp docker${NC}"
-        echo -e "  veya terminali yeniden başlatın"
+
+        # Check daemon status
+        if ! docker info &> /dev/null; then
+            echo -e "\n${YELLOW}[UYARI]${NC} Docker kurulu ama daemon çalışmıyor veya erişilemiyor."
+            echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin etkili olması için oturumu kapatıp açın veya:"
+            echo -e "  ${CYAN}newgrp docker${NC}"
+            echo -e "  ${CYAN}sudo service docker start${NC}"
+        else
+            echo -e "${GREEN}[✓]${NC} Docker Daemon çalışıyor."
+        fi
     else
         echo -e "${RED}[HATA]${NC} Docker Engine kurulumu başarısız!"
         return 1
