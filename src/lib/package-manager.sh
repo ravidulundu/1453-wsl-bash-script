@@ -11,6 +11,11 @@ safe_install_packages() {
         return 1
     fi
 
+    # Auto-detect package manager if not already set
+    if [ -z "$PKG_MANAGER" ]; then
+        detect_package_manager
+    fi
+
     case "$PKG_MANAGER" in
         "apt")
             sudo DEBIAN_FRONTEND=noninteractive apt install -y "$@"
@@ -34,6 +39,11 @@ safe_install_packages() {
 # FIX BUG-004: Safe system update wrapper function
 # This prevents command injection for complex update commands (e.g., apt update && apt upgrade)
 safe_update_system() {
+    # Auto-detect package manager if not already set
+    if [ -z "$PKG_MANAGER" ]; then
+        detect_package_manager
+    fi
+
     case "$PKG_MANAGER" in
         "apt")
             sudo DEBIAN_FRONTEND=noninteractive apt update && \
@@ -125,6 +135,12 @@ install_package_with_retry() {
 
 # Update system packages and install essential tools with retry
 update_system() {
+    # Auto-detect package manager if not already set
+    if [ -z "$PKG_MANAGER" ]; then
+        echo -e "${YELLOW}[!]${NC} Paket yöneticisi tespit ediliyor..."
+        detect_package_manager
+    fi
+
     echo -e "\n${YELLOW}[BİLGİ]${NC} Sistem güncelleniyor..."
 
     # FIX BUG-004: Use safe wrapper function for system updates
