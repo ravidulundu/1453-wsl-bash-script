@@ -277,17 +277,19 @@ setup_starship_config() {
 
     local STARSHIP_CONFIG="$HOME/.config/starship.toml"
 
+    # Always overwrite to ensure correct icons and settings (User requested "her sey sorunsuz olmali")
     if [ -f "$STARSHIP_CONFIG" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Starship config zaten mevcut."
-        return 0
+        echo -e "${CYAN}[BİLGİ]${NC} Mevcut Starship config güncelleniyor..."
+        cp "$STARSHIP_CONFIG" "${STARSHIP_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
     fi
 
     mkdir -p "$HOME/.config"
 
-    # Create Starship configuration with Catppuccin Mocha theme + Nerd Font icons
+    # Create Starship configuration with Catppuccin Mocha theme + Nerd Font icons (Hardcoded for reliability)
+    # FIX: Directly writing icons instead of using fragile sed injection
     cat > "$STARSHIP_CONFIG" << 'EOF'
 # Starship Configuration - 1453 WSL Setup
-# Theme: Catppuccin Mocha
+# Theme: Catppuccin Mocha + Nerd Fonts
 
 # Catppuccin Mocha Color Palette
 palette = "catppuccin_mocha"
@@ -378,7 +380,7 @@ format = "[$path]($style)[$read_only]($read_only_style) "
 
 # Git Branch
 [git_branch]
-symbol = " "
+symbol = " "
 style = "bold mauve"
 format = "[$symbol$branch]($style) "
 
@@ -432,7 +434,7 @@ format = "[took $duration]($style)"
 
 # Programming Languages
 [nodejs]
-symbol = " "
+symbol = " "
 style = "bold green"
 format = "[$symbol($version )]($style)"
 
@@ -447,12 +449,12 @@ style = "bold green"
 format = "[$symbol($version )]($style)"
 
 [python]
-symbol = " "
+symbol = " "
 style = "bold yellow"
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 
 [golang]
-symbol = " "
+symbol = " "
 style = "bold cyan"
 format = "[$symbol($version )]($style)"
 
@@ -462,7 +464,7 @@ style = "bold red"
 format = "[$symbol($version )]($style)"
 
 [php]
-symbol = " "
+symbol = " "
 style = "bold mauve"
 format = "[$symbol($version )]($style)"
 
@@ -472,7 +474,7 @@ style = "bold red"
 format = "[$symbol($version )]($style)"
 
 [ruby]
-symbol = " "
+symbol = " "
 style = "bold red"
 format = "[$symbol($version )]($style)"
 
@@ -513,7 +515,7 @@ format = "[$symbol($version )]($style)"
 
 # DevOps & Infrastructure Tools
 [docker_context]
-symbol = " "
+symbol = " "
 style = "bold blue"
 format = "[$symbol$context]($style) "
 
@@ -697,46 +699,6 @@ style = "bold peach"
 format = "[$symbol($version )]($style)"
 
 EOF
-
-    # Inject Nerd Font icons for JetBrainsMono Nerd Font Mono
-    # FIX: Copilot AI found critical issues:
-    # 1. sed syntax: 0,/pattern/,/end/ is MALFORMED → use /start/,/end/{s//./}
-    # 2. No error handling → add if/else with rollback
-    # 3. Not idempotent → sed only replaces " " (safe to re-run)
-    # 4. Not atomic → backup + single-pass sed + rollback on failure
-    echo -e "${YELLOW}[BİLGİ]${NC} Nerd Font ikonları enjekte ediliyor..."
-
-    local backup_config="${STARSHIP_CONFIG}.backup"
-    local temp_config="${STARSHIP_CONFIG}.tmp"
-
-    # Backup original config for rollback
-    if ! cp "$STARSHIP_CONFIG" "$backup_config"; then
-        echo -e "${RED}[HATA]${NC} Yedekleme başarısız! Disk alanı, izin veya dosya eksikliği olabilir."
-        return 1
-    fi
-
-    # Apply all 7 icon injections in SINGLE atomic operation
-    # Pattern: /\[section\]/,/^$/{s/old/new/} = range substitution
-    if sed \
-        -e '/\[git_branch\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x82\xa0')' "/}' \
-        -e '/\[nodejs\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\x98')' "/}' \
-        -e '/\[python\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbc')' "/}' \
-        -e '/\[golang\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x98\xa6')' "/}' \
-        -e '/\[php\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9c\xbd')' "/}' \
-        -e '/\[ruby\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xee\x9e\x91')' "/}' \
-        -e '/\[docker_context\]/,/^$/{s/symbol = " "/symbol = "'$(echo -ne '\xef\x8c\x88')' "/}' \
-        "$STARSHIP_CONFIG" > "$temp_config"; then
-        # Success: replace original with injected version
-        mv "$temp_config" "$STARSHIP_CONFIG"
-        rm -f "$backup_config"
-        echo -e "${GREEN}[BAŞARILI]${NC} 7 Nerd Font ikonu enjekte edildi"
-    else
-        # Failure: rollback to backup
-        echo -e "${RED}[HATA]${NC} İkon enjektesi başarısız, config geri alınıyor..."
-        mv "$backup_config" "$STARSHIP_CONFIG"
-        rm -f "$temp_config"
-        return 1
-    fi
 
     echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
     echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"
