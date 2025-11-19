@@ -1,0 +1,60 @@
+# ==========================================
+# 1453 WSL Setup Script - Git Ignore Patterns
+# ==========================================
+
+# Bash Script Artifacts
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Logs
+*.log
+logs/
+
+# Development Artifacts
+test-go-*.sh
+todo-*.md
+
+# Bug Report Archives (keep only final versions)
+BUG-FIX-SUMMARY-[0-9]*.md
+BUG-ANALYSIS-*.md
+BUGFIX-*.md
+
+# Backup Directories
+backup-*/
+.1453-backups/
+
+# Diagnostic Files
+wsl_diagnostic.json
+wsl_diagnostic.json:Zone.Identifier
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# OS-Specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor-Specific
+.vscode/
+.idea/
+*.kate-swp
+.*.swp
+.*.swo
+*~
+
+# Archive (for reference only)
+docs/archive/
+
+# Deprecated Planning Docs
+TEST_WSL_RESET.md
+CLEANUP_FEATURE_PLAN.md
