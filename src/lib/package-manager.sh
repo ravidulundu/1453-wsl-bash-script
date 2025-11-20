@@ -98,8 +98,11 @@ detect_package_manager() {
 
     # Export variables and functions for use in other modules
     export PKG_MANAGER
-    export UPDATE_CMD  # Backward compatibility
-    export INSTALL_CMD  # Backward compatibility
+    # SECURITY FIX Y-1: Deprecated - use safe_install_packages() and safe_update_system() instead
+    # These are kept ONLY for backward compatibility checks (not for actual usage)
+    # NOTE: If any module still uses eval with these, it's a security vulnerability
+    export UPDATE_CMD  # DEPRECATED: Use safe_update_system() instead
+    export INSTALL_CMD  # DEPRECATED: Use safe_install_packages() instead
     export -f safe_install_packages
     export -f safe_update_system
 }
@@ -107,10 +110,24 @@ detect_package_manager() {
 # Install package with retry mechanism
 # Usage: install_package_with_retry "package_name" [max_retries]
 # FIX BUG-004: Use safe_install_packages() to prevent command injection
+# REFACTOR O-9: Added input validation
 install_package_with_retry() {
     local packages="$1"
     local max_retries="${2:-$MAX_PACKAGE_RETRIES}"
     local attempt=1
+
+    # SECURITY FIX O-9: Input validation
+    if [ -z "$packages" ]; then
+        echo -e "${RED}[HATA]${NC} install_package_with_retry: Boş paket listesi"
+        return 1
+    fi
+
+    # Validate package names (alphanumeric, dash, underscore, dot)
+    if ! [[ "$packages" =~ ^[a-zA-Z0-9\ \._-]+$ ]]; then
+        echo -e "${RED}[HATA]${NC} install_package_with_retry: Geçersiz paket adı karakteri"
+        echo -e "${YELLOW}[!]${NC} İzin verilen: a-z A-Z 0-9 . _ - boşluk"
+        return 1
+    fi
 
     # Convert space-separated packages to array for safe expansion
     local -a pkg_array
@@ -253,7 +270,73 @@ update_system() {
     echo -e "${CYAN}[ℹ]${NC} Eksik paketler varsa yukarıdaki mesajlara bakın."
 }
 
+# REFACTOR O-8: Safe package removal with package manager detection
+# Usage: safe_remove_packages package1 package2 package3
+safe_remove_packages() {
+    if [ $# -eq 0 ]; then
+        echo -e "${RED}[HATA]${NC} safe_remove_packages: Paket adı gerekli"
+        return 1
+    fi
+
+    # Auto-detect package manager if not already set
+    if [ -z "$PKG_MANAGER" ]; then
+        detect_package_manager
+    fi
+
+    case "$PKG_MANAGER" in
+        "apt")
+            sudo DEBIAN_FRONTEND=noninteractive apt remove -y "$@" 2>/dev/null
+            sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y 2>/dev/null
+            ;;
+        "dnf")
+            sudo dnf remove -y "$@" 2>/dev/null
+            sudo dnf autoremove -y 2>/dev/null
+            ;;
+        "yum")
+            sudo yum remove -y "$@" 2>/dev/null
+            sudo yum autoremove -y 2>/dev/null
+            ;;
+        "pacman")
+            sudo pacman -Rs --noconfirm "$@" 2>/dev/null
+            ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Bilinmeyen paket yöneticisi: $PKG_MANAGER"
+            return 1
+            ;;
+    esac
+}
+
+# Get install command hint for error messages
+# Usage: get_install_command_hint "package_name"
+get_install_command_hint() {
+    local package="$1"
+
+    if [ -z "$PKG_MANAGER" ]; then
+        detect_package_manager
+    fi
+
+    case "$PKG_MANAGER" in
+        "apt")
+            echo "sudo apt install -y $package"
+            ;;
+        "dnf")
+            echo "sudo dnf install -y $package"
+            ;;
+        "yum")
+            echo "sudo yum install -y $package"
+            ;;
+        "pacman")
+            echo "sudo pacman -S --noconfirm $package"
+            ;;
+        *)
+            echo "sudo $PKG_MANAGER install $package"
+            ;;
+    esac
+}
+
 # Export functions
 export -f detect_package_manager
 export -f install_package_with_retry
 export -f update_system
+export -f safe_remove_packages
+export -f get_install_command_hint

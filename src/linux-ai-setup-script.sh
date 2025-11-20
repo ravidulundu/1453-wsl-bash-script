@@ -6,7 +6,8 @@
 
 # FIX BUG-002: Add safety flags for robust error handling
 # Note: set -e may affect sourced modules, but this is an entry point script
-set -eo pipefail
+# SECURITY FIX: Added -u flag to catch undefined variable usage (prevents rm -rf $UNDEF/ scenarios)
+set -euo pipefail
 
 # Get the directory where this script resides
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

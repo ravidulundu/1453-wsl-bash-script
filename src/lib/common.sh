@@ -259,16 +259,18 @@ verify_checksum() {
         expected_checksum=$(curl -sL "$checksum_url" | head -n1 | awk '{print $1}')
 
         if [ -z "$expected_checksum" ]; then
-            echo -e "${YELLOW}[UYARI]${NC} Checksum indirilemedi, doğrulama atlanıyor"
-            return 0  # Don't fail, just skip verification
+            echo -e "${RED}[✗]${NC} SECURITY ERROR: Checksum indirilemedi!"
+            echo -e "${RED}[!]${NC} Güvenlik nedeniyle indirme başarısız sayılıyor."
+            return 1  # SECURITY FIX: Fail if checksum cannot be fetched
         fi
     fi
 
     # FIX BUG-023: Validate checksum format (64 hex characters for SHA256)
     if ! [[ "$expected_checksum" =~ ^[a-fA-F0-9]{64}$ ]]; then
-        echo -e "${YELLOW}[UYARI]${NC} Geçersiz checksum formatı (64 hex karakter bekleniyor)"
-        echo -e "${YELLOW}[UYARI]${NC} Alınan: ${expected_checksum:0:32}..."
-        return 0  # Don't fail, just skip verification
+        echo -e "${RED}[✗]${NC} SECURITY ERROR: Geçersiz checksum formatı!"
+        echo -e "${RED}[!]${NC} SHA256 checksum 64 hex karakter olmalı"
+        echo -e "${RED}[!]${NC} Alınan: ${expected_checksum:0:32}..."
+        return 1  # SECURITY FIX: Fail on invalid checksum format
     fi
 
     # Calculate actual checksum
@@ -278,8 +280,10 @@ verify_checksum() {
     elif command -v shasum &>/dev/null; then
         actual_checksum=$(shasum -a 256 "$file_path" | awk '{print $1}')
     else
-        echo -e "${YELLOW}[UYARI]${NC} SHA256 aracı bulunamadı, checksum doğrulaması atlanıyor"
-        return 0  # Don't fail if no checksum tool available
+        echo -e "${RED}[✗]${NC} SECURITY ERROR: SHA256 aracı bulunamadı!"
+        echo -e "${RED}[!]${NC} Checksum doğrulaması yapılamıyor (sha256sum veya shasum gerekli)"
+        echo -e "${RED}[!]${NC} Güvenlik nedeniyle işlem iptal ediliyor."
+        return 1  # SECURITY FIX: Fail if no checksum tool available (CRITICAL)
     fi
 
     # Compare checksums (case-insensitive)
@@ -343,16 +347,27 @@ download_with_checksum() {
             fi
 
             if [ -n "$expected_checksum" ]; then
-                verify_checksum "$output_path" "$expected_checksum" ""
+                if ! verify_checksum "$output_path" "$expected_checksum" ""; then
+                    rm -f "$output_path"  # Cleanup on verification failure
+                    return 1
+                fi
             else
-                echo -e "${YELLOW}[UYARI]${NC} Checksum indirilemedi, doğrulama atlanıyor"
-                return 0
+                echo -e "${RED}[✗]${NC} SECURITY ERROR: Checksum dosyası indirilemedi!"
+                echo -e "${RED}[!]${NC} Dosya silinecek: $(basename "$output_path")"
+                rm -f "$output_path"  # SECURITY FIX: Remove file if checksum unavailable
+                return 1
             fi
         else
-            verify_checksum "$output_path" "$checksum_or_url" ""
+            if ! verify_checksum "$output_path" "$checksum_or_url" ""; then
+                rm -f "$output_path"  # Cleanup on verification failure
+                return 1
+            fi
         fi
     else
-        echo -e "${YELLOW}[UYARI]${NC} Checksum belirtilmedi, doğrulama atlanıyor"
+        # SECURITY NOTE: If checksum is not provided, it's caller's responsibility
+        # This allows backward compatibility for downloads without checksums
+        echo -e "${YELLOW}[⚠]${NC} UYARI: Checksum belirtilmedi (güvenlik riski!)"
+        echo -e "${YELLOW}[!]${NC} İndirilen dosyanın doğruluğu garanti edilemiyor"
         return 0
     fi
 }

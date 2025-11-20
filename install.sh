@@ -38,6 +38,26 @@ BASE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}
 # Kurulum dizini
 INSTALL_DIR="$HOME/.1453-wsl-setup"
 
+# SECURITY FIX K-4: Validate critical path variables
+if [ -z "${HOME:-}" ]; then
+    echo "FATAL ERROR: HOME variable is not set!"
+    exit 1
+fi
+
+if [ -z "${INSTALL_DIR:-}" ]; then
+    echo "FATAL ERROR: INSTALL_DIR variable is not set!"
+    exit 1
+fi
+
+# Ensure INSTALL_DIR is not root or system directory
+case "$INSTALL_DIR" in
+    /|/bin|/sbin|/usr|/usr/bin|/usr/sbin|/etc|/var|/tmp|/boot)
+        echo "FATAL ERROR: INSTALL_DIR points to system directory: $INSTALL_DIR"
+        echo "This is a security risk. Installation aborted."
+        exit 1
+        ;;
+esac
+
 # Detect terminal width
 TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
@@ -272,6 +292,7 @@ main() {
         "src/modules/quickstart.sh:Quick Start modu"
         "src/modules/cleanup.sh:Temizleme ve sıfırlama"
         "src/modules/menus.sh:Menü sistemi"
+        "templates/starship.toml:Starship TOML config"
     )
 
     # Tüm dosyaları indir
@@ -454,6 +475,14 @@ END_OF_LAUNCHER_SCRIPT
     echo ""
 
     # Kullanıcıya kurulum betiğini şimdi çalıştırmak isteyip istemediğini sor
+    # SECURITY FIX Y-3: Check if /dev/tty is available before using it
+    if [ ! -c /dev/tty ]; then
+        echo -e "  ${YELLOW}[!]${NC} Non-interactive mode detected (/dev/tty not available)"
+        echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
+        echo -e "  ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
+        return 0
+    fi
+
     if has_gum; then
         # Modern Gum confirm
         if gum confirm "Kurulum betiğini şimdi çalıştırmak ister misiniz?"; then

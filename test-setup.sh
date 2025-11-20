@@ -15,7 +15,9 @@
 
 # FIX BUG-002: Add safety flags for robust error handling
 # Note: -e not used because tests should continue even if checks fail
-set -o pipefail
+# SECURITY FIX: Added -u flag to catch undefined variable usage
+# Tests use explicit error handling (if ! command; then ...) instead of -e
+set -uo pipefail
 
 # FIX BUG-013: Ensure running with bash, not sh
 if [ -z "${BASH_VERSION:-}" ]; then

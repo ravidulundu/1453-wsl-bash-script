@@ -32,6 +32,12 @@ declare -rx APT_UPDATE_TIMEOUT_SECONDS=10
 # Sudo keepalive refresh interval (seconds)
 declare -rx SUDO_KEEPALIVE_INTERVAL=60
 
+# Python pip install timeout (seconds) - for slow connections
+declare -rx PIP_INSTALL_TIMEOUT_SECONDS=120
+
+# Binary download timeout (seconds) - for large files
+declare -rx BINARY_DOWNLOAD_TIMEOUT_SECONDS=300
+
 # ==========================================
 # Network Configuration
 # ==========================================

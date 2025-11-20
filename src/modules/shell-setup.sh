@@ -64,15 +64,49 @@ alias c='clear'
 alias cl='clear'
 alias cls='clear'
 
-# Modern tool replacements (if installed)
-alias cat='batcat'
-alias grep='rg'
-alias find='fdfind'
-alias ls='eza --icons --group-directories-first'
-alias ll='eza --icons --group-directories-first -l -g --git'
-alias la='eza -a'
-alias ld='lazydocker 2>/dev/null || docker ps -a'
-alias lg='lazygit 2>/dev/null || git log --oneline --graph --decorate --all'
+# Modern tool replacements (conditionally loaded if installed)
+# bat/batcat - better cat
+if command -v batcat &>/dev/null; then
+    alias cat='batcat'
+elif command -v bat &>/dev/null; then
+    alias cat='bat'
+fi
+
+# ripgrep - better grep
+if command -v rg &>/dev/null; then
+    alias grep='rg'
+fi
+
+# fd - better find
+if command -v fdfind &>/dev/null; then
+    alias find='fdfind'
+elif command -v fd &>/dev/null; then
+    alias find='fd'
+fi
+
+# eza - better ls
+if command -v eza &>/dev/null; then
+    alias ls='eza --icons --group-directories-first'
+    alias ll='eza --icons --group-directories-first -l -g --git'
+    alias la='eza -a --icons --group-directories-first'
+else
+    alias ll='ls -lh'
+    alias la='ls -lAh'
+fi
+
+# lazydocker - Docker TUI
+if command -v lazydocker &>/dev/null; then
+    alias ld='lazydocker'
+else
+    alias ld='docker ps -a'
+fi
+
+# lazygit - Git TUI
+if command -v lazygit &>/dev/null; then
+    alias lg='lazygit'
+else
+    alias lg='git log --oneline --graph --decorate --all'
+fi
 
 # Safe operations
 alias cp='cp -i'
@@ -135,8 +169,8 @@ alias bashrc='nano ~/.bashrc'
 alias aliases='nano ~/.bash_aliases'
 alias reload='source ~/.bashrc'
 
-# Zoxide (smart cd)
-alias z='z'
+# Note: Zoxide 'z' command is automatically available if zoxide is installed
+# It's initialized via 'eval "$(zoxide init bash)"' in bashrc enhancements
 
 EOF
 
@@ -165,21 +199,22 @@ setup_custom_functions() {
     fi
 
     # Add custom functions to .bashrc
-    cat >> "$BASHRC" << 'EOF'
+    # FIX: Use marker variables from constants.sh instead of hardcoded strings
+    cat >> "$BASHRC" << EOF
 
-# ===== START: Custom Functions - 1453 WSL Setup =====
+# $BASHRC_MARKER_FUNCTIONS_START
 # Create directory and cd into it
 # FIX BUG-008: Use 'return' instead of 'exit' to avoid killing the shell
 mcd() {
-    mkdir -p "$1" && cd "$1" || return 1
+    mkdir -p "\$1" && cd "\$1" || return 1
 }
 
 # Make file executable
 # FIX BUG-007: Renamed from 'make()' to 'mkexec()' to avoid shadowing system 'make' command
 mkexec() {
-    chmod +x "$1"
+    chmod +x "\$1"
 }
-# ===== END: Custom Functions - 1453 WSL Setup =====
+# $BASHRC_MARKER_FUNCTIONS_END
 
 EOF
 
@@ -201,9 +236,10 @@ setup_bashrc_enhancements() {
     fi
 
     # Add enhanced configuration
-    cat >> "$BASHRC" << 'EOF'
+    # FIX: Use marker variables from constants.sh instead of hardcoded strings
+    cat >> "$BASHRC" << EOF
 
-# ===== START: Enhanced Bash Config - 1453 WSL Setup =====
+# $BASHRC_MARKER_CONFIG_START
 
 # History settings
 export HISTCONTROL=ignoreboth:erasedups
@@ -214,7 +250,7 @@ export HISTIGNORE="ls:ll:la:pwd:exit:history:clear:cd"
 shopt -s histappend
 
 # Update history after each command
-PROMPT_COMMAND="history -a; history -c; history -r; ${PROMPT_COMMAND}"
+PROMPT_COMMAND="history -a; history -c; history -r; \${PROMPT_COMMAND}"
 
 # Terminal settings
 export TERM=xterm-256color
@@ -225,15 +261,15 @@ export TERM=xterm-256color
 # - Different from package installation eval (which had command injection risk)
 # - Official recommended method: https://starship.rs/guide/
 if command -v starship &>/dev/null; then
-    eval "$(starship init bash)"
+    eval "\$(starship init bash)"
 fi
 
 if command -v zoxide &>/dev/null; then
-    eval "$(zoxide init bash)"
+    eval "\$(zoxide init bash)"
 fi
 
 if command -v vivid &>/dev/null; then
-    export LS_COLORS="$(vivid generate catppuccin-mocha)"
+    export LS_COLORS="\$(vivid generate catppuccin-mocha)"
 fi
 
 # FZF configuration
@@ -251,12 +287,12 @@ if command -v fzf &> /dev/null; then
 fi
 
 # Add ~/.local/bin to PATH
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="\$HOME/.local/bin:\$PATH"
 
 # WSL specific settings
 export BROWSER=wslview
 
-# ===== END: Enhanced Bash Config - 1453 WSL Setup =====
+# $BASHRC_MARKER_CONFIG_END
 
 EOF
 
@@ -274,18 +310,24 @@ setup_starship_config() {
     echo -e "${YELLOW}[BİLGİ]${NC} Starship yapılandırması oluşturuluyor..."
 
     local STARSHIP_CONFIG="$HOME/.config/starship.toml"
+    local TEMPLATE_FILE="${SCRIPT_DIR}/templates/starship.toml"
 
-    # Always overwrite to ensure correct icons and settings (User requested "her sey sorunsuz olmali")
+    # Backup existing config
     if [ -f "$STARSHIP_CONFIG" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Mevcut Starship config güncelleniyor..."
+        echo -e "${CYAN}[BİLGİ]${NC} Mevcut Starship config yedekleniyor..."
         cp "$STARSHIP_CONFIG" "${STARSHIP_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
     fi
 
     mkdir -p "$HOME/.config"
 
-    # Create Starship configuration with Catppuccin Mocha theme + Nerd Font icons (Hardcoded for reliability)
-    # FIX: Directly writing icons instead of using fragile sed injection
-    cat > "$STARSHIP_CONFIG" << 'EOF'
+    # REFACTOR O-2: Load from template instead of 412-line heredoc
+    if [ -f "$TEMPLATE_FILE" ]; then
+        echo -e "${CYAN}[BİLGİ]${NC} Template'den yükleniyor: $TEMPLATE_FILE"
+        cp "$TEMPLATE_FILE" "$STARSHIP_CONFIG"
+    else
+        # Fallback: Use embedded heredoc if template missing
+        echo -e "${YELLOW}[UYARI]${NC} Template bulunamadı, embedded config kullanılıyor"
+        cat > "$STARSHIP_CONFIG" << 'EOF'
 # Starship Configuration - 1453 WSL Setup
 # Theme: Catppuccin Mocha + Nerd Fonts
 
@@ -697,6 +739,7 @@ style = "bold peach"
 format = "[$symbol($version )]($style)"
 
 EOF
+    fi
 
     echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
     echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"

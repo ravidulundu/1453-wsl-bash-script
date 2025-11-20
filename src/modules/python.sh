@@ -29,7 +29,7 @@ install_python() {
             # Use install_package_with_retry for safer installation
             if ! install_package_with_retry "python3-pip python3-venv"; then
                 echo -e "${RED}[✗]${NC} python3-pip kurulumu başarısız!"
-                echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y python3-pip python3-venv"
+                echo -e "${YELLOW}[!]${NC} Elle kurun: $(get_install_command_hint "python3-pip python3-venv")"
                 track_failure "Python (pip modülü)" "pip kurulumu başarısız"
             else
                 track_skip "Python" "Zaten kurulu ($version, pip eklendi)"
@@ -43,7 +43,7 @@ install_python() {
     # Use install_package_with_retry instead of direct command
     if ! install_package_with_retry "python3 python3-pip python3-venv"; then
         echo -e "${RED}[✗]${NC} Python kurulumu başarısız!"
-        echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y python3 python3-pip python3-venv"
+        echo -e "${YELLOW}[!]${NC} Elle kurun: $(get_install_command_hint "python3 python3-pip python3-venv")"
         return 1
     fi
 
@@ -86,10 +86,10 @@ install_pip() {
     local pip_exit_code
 
     if command -v timeout &>/dev/null; then
-        pip_output=$(timeout 120 python3 -m pip install --upgrade pip 2>&1)
+        pip_output=$(timeout "$PIP_INSTALL_TIMEOUT_SECONDS" python3 -m pip install --upgrade pip 2>&1)
         pip_exit_code=$?
         if [ $pip_exit_code -eq 124 ]; then
-            echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı (120 saniye)"
+            echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı ($PIP_INSTALL_TIMEOUT_SECONDS saniye)"
             echo -e "${YELLOW}[!]${NC} İnternet bağlantınızı kontrol edin"
             return 1
         fi
@@ -102,10 +102,10 @@ install_pip() {
     if echo "$pip_output" | grep -q "externally-managed-environment"; then
         echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, --break-system-packages ile deneniyor..."
         if command -v timeout &>/dev/null; then
-            timeout 120 python3 -m pip install --upgrade pip --break-system-packages
+            timeout "$PIP_INSTALL_TIMEOUT_SECONDS" python3 -m pip install --upgrade pip --break-system-packages
             pip_exit_code=$?
             if [ $pip_exit_code -eq 124 ]; then
-                echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı (120 saniye)"
+                echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı ($PIP_INSTALL_TIMEOUT_SECONDS saniye)"
                 return 1
             fi
         else

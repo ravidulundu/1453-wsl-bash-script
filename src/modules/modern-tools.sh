@@ -226,17 +226,8 @@ fix_bat_fd_symlinks() {
     fi
 }
 
-# Install modern tools for APT (Debian/Ubuntu)
-install_modern_tools_apt() {
-    echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
-
-    # Core tools available in repos
-    sudo apt install -y bat ripgrep fd-find fzf
-
-    # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
-    fix_bat_fd_symlinks
-
-    # Install eza (modern ls replacement)
+# REFACTOR O-5: Helper for eza installation
+_apt_install_eza() {
     if ! command -v eza &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Eza kuruluyor..."
         sudo mkdir -p /etc/apt/keyrings
@@ -248,12 +239,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
     fi
+}
 
-    # Initialize tool versions (fetch latest from GitHub with fallbacks)
-    init_tool_versions
-
-    # Install starship prompt
-    # FIX BUG-010: Download script to temp file, verify source before executing
+# REFACTOR O-5: Helper for starship installation
+_apt_install_starship() {
     if ! command -v starship &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
         local temp_starship_script
@@ -271,8 +260,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
     fi
+}
 
-    # Install zoxide
+# REFACTOR O-5: Helper for zoxide installation
+_apt_install_zoxide() {
     # FIX BUG-010: Download script to temp file, verify source before executing
     if ! command -v zoxide &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
@@ -291,7 +282,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
     fi
+}
 
+# REFACTOR O-5: Helper for vivid installation
+_apt_install_vivid() {
     # Install vivid (using centralized version from config/tool-versions.sh)
     if ! command -v vivid &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
@@ -311,7 +305,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
     fi
+}
 
+# REFACTOR O-5: Helper for fastfetch installation
+_apt_install_fastfetch() {
     # Install fastfetch
     if ! command -v fastfetch &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kuruluyor..."
@@ -343,7 +340,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Fastfetch zaten kurulu."
     fi
+}
 
+# REFACTOR O-5: Helper for lazygit installation
+_apt_install_lazygit() {
     # Install lazygit (using centralized version from config/tool-versions.sh)
     if ! command -v lazygit &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Lazygit ${LAZYGIT_VERSION} kuruluyor..."
@@ -364,7 +364,10 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazygit zaten kurulu."
     fi
+}
 
+# REFACTOR O-5: Helper for lazydocker installation
+_apt_install_lazydocker() {
     # Install lazydocker
     if ! command -v lazydocker &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Lazydocker kuruluyor..."
@@ -386,6 +389,30 @@ install_modern_tools_apt() {
     else
         echo -e "${GREEN}[BİLGİ]${NC} Lazydocker zaten kurulu."
     fi
+}
+
+# REFACTOR O-5: Main APT installation function - broken down from 160 lines monolithic function
+# Now uses helper functions for each tool
+install_modern_tools_apt() {
+    echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
+
+    # Install core tools from APT repositories
+    echo -e "${YELLOW}[BİLGİ]${NC} Temel araçlar kuruluyor (bat, ripgrep, fd-find, fzf)..."
+    safe_install_packages bat ripgrep fd-find fzf
+
+    # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
+    fix_bat_fd_symlinks
+
+    # Install remaining tools using helper functions
+    _apt_install_eza
+    _apt_install_starship
+    _apt_install_zoxide
+    _apt_install_vivid
+    _apt_install_fastfetch
+    _apt_install_lazygit
+    _apt_install_lazydocker
+
+    echo -e "${GREEN}[✓]${NC} APT araç kurulumu tamamlandı!"
 }
 
 # Install modern tools for DNF/YUM (Fedora/RHEL)
@@ -491,9 +518,22 @@ install_lazydocker_generic() {
 export -f install_gum
 export -f install_modern_cli_tools
 export -f fix_bat_fd_symlinks
+
+# Export APT helper functions (REFACTOR O-5)
+export -f _apt_install_eza
+export -f _apt_install_starship
+export -f _apt_install_zoxide
+export -f _apt_install_vivid
+export -f _apt_install_fastfetch
+export -f _apt_install_lazygit
+export -f _apt_install_lazydocker
+
+# Export main installation functions
 export -f install_modern_tools_apt
 export -f install_modern_tools_dnf
 export -f install_modern_tools_pacman
+
+# Export generic installer functions
 export -f install_starship_generic
 export -f install_zoxide_generic
 export -f install_lazygit_generic

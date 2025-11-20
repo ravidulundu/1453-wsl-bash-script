@@ -216,13 +216,11 @@ generate_installation_plan() {
 }
 
 # Execute installation plan
-execute_installation_plan() {
+# REFACTOR O-1: Broken down from 349 lines monolithic function
+# Show installation start banner and info
+_quickstart_show_welcome() {
     local -a tools=("$@")
 
-    # Initialize TUI
-    init_tui
-
-    # Show installation start with banner
     clear
     show_banner
     echo ""
@@ -239,11 +237,10 @@ execute_installation_plan() {
     echo -e "${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')"
     echo ""
     sleep 3
+}
 
-    # Reset tracking for fresh start
-    reset_tracking
-
-    # Run pre-flight checks first
+# Run system preflight checks
+_quickstart_preflight_checks() {
     clear
     show_banner
     echo ""
@@ -259,8 +256,11 @@ execute_installation_plan() {
         echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
+    return 0
+}
 
-    # Update system and configure git
+# Update system packages
+_quickstart_update_system() {
     clear
     show_banner
     echo ""
@@ -275,7 +275,10 @@ execute_installation_plan() {
     update_system
     show_install_status "System Update" "success"
     sleep 1
+}
 
+# Configure Git
+_quickstart_configure_git() {
     clear
     show_banner
     echo ""
@@ -290,8 +293,10 @@ execute_installation_plan() {
     configure_git
     show_install_status "Git Configuration" "success"
     sleep 1
+}
 
-    # Install Python + modern CLI tools first (base for all presets)
+# Install Python ecosystem (Python, pip, pipx, UV)
+_quickstart_install_python() {
     clear
     show_banner
     echo ""
@@ -306,30 +311,19 @@ execute_installation_plan() {
     install_python && show_install_status "Python" "success" || show_install_status "Python" "failed"
 
     show_install_status "Pip" "installing"
-    if install_pip; then
-        show_install_status "Pip" "success"
-    else
-        show_install_status "Pip" "skipped"
-        echo -e "${YELLOW}[!]${NC} Pip güncellemesi atlandı, devam ediliyor..."
-    fi
+    install_pip && show_install_status "Pip" "success" || show_install_status "Pip" "skipped"
 
     show_install_status "Pipx" "installing"
-    if install_pipx; then
-        show_install_status "Pipx" "success"
-    else
-        show_install_status "Pipx" "skipped"
-        echo -e "${YELLOW}[!]${NC} Pipx kurulumu atlandı, devam ediliyor..."
-    fi
+    install_pipx && show_install_status "Pipx" "success" || show_install_status "Pipx" "skipped"
 
     show_install_status "UV" "installing"
-    if install_uv; then
-        show_install_status "UV" "success"
-    else
-        show_install_status "UV" "skipped"
-        echo -e "${YELLOW}[!]${NC} UV kurulumu atlandı, devam ediliyor..."
-    fi
-    sleep 1
+    install_uv && show_install_status "UV" "success" || show_install_status "UV" "skipped"
 
+    sleep 1
+}
+
+# Install modern CLI tools
+_quickstart_install_modern_tools() {
     clear
     show_banner
     echo ""
@@ -340,14 +334,12 @@ execute_installation_plan() {
     fi
     echo ""
     show_install_status "Modern CLI Tools" "installing"
-    if install_modern_cli_tools; then
-        show_install_status "Modern CLI Tools" "success"
-    else
-        show_install_status "Modern CLI Tools" "skipped"
-        echo -e "${YELLOW}[!]${NC} Modern CLI araçları kurulumu atlandı, devam ediliyor..."
-    fi
+    install_modern_cli_tools && show_install_status "Modern CLI Tools" "success" || show_install_status "Modern CLI Tools" "skipped"
     sleep 1
+}
 
+# Setup shell environment
+_quickstart_setup_shell() {
     clear
     show_banner
     echo ""
@@ -358,13 +350,38 @@ execute_installation_plan() {
     fi
     echo ""
     show_install_status "Shell Setup" "installing"
-    if setup_custom_shell; then
-        show_install_status "Shell Setup" "success"
-    else
-        show_install_status "Shell Setup" "skipped"
-        echo -e "${YELLOW}[!]${NC} Shell kurulumu atlandı, devam ediliyor..."
-    fi
+    setup_custom_shell && show_install_status "Shell Setup" "success" || show_install_status "Shell Setup" "skipped"
     sleep 1
+}
+
+# REFACTOR O-1: Main installation function (simplified from 349 to ~150 lines)
+execute_installation_plan() {
+    local -a tools=("$@")
+
+    # Initialize TUI
+    init_tui
+
+    # Show welcome banner
+    _quickstart_show_welcome "${tools[@]}"
+
+    # Reset tracking for fresh start
+    reset_tracking
+
+    # Run system checks
+    if ! _quickstart_preflight_checks; then
+        return 1
+    fi
+
+    # Update system
+    _quickstart_update_system
+
+    # Configure Git
+    _quickstart_configure_git
+
+    # Install base components (always installed)
+    _quickstart_install_python
+    _quickstart_install_modern_tools
+    _quickstart_setup_shell
 
     # Install tools
     for tool in "${tools[@]}"; do

@@ -201,7 +201,9 @@ show_advanced_menu() {
 }
 
 # Main program loop - Advanced Mode
-run_advanced_mode() {
+# REFACTOR O-3: Broken down from 236 lines monolithic function
+# Initialize advanced mode (Gum + preflight checks)
+_advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
         echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum - opsiyonel)..."
@@ -253,6 +255,12 @@ run_advanced_mode() {
         echo -e "${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}"
     fi
     sleep 1
+}
+
+# REFACTOR O-3: Main advanced mode loop (simplified)
+run_advanced_mode() {
+    # Initialize
+    _advanced_mode_init
 
     # Track installed components
     local NVM_INSTALLED=false
