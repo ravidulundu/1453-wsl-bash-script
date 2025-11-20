@@ -287,41 +287,41 @@ main() {
     local failed=0
     local failed_files=()
 
+    # Download all files with single-line progress
+    local count=0
+
     if has_gum; then
         gum_print --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
-        echo ""
-
-        # Download with spinner
-        local count=0
-        for file_info in "${files[@]}"; do
-            IFS=':' read -r file_path description <<< "$file_info"
-            local url="${BASE_URL}/${file_path}"
-            local dest="${INSTALL_DIR}/${file_path}"
-            ((count++))
-
-            # Use gum spinner for each file
-            if ! gum spin --spinner dot --title "[$count/$total_files] $description" -- \
-                bash -c "curl -fsSL '$url' -o '$dest' 2>/dev/null"; then
-                ((failed++))
-                failed_files+=("$description")
-            fi
-        done
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
-        echo ""
-
-        # Download with progress indicator
-        for file_info in "${files[@]}"; do
-            IFS=':' read -r file_path description <<< "$file_info"
-            local url="${BASE_URL}/${file_path}"
-            local dest="${INSTALL_DIR}/${file_path}"
-
-            if ! download_file "$url" "$dest" "$description"; then
-                ((failed++))
-                failed_files+=("$description")
-            fi
-        done
     fi
+
+    for file_info in "${files[@]}"; do
+        IFS=':' read -r file_path description <<< "$file_info"
+        local url="${BASE_URL}/${file_path}"
+        local dest="${INSTALL_DIR}/${file_path}"
+        ((count++))
+
+        # Calculate progress percentage
+        local percent=$((count * 100 / total_files))
+
+        # Show progress on same line (overwrite)
+        if has_gum; then
+            printf "\r"
+            gum style --foreground 51 "  [$count/$total_files - %${percent}] $description" | tr -d '\n'
+        else
+            printf "\r  ${CYAN}[$count/$total_files - %${percent}]${NC} %-50s" "$description"
+        fi
+
+        # Download file silently
+        if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+            ((failed++))
+            failed_files+=("$description")
+        fi
+    done
+
+    # Clear the progress line and move to next
+    printf "\r%*s\r" 120 ""
 
     echo ""
 
