@@ -96,14 +96,8 @@ show_mode_selection() {
 
         # Modern TUI with Gum if available
         if has_gum; then
-            # Gum-powered modern menu
-            gum_style \
-                --foreground 212 --border double --align center \
-                --width 60 --margin "1 2" --padding "2 4" \
-                "🎯 1453.AI - MOD SEÇİMİ" \
-                "" \
-                "Hangi kurulum modunu tercih edersiniz?"
-
+            # Gum-powered modern menu (banner already shown above)
+            gum_style --foreground 226 "🎯 Hangi kurulum modunu tercih edersiniz?"
             echo ""
 
             local selection
