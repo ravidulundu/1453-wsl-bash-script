@@ -95,8 +95,9 @@ elif command -v python &>/dev/null; then
 fi
 
 # Redirect stdin to /dev/tty
+# Use || true to prevent script exit if redirection fails in non-interactive contexts
 if [ -e /dev/tty ]; then
-    exec 0</dev/tty
+    exec 0</dev/tty 2>/dev/null || true
 fi
 
 # Phase 6: Sudo authentication and keep-alive

@@ -14,8 +14,9 @@ if [ -z "${BASH_VERSION:-}" ]; then
 fi
 
 # CRITICAL: Redirect stdin to /dev/tty at the very beginning
+# Use || true to prevent script exit if redirection fails in non-interactive contexts
 if [ -e /dev/tty ]; then
-    exec 0</dev/tty
+    exec 0</dev/tty 2>/dev/null || true
 fi
 
 # Renkli çıktı için tanımlamalar
@@ -153,8 +154,9 @@ main() {
 # 1453.AI WSL Kurulum Başlatıcı
 
 # CRITICAL: Redirect stdin to /dev/tty
+# Use || true to prevent script exit if redirection fails
 if [ -e /dev/tty ]; then
-    exec 0</dev/tty
+    exec 0</dev/tty 2>/dev/null || true
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
