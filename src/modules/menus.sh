@@ -59,62 +59,57 @@ prepare_and_configure_git() {
 
 # Display main menu
 show_menu() {
-    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║                    Ana Kurulum Menüsü                          ║${NC}"
-    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo -e "  ${GREEN}1${NC}) Tam Kurulum (Önerilen)"
-    echo -e "  ${GREEN}2${NC}) Hazırlık (Sistem güncelleme + Git)"
-    echo -e "  ${GREEN}3${NC}) Python Kurulumu"
-    echo -e "  ${GREEN}4${NC}) Pip Güncelleme"
-    echo -e "  ${GREEN}5${NC}) Pipx Kurulumu"
-    echo -e "  ${GREEN}6${NC}) UV Kurulumu"
-    echo -e "  ${GREEN}7${NC}) NVM Kurulumu"
-    echo -e "  ${GREEN}8${NC}) Bun.js Kurulumu"
-    echo -e "  ${GREEN}9${NC}) PHP Kurulumu"
-    echo -e "  ${GREEN}10${NC}) Composer Kurulumu"
-    echo -e "  ${GREEN}11${NC}) AI CLI Araçları"
-    echo -e "  ${GREEN}12${NC}) AI Framework'leri"
-    echo -e "  ${GREEN}13${NC}) AI Framework'leri Kaldır"
-    echo -e "  ${GREEN}14${NC}) Go Kurulumu"
-    echo -e "  ${GREEN}15${NC}) Modern CLI Araçları (bat, eza, starship, zoxide, fzf, lazygit)"
-    echo -e "  ${GREEN}16${NC}) Shell Ortamı Kurulumu (aliases, functions, bashrc)"
-    echo -e "  ${RED}17${NC}) 🗑️  Temizleme ve Sıfırlama"
-    echo -e "  ${GREEN}18${NC}) 🐳 Docker (Docker Engine + lazydocker)"
-    echo -e "  ${GREEN}0${NC}) Çıkış"
-    echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    draw_box_top "⚙️  ADVANCED MODE - ANA MENÜ" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}Python & JavaScript:${NC}" 70
+    draw_box_middle "    ${GREEN}3${NC}) Python  ${GREEN}4${NC}) Pip  ${GREEN}5${NC}) Pipx  ${GREEN}6${NC}) UV" 70
+    draw_box_middle "    ${GREEN}7${NC}) NVM  ${GREEN}8${NC}) Bun.js" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}Backend & Languages:${NC}" 70
+    draw_box_middle "    ${GREEN}9${NC}) PHP  ${GREEN}10${NC}) Composer  ${GREEN}14${NC}) Go" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}AI & Modern Tools:${NC}" 70
+    draw_box_middle "    ${GREEN}11${NC}) AI CLI Araçları  ${GREEN}12${NC}) AI Frameworks" 70
+    draw_box_middle "    ${GREEN}15${NC}) Modern CLI Tools  ${GREEN}16${NC}) Shell Ortamı" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}Docker & Utilities:${NC}" 70
+    draw_box_middle "    ${GREEN}18${NC}) 🐳 Docker (Engine + lazydocker)" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}Quick Actions:${NC}" 70
+    draw_box_middle "    ${GREEN}1${NC}) ✨ Tam Kurulum (Önerilen)" 70
+    draw_box_middle "    ${GREEN}2${NC}) 🔧 Hazırlık (Sistem + Git)" 70
+    draw_box_middle "    ${RED}13${NC}) ❌ AI Frameworks Kaldır" 70
+    draw_box_middle "    ${RED}17${NC}) 🗑️  Temizleme & Sıfırlama" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${GREEN}0${NC}) ◀ Ana Menüye Dön" 70
+    draw_box_middle "" 70
+    draw_box_bottom 70
 }
 
 # Show mode selection menu
 show_mode_selection() {
-    # Loop için bayrak
-    local retry=0
-
     while true; do
         clear
-        echo -e "${CYAN}"
-        cat << 'EOF'
-    ╔════════════════════════════════════════════════════════════════╗
-    ║                                                                ║
-    ║           🎯 1453.AI - MOD SEÇİMİNİ YAPIN 🎯                  ║
-    ║                                                                ║
-    ╚════════════════════════════════════════════════════════════════╝
-EOF
-        echo -e "${NC}"
-        echo -e "${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}"
-        echo ""
-        echo -e "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE (Önerilen)${NC}"
-        echo -e "     ${YELLOW}→ Vibe coder'lar ve yeni başlayanlar için${NC}"
-        echo -e "     ${YELLOW}→ Basit sorular, otomatik kurulum${NC}"
-        echo -e "     ${YELLOW}→ Sizi yormaz, sadece gerekli araçları kurar${NC}"
-        echo ""
-        echo -e "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}"
-        echo -e "     ${YELLOW}→ İleri düzey kullanıcılar için${NC}"
-        echo -e "     ${YELLOW}→ Detaylı kontrol, her aracı ayrı seçin${NC}"
-        echo -e "     ${YELLOW}→ 16 farklı kurulum seçeneği${NC}"
-        echo ""
-        echo -e "  ${GREEN}0${NC}) ${CYAN}❌ Çıkış${NC}"
-        echo ""
-        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+
+        # TUI Mode Selection
+        draw_box_top "🎯 1453.AI - MOD SEÇİMİ" 70
+        draw_box_middle "" 70
+        draw_box_middle "  ${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}" 70
+        draw_box_middle "" 70
+        draw_box_middle "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE${NC} ${YELLOW}(Önerilen)${NC}" 70
+        draw_box_middle "      → Vibe coder'lar ve yeni başlayanlar için" 70
+        draw_box_middle "      → Basit sorular, otomatik kurulum" 70
+        draw_box_middle "      → Sizi yormaz, sadece gerekli araçları kurar" 70
+        draw_box_middle "" 70
+        draw_box_middle "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}" 70
+        draw_box_middle "      → İleri düzey kullanıcılar için" 70
+        draw_box_middle "      → Detaylı kontrol, her aracı ayrı seçin" 70
+        draw_box_middle "      → 18 farklı kurulum seçeneği" 70
+        draw_box_middle "" 70
+        draw_box_middle "  ${GREEN}0${NC}) ${RED}❌ Çıkış${NC}" 70
+        draw_box_middle "" 70
+        draw_box_bottom 70
         echo ""
 
         # CRITICAL FIX: Flush stdin buffer before reading
@@ -165,16 +160,36 @@ show_advanced_menu() {
 
 # Main program loop - Advanced Mode
 run_advanced_mode() {
-    # Run pre-flight checks before starting
+    # Run pre-flight checks with TUI
+    clear
+    draw_box_top "🔍 ADVANCED MODE - SİSTEM KONTROLÜ" 70
+    draw_box_middle "" 70
+
     if ! run_preflight_checks; then
-        echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!"
-        echo -e "${YELLOW}[!]${NC} Advanced Mode menüsüne yönlendiriliyorsunuz..."
-        echo -e "${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir."
+        draw_box_middle "" 70
+        draw_box_middle "  ${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!" 70
+        draw_box_middle "  ${YELLOW}[!]${NC} Menüye yönlendiriliyorsunuz..." 70
+        draw_box_middle "  ${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir." 70
+        draw_box_middle "" 70
+        draw_box_bottom 70
         sleep 3
+    else
+        draw_box_middle "  ${GREEN}[✓]${NC} Sistem kontrolleri başarılı!" 70
+        draw_box_middle "" 70
+        draw_box_bottom 70
+        sleep 1
     fi
 
-    # Detect package manager on startup
+    # Detect package manager on startup with TUI
+    clear
+    draw_box_top "📦 PAKET YÖNETİCİSİ TESPİT EDİLİYOR" 70
+    draw_box_middle "" 70
     detect_package_manager
+    draw_box_middle "" 70
+    draw_box_middle "  ${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}" 70
+    draw_box_middle "" 70
+    draw_box_bottom 70
+    sleep 1
 
     # Track installed components
     local NVM_INSTALLED=false
@@ -194,9 +209,14 @@ run_advanced_mode() {
 
             case $choice in
                 1)
-                    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-                    echo -e "${BLUE}║           TAM KURULUM BAŞLATILIYOR            ║${NC}"
-                    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+                    clear
+                    draw_box_top "✨ TAM KURULUM BAŞLATILIYOR" 70
+                    draw_box_middle "" 70
+                    draw_box_middle "  ${YELLOW}Tüm temel araçlar kurulacak...${NC}" 70
+                    draw_box_middle "" 70
+                    draw_box_bottom 70
+                    sleep 2
+
                     update_system
                     configure_git
                     install_python && PYTHON_INSTALLED=true
@@ -209,7 +229,14 @@ run_advanced_mode() {
                     install_claude_code
                     install_github_cli
                     install_go
-                    echo -e "\n${GREEN}[BAŞARILI]${NC} Tam kurulum tamamlandı!"
+
+                    clear
+                    draw_box_top "✅ TAM KURULUM TAMAMLANDI" 70
+                    draw_box_middle "" 70
+                    draw_box_middle "  ${GREEN}[✓]${NC} Tüm araçlar başarıyla kuruldu!" 70
+                    draw_box_middle "" 70
+                    draw_box_bottom 70
+                    sleep 2
                     ;;
                 2) prepare_and_configure_git ;;
                 3) install_python && PYTHON_INSTALLED=true ;;

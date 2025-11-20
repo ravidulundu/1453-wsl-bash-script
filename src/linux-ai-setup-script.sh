@@ -131,6 +131,7 @@ fi
 
 echo ""
 
-# Phase 7: Display banner and run main program
+# Phase 7: Initialize TUI and run main program
+init_tui
 show_banner
 main "$@"
