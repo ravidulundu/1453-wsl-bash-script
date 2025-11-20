@@ -7,6 +7,42 @@ TUI_MODE="bash"  # "dialog" or "bash"
 TUI_WIDTH=70
 TUI_HEIGHT=20
 
+# Get actual display width of string (handles ANSI codes + emojis)
+# Uses wcwidth for Unicode characters (emojis count as 2)
+get_display_width() {
+    local str="$1"
+
+    # Strip ANSI color codes first
+    local visible
+    visible=$(echo -e "$str" | sed 's/\x1b\[[0-9;]*m//g')
+
+    # Try wcwidth for accurate emoji/Unicode width
+    if command -v python3 &>/dev/null; then
+        local width
+        # Escape single quotes for Python
+        local escaped="${visible//\'/\\\'}"
+        width=$(python3 -c "
+try:
+    import wcwidth
+    print(wcwidth.wcswidth('$escaped'))
+except:
+    print(len('$escaped'))
+" 2>/dev/null)
+
+        # If wcwidth returned valid number, use it
+        if [ -n "$width" ] && [ "$width" -ge 0 ]; then
+            echo "$width"
+            return
+        fi
+    fi
+
+    # Fallback: count emojis as 2 chars (common emoji range)
+    local emoji_count
+    emoji_count=$(echo "$visible" | grep -o '[🀀-🿿]' | wc -l 2>/dev/null || echo 0)
+    local regular_len=${#visible}
+    echo $((regular_len + emoji_count))
+}
+
 # Initialize TUI system
 init_tui() {
     # Check if dialog is available
@@ -26,8 +62,8 @@ init_tui() {
         TUI_HEIGHT=24
     fi
 
-    # Ensure minimum dimensions
-    [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 70 ] && TUI_WIDTH=70
+    # Ensure minimum dimensions (wider for emoji support)
+    [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 80 ] && TUI_WIDTH=80
     [ -n "$TUI_HEIGHT" ] && [ "$TUI_HEIGHT" -lt 20 ] && TUI_HEIGHT=20
 }
 
@@ -125,12 +161,11 @@ show_install_status() {
 # Usage: draw_box <title> <width>
 draw_box_top() {
     local title="$1"
-    local width="${2:-70}"
+    local width="${2:-80}"
 
-    # Strip ANSI color codes to get actual visible length
-    local visible_title
-    visible_title=$(echo -e "$title" | sed 's/\x1b\[[0-9;]*m//g')
-    local title_len=${#visible_title}
+    # Get actual display width (handles emojis correctly)
+    local title_len
+    title_len=$(get_display_width "$title")
     local padding=$(( (width - title_len - 4) / 2 ))
 
     echo -e "${CYAN}╔$(printf '%0.s═' $(seq 1 $((width-2))))╗${NC}"
@@ -144,12 +179,11 @@ draw_box_top() {
 
 draw_box_middle() {
     local content="$1"
-    local width="${2:-70}"
+    local width="${2:-80}"
 
-    # Strip ANSI color codes to get actual visible length
-    local visible_content
-    visible_content=$(echo -e "$content" | sed 's/\x1b\[[0-9;]*m//g')
-    local content_len=${#visible_content}
+    # Get actual display width (handles emojis correctly)
+    local content_len
+    content_len=$(get_display_width "$content")
     local padding=$((width - content_len - 4))
 
     echo -ne "${CYAN}║${NC} "
@@ -159,7 +193,7 @@ draw_box_middle() {
 }
 
 draw_box_bottom() {
-    local width="${1:-70}"
+    local width="${1:-80}"
     echo -e "${CYAN}╚$(printf '%0.s═' $(seq 1 $((width-2))))╝${NC}"
 }
 
@@ -321,6 +355,7 @@ tui_infobox() {
 # ═══════════════════════════════════════════════════════════
 
 export TUI_MODE TUI_WIDTH TUI_HEIGHT
+export -f get_display_width
 export -f init_tui
 export -f show_progress_bar
 export -f show_spinner
