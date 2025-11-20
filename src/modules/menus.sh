@@ -89,11 +89,8 @@ show_menu() {
 
 # Show mode selection menu
 show_mode_selection() {
-    echo -e "${YELLOW}[DEBUG]${NC} show_mode_selection() fonksiyonu başladı"
     while true; do
-        echo -e "${YELLOW}[DEBUG]${NC} Menü döngüsü başladı - clear çağrılıyor"
         clear
-        echo -e "${YELLOW}[DEBUG]${NC} show_banner çağrılıyor"
         show_banner
         echo ""
 
@@ -117,32 +114,22 @@ show_mode_selection() {
         draw_box_bottom 80
         echo ""
 
-        echo -e "${YELLOW}[DEBUG]${NC} Stdin buffer flush kontrolü..."
         # CRITICAL FIX: Flush stdin buffer before reading
         # Only flush if stdin is a terminal to avoid infinite loop on EOF
         if [ -t 0 ]; then
-            echo -e "${YELLOW}[DEBUG]${NC} stdin is a terminal, flushing buffer..."
             while read -r -t 0 <&0; do
                 read -r -t 0.01 -N 1000 <&0 || break
             done 2>/dev/null
-            echo -e "${YELLOW}[DEBUG]${NC} Buffer flush tamamlandı"
-        else
-            echo -e "${YELLOW}[DEBUG]${NC} stdin is NOT a terminal, skipping flush"
         fi
 
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-        echo -e "${YELLOW}[DEBUG]${NC} read komutu çağrılıyor..."
 
         # Read from /dev/tty if available, otherwise from stdin
-        if [ -e /dev/tty ]; then
-            echo -e "${YELLOW}[DEBUG]${NC} /dev/tty mevcut, oradan okuyorum..."
-            read -r mode_choice </dev/tty || read -r mode_choice
+        if [ -e /dev/tty ] && [ -c /dev/tty ]; then
+            read -r mode_choice </dev/tty 2>/dev/null || read -r mode_choice
         else
-            echo -e "${YELLOW}[DEBUG]${NC} /dev/tty YOK, stdin'den okuyorum..."
             read -r mode_choice
         fi
-
-        echo -e "${YELLOW}[DEBUG]${NC} read tamamlandı, seçim: '$mode_choice'"
 
         # Boş input kontrolü
         if [ -z "$mode_choice" ]; then
@@ -307,9 +294,7 @@ run_advanced_mode() {
 
 # Main program loop - entry point
 main() {
-    echo -e "${YELLOW}[DEBUG]${NC} main() fonksiyonu başladı"
     show_mode_selection
-    echo -e "${YELLOW}[DEBUG]${NC} main() fonksiyonu tamamlandı"
 }
 
 # Export functions for use in other modules

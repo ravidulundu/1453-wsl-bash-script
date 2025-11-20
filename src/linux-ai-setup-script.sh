@@ -8,9 +8,6 @@
 # Note: set -e may affect sourced modules, but this is an entry point script
 set -eo pipefail
 
-# TEMPORARY DEBUG: Enable bash debug mode to trace execution
-set -x
-
 # Get the directory where this script resides
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -110,7 +107,6 @@ echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
 
 if sudo -v; then
     echo -e "${GREEN}[✓]${NC} Sudo yetkisi alındı"
-    echo -e "${YELLOW}[DEBUG]${NC} Trap kurulumu yapılıyor..."
 
     # FIX BUG-012: Set trap BEFORE starting background process to prevent race condition
     # Cleanup function to kill background process on exit
@@ -121,7 +117,6 @@ if sudo -v; then
     }
     trap cleanup_sudo EXIT INT TERM
 
-    echo -e "${YELLOW}[DEBUG]${NC} Background sudo keep-alive başlatılıyor..."
     # Keep-alive: update sudo timestamp in background every 60 seconds
     # This prevents repeated password prompts during long installations
     # CRITICAL: Close stdin/stdout/stderr to prevent blocking
@@ -132,29 +127,13 @@ if sudo -v; then
         done
     ) </dev/null >/dev/null 2>&1 &
     SUDO_KEEPALIVE_PID=$!
-    echo -e "${YELLOW}[DEBUG]${NC} Background process PID: $SUDO_KEEPALIVE_PID"
 else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
 fi
 
 echo ""
-echo -e "${YELLOW}[DEBUG]${NC} Fonksiyon kontrolleri yapılıyor..."
-echo -e "${YELLOW}[DEBUG]${NC} init_tui fonksiyonu tipi: $(type -t init_tui 2>&1 || echo 'TANIMSIZ!')"
-echo -e "${YELLOW}[DEBUG]${NC} show_banner fonksiyonu tipi: $(type -t show_banner 2>&1 || echo 'TANIMSIZ!')"
-echo -e "${YELLOW}[DEBUG]${NC} main fonksiyonu tipi: $(type -t main 2>&1 || echo 'TANIMSIZ!')"
-
-echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..."
 
 # Phase 7: Initialize TUI and run main program
-if type -t init_tui >/dev/null 2>&1; then
-    init_tui
-    echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı ✓"
-else
-    echo -e "${RED}[HATA]${NC} init_tui fonksiyonu tanımlı değil!"
-    exit 1
-fi
-
-echo -e "${YELLOW}[DEBUG]${NC} show_banner çağrılıyor..."
+init_tui
 show_banner
-echo -e "${YELLOW}[DEBUG]${NC} show_banner tamamlandı, main çağrılıyor..."
 main "$@"
