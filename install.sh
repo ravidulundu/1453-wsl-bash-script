@@ -287,41 +287,61 @@ main() {
     local failed=0
     local failed_files=()
 
-    # Download all files with single-line progress
+    # Download all files with clear progress
     local count=0
 
     if has_gum; then
         gum_print --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
+        echo ""
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
+        echo ""
     fi
+
+    # Temporarily disable strict error handling for download loop
+    set +e
 
     for file_info in "${files[@]}"; do
         IFS=':' read -r file_path description <<< "$file_info"
+
+        # Safety check for parsed values
+        if [ -z "${file_path:-}" ] || [ -z "${description:-}" ]; then
+            continue
+        fi
+
         local url="${BASE_URL}/${file_path}"
         local dest="${INSTALL_DIR}/${file_path}"
-        ((count++))
+        count=$((count + 1))
 
-        # Calculate progress percentage
-        local percent=$((count * 100 / total_files))
-
-        # Show progress on same line (overwrite)
+        # Show downloading status
         if has_gum; then
-            printf "\r"
-            gum style --foreground 51 "  [$count/$total_files - %${percent}] $description" | tr -d '\n'
+            gum_print --foreground 226 "  [$count/$total_files] İndiriliyor: $description"
         else
-            printf "\r  ${CYAN}[$count/$total_files - %${percent}]${NC} %-50s" "$description"
+            echo -e "  ${YELLOW}[$count/$total_files]${NC} İndiriliyor: $description"
         fi
 
         # Download file silently
-        if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-            ((failed++))
+        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+            # Success - show checkmark
+            if has_gum; then
+                gum_print --foreground 82 "    ✅ Başarılı"
+            else
+                echo -e "    ${GREEN}✅ Başarılı${NC}"
+            fi
+        else
+            # Failure - show error
+            failed=$((failed + 1))
             failed_files+=("$description")
+            if has_gum; then
+                gum_print --foreground 196 "    ❌ İndirilemedi!"
+            else
+                echo -e "    ${RED}❌ İndirilemedi!${NC}"
+            fi
         fi
     done
 
-    # Clear the progress line and move to next
-    printf "\r%*s\r" 120 ""
+    # Re-enable strict error handling
+    set -e
 
     echo ""
 
