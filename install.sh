@@ -67,14 +67,14 @@ show_banner() {
     clear
 
     if has_gum; then
-        # Check terminal width for responsiveness
-        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 60 ]; then
+        # Check terminal width for responsiveness (100 chars threshold)
+        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 100 ]; then
             # Terminal too narrow - show compact banner
             gum style \
                 --foreground 212 --bold --align center \
                 "1453.AI WSL Setup"
             echo ""
-            gum_print --foreground 51 "🚀 Hızlı Yükleyici"
+            gum style --foreground 51 --align center "🚀 Hızlı Yükleyici"
             echo ""
         else
             # Calculate responsive widths based on terminal size
@@ -405,30 +405,30 @@ END_OF_LAUNCHER_SCRIPT
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""
     if has_gum; then
-        # Calculate responsive width
-        local box_width=70
+        # Calculate responsive width - aggressive limiting for narrow terminals
+        local box_width=60
         if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-            box_width=$((TUI_WIDTH - 10))
-            [ "$box_width" -gt 80 ] && box_width=80
+            box_width=$((TUI_WIDTH - 20))
         fi
+        # Ensure box never exceeds 70 chars (fits in most terminals)
+        [ "$box_width" -gt 70 ] && box_width=70
+        # Ensure box never exceeds terminal width
+        [ "$box_width" -gt $((TUI_WIDTH - 10)) ] && box_width=$((TUI_WIDTH - 10))
 
         # Modern Gum success message (responsive)
         gum style \
             --foreground 82 --border double --align center \
-            --width "$box_width" --margin "1 2" --padding "2 4" \
+            --width "$box_width" --margin "1 2" --padding "1 2" \
             "✅ Kurulum Tamamlandı!" \
             "" \
-            "1453.AI WSL Setup başarıyla yüklendi" \
-            "Kurulum dizini: ${INSTALL_DIR}"
+            "1453.AI WSL Setup yüklendi"
 
         echo ""
-        gum_print --foreground 226 "📌 Çalıştırma Yöntemleri:"
+        gum_print --foreground 226 "📌 Çalıştırma:"
         echo ""
-        gum_print "  1️⃣  Doğrudan: ${INSTALL_DIR}/1453-setup"
-        gum_print "  2️⃣  PATH'e ekle: echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc"
-        gum_print "  3️⃣  Alias oluştur: echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc"
+        gum_print "  ${INSTALL_DIR}/1453-setup"
         echo ""
-        gum_print --foreground 51 "💡 Güncellemek için bu installer'ı tekrar çalıştırın"
+        gum_print --foreground 51 "💡 Güncellemek için installer'ı tekrar çalıştırın"
     else
         # Fallback: Traditional message with padding
         echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
