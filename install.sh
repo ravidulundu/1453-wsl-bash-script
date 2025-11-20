@@ -40,20 +40,20 @@ INSTALL_DIR="$HOME/.1453-wsl-setup"
 
 # ASCII Art Banner
 show_banner() {
-    echo -e "${CYAN}"
-    echo '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
-    echo ' /$$$$| $$  | $$| $$____/  /$$__  $$'
-    echo '|_  $$| $$  | $$| $$      |__/  \ $$'
-    echo '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
-    echo '  | $$|_____  $$|_____  $$  |___  $$'
-    echo '  | $$      | $$ /$$  \ $$ /$$  \ $$'
-    echo ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
-    echo '|______/    |__/ \______/  \______/ '
+    echo ""
+    echo -e "  ${CYAN}"
+    echo '     /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
+    echo '   /$$$$| $$  | $$| $$____/  /$$__  $$'
+    echo '  |_  $$| $$  | $$| $$      |__/  \ $$'
+    echo '    | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
+    echo '    | $$|_____  $$|_____  $$  |___  $$'
+    echo '    | $$      | $$ /$$  \ $$ /$$  \ $$'
+    echo '   /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
+    echo '  |______/    |__/ \______/  \______/ '
     echo -e "${NC}"
     echo ""
-    echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      1453.AI WSL Kurulum Betiği - Hızlı Yükleyici            ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo -e "  ${CYAN}🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici${NC}"
+    echo ""
 }
 
 # Dosya indirme fonksiyonu
@@ -62,12 +62,12 @@ download_file() {
     local dest="$2"
     local desc="$3"
 
-    echo -e "${YELLOW}[İNDİRİLİYOR]${NC} $desc"
+    echo -e "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc"
     if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} $desc"
+        echo -e "  ${GREEN}[✓]${NC} $desc"
         return 0
     else
-        echo -e "${RED}[✗]${NC} İndirilemedi: $desc"
+        echo -e "  ${RED}[✗]${NC} İndirilemedi: $desc"
         return 1
     fi
 }
@@ -80,10 +80,10 @@ has_gum() {
 # Install Gum for modern TUI
 install_gum_minimal() {
     echo ""
-    echo -e "${CYAN}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
+    echo -e "  ${CYAN}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
 
     if has_gum; then
-        echo -e "${GREEN}[✓]${NC} Gum zaten kurulu"
+        echo -e "  ${GREEN}[✓]${NC} Gum zaten kurulu"
         return 0
     fi
 
@@ -98,7 +98,7 @@ install_gum_minimal() {
     elif command -v pacman &>/dev/null; then
         pkg_mgr="pacman"
     else
-        echo -e "${YELLOW}[!]${NC} Paket yöneticisi bulunamadı, Gum kurulumu atlanıyor"
+        echo -e "  ${YELLOW}[!]${NC} Paket yöneticisi bulunamadı, Gum kurulumu atlanıyor"
         return 1
     fi
 
@@ -125,10 +125,10 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
     esac
 
     if has_gum; then
-        echo -e "${GREEN}[✓]${NC} Gum kuruldu!"
+        echo -e "  ${GREEN}[✓]${NC} Gum kuruldu!"
         return 0
     else
-        echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+        echo -e "  ${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
         return 1
     fi
 }
@@ -138,21 +138,21 @@ main() {
     clear
     show_banner
 
-    echo -e "${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-    echo -e "${CYAN}[BİLGİ]${NC} Kurulum dizini: ${INSTALL_DIR}"
+    echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
+    echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum dizini: ${INSTALL_DIR}"
     echo ""
 
     # curl kontrolü
     if ! command -v curl &> /dev/null; then
-        echo -e "${RED}[HATA]${NC} curl gerekli ama kurulu değil."
-        echo -e "${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
+        echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
+        echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
         exit 1
     fi
 
     # Kurulum dizin yapısını oluştur
-    echo -e "${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
+    echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
     mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
-    echo -e "${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
+    echo -e "  ${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
     echo ""
 
     # İndirilecek dosyaların listesi
@@ -183,7 +183,7 @@ main() {
     )
 
     # Tüm dosyaları indir
-    echo -e "${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor..."
+    echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor..."
     echo ""
 
     local failed=0
@@ -200,9 +200,9 @@ main() {
     echo ""
 
     if [ $failed -gt 0 ]; then
-        echo -e "${RED}[HATA]${NC} $failed dosya indirilemedi."
-        echo -e "${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-        echo -e "      git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        echo -e "  ${RED}[HATA]${NC} $failed dosya indirilemedi."
+        echo -e "  ${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
+        echo -e "        git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         exit 1
     fi
 
@@ -210,7 +210,7 @@ main() {
     chmod +x "${INSTALL_DIR}/src/linux-ai-setup-script.sh"
 
     # Kullanışlı bir başlatıcı betiği oluştur
-    echo -e "${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
+    echo -e "  ${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
     # FIX BUG-017: Use unique heredoc delimiter to prevent conflicts
     cat > "${INSTALL_DIR}/1453-setup" << 'END_OF_LAUNCHER_SCRIPT'
 #!/bin/bash
@@ -227,7 +227,7 @@ bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
-    echo -e "${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
+    echo -e "  ${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
     echo ""
 
     # Install Gum for modern TUI (critical dependency)
@@ -254,30 +254,30 @@ END_OF_LAUNCHER_SCRIPT
         echo ""
         gum style --foreground 51 "💡 Güncellemek için bu installer'ı tekrar çalıştırın"
     else
-        # Fallback: Traditional message
-        echo -e "${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
+        # Fallback: Traditional message with padding
+        echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
         echo ""
-        echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-        echo -e "${GREEN}                    Kurulum Tamamlandı!                        ${NC}"
-        echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+        echo -e "  ${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+        echo -e "  ${GREEN}                    Kurulum Tamamlandı!                        ${NC}"
+        echo -e "  ${GREEN}═══════════════════════════════════════════════════════════════${NC}"
         echo ""
-        echo -e "${YELLOW}Kurulum betiğini çalıştırmak için şu yöntemlerden birini kullanın:${NC}"
+        echo -e "  ${YELLOW}Kurulum betiğini çalıştırmak için şu yöntemlerden birini kullanın:${NC}"
         echo ""
-        echo -e "  1. Doğrudan çalıştırma:"
-        echo -e "     ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
+        echo -e "    1. Doğrudan çalıştırma:"
+        echo -e "       ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
         echo ""
-        echo -e "  2. PATH'e ekleyerek kolay erişim (isteğe bağlı):"
-        echo -e "     ${GREEN}echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc${NC}"
-        echo -e "     ${GREEN}source ~/.bashrc${NC}"
-        echo -e "     ${GREEN}1453-setup${NC}"
+        echo -e "    2. PATH'e ekleyerek kolay erişim (isteğe bağlı):"
+        echo -e "       ${GREEN}echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc${NC}"
+        echo -e "       ${GREEN}source ~/.bashrc${NC}"
+        echo -e "       ${GREEN}1453-setup${NC}"
         echo ""
-        echo -e "  3. Takma ad (alias) oluşturma (isteğe bağlı):"
-        echo -e "     ${GREEN}echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc${NC}"
-        echo -e "     ${GREEN}source ~/.bashrc${NC}"
-        echo -e "     ${GREEN}1453${NC}"
+        echo -e "    3. Takma ad (alias) oluşturma (isteğe bağlı):"
+        echo -e "       ${GREEN}echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc${NC}"
+        echo -e "       ${GREEN}source ~/.bashrc${NC}"
+        echo -e "       ${GREEN}1453${NC}"
         echo ""
-        echo -e "${CYAN}[İPUCU]${NC} Betik şu dizinde kurulu: ${INSTALL_DIR}"
-        echo -e "${CYAN}[İPUCU]${NC} Güncellemek için bu yükleyiciyi tekrar çalıştırın"
+        echo -e "  ${CYAN}[İPUCU]${NC} Betik şu dizinde kurulu: ${INSTALL_DIR}"
+        echo -e "  ${CYAN}[İPUCU]${NC} Güncellemek için bu yükleyiciyi tekrar çalıştırın"
     fi
 
     echo ""
@@ -295,9 +295,9 @@ END_OF_LAUNCHER_SCRIPT
             gum style --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
         fi
     else
-        # Fallback: Traditional prompt
-        echo -e "${YELLOW}════════════════════════════════════════════════════════════════${NC}"
-        echo -ne "${YELLOW}Kurulum betiğini şimdi çalıştırmak ister misiniz? (e/E=Evet, Enter=Hayır): ${NC}"
+        # Fallback: Traditional prompt with padding
+        echo -e "  ${YELLOW}════════════════════════════════════════════════════════════════${NC}"
+        echo -ne "  ${YELLOW}Kurulum betiğini şimdi çalıştırmak ister misiniz? (e/E=Evet, Enter=Hayır): ${NC}"
 
         # stdin'i terminal'e yönlendir (pipe'dan okuma sorunu için)
         if [ -t 0 ]; then
@@ -308,13 +308,13 @@ END_OF_LAUNCHER_SCRIPT
 
         if [[ "$response" =~ ^[eE]$ ]]; then
             echo ""
-            echo -e "${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
+            echo -e "  ${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
             # Run with stdin explicitly from /dev/tty
             bash "${INSTALL_DIR}/1453-setup" </dev/tty
         else
             echo ""
-            echo -e "${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
-            echo -e "${GREEN}${INSTALL_DIR}/1453-setup${NC}"
+            echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
+            echo -e "  ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
             echo ""
         fi
     fi
