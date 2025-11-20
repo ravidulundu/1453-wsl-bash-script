@@ -60,31 +60,31 @@ prepare_and_configure_git() {
 # Display main menu
 show_menu() {
     echo ""
-    draw_box_top "ADVANCED MODE - ANA MENÜ" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}Python & JavaScript:${NC}" 70
-    draw_box_middle "    ${GREEN}3${NC}) Python  ${GREEN}4${NC}) Pip  ${GREEN}5${NC}) Pipx  ${GREEN}6${NC}) UV" 70
-    draw_box_middle "    ${GREEN}7${NC}) NVM  ${GREEN}8${NC}) Bun.js" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}Backend & Languages:${NC}" 70
-    draw_box_middle "    ${GREEN}9${NC}) PHP  ${GREEN}10${NC}) Composer  ${GREEN}14${NC}) Go" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}AI & Modern Tools:${NC}" 70
-    draw_box_middle "    ${GREEN}11${NC}) AI CLI Araçları  ${GREEN}12${NC}) AI Frameworks" 70
-    draw_box_middle "    ${GREEN}15${NC}) Modern CLI Tools  ${GREEN}16${NC}) Shell Ortamı" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}Docker & Utilities:${NC}" 70
-    draw_box_middle "    ${GREEN}18${NC}) Docker (Engine + lazydocker)" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}Quick Actions:${NC}" 70
-    draw_box_middle "    ${GREEN}1${NC}) Tam Kurulum (Önerilen)" 70
-    draw_box_middle "    ${GREEN}2${NC}) Hazırlık (Sistem + Git)" 70
-    draw_box_middle "    ${RED}13${NC}) AI Frameworks Kaldır" 70
-    draw_box_middle "    ${RED}17${NC}) Temizleme & Sıfırlama" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${GREEN}0${NC}) Ana Menüye Dön" 70
-    draw_box_middle "" 70
-    draw_box_bottom 70
+    draw_box_top "⚙️  ADVANCED MODE - ANA MENÜ" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${CYAN}Python & JavaScript:${NC}" 80
+    draw_box_middle "    ${GREEN}3${NC}) Python  ${GREEN}4${NC}) Pip  ${GREEN}5${NC}) Pipx  ${GREEN}6${NC}) UV" 80
+    draw_box_middle "    ${GREEN}7${NC}) NVM  ${GREEN}8${NC}) Bun.js" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${CYAN}Backend & Languages:${NC}" 80
+    draw_box_middle "    ${GREEN}9${NC}) PHP  ${GREEN}10${NC}) Composer  ${GREEN}14${NC}) Go" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${CYAN}AI & Modern Tools:${NC}" 80
+    draw_box_middle "    ${GREEN}11${NC}) AI CLI Araçları  ${GREEN}12${NC}) AI Frameworks" 80
+    draw_box_middle "    ${GREEN}15${NC}) Modern CLI Tools  ${GREEN}16${NC}) Shell Ortamı" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${CYAN}Docker & Utilities:${NC}" 80
+    draw_box_middle "    ${GREEN}18${NC}) 🐳 Docker (Engine + lazydocker)" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${CYAN}Quick Actions:${NC}" 80
+    draw_box_middle "    ${GREEN}1${NC}) ✨ Tam Kurulum (Önerilen)" 80
+    draw_box_middle "    ${GREEN}2${NC}) 🔧 Hazırlık (Sistem + Git)" 80
+    draw_box_middle "    ${RED}13${NC}) ❌ AI Frameworks Kaldır" 80
+    draw_box_middle "    ${RED}17${NC}) 🗑️  Temizleme & Sıfırlama" 80
+    draw_box_middle "" 80
+    draw_box_middle "  ${GREEN}0${NC}) ◀ Ana Menüye Dön" 80
+    draw_box_middle "" 80
+    draw_box_bottom 80
 }
 
 # Show mode selection menu
@@ -95,23 +95,23 @@ show_mode_selection() {
         echo ""
 
         # TUI Mode Selection
-        draw_box_top "1453.AI - MOD SEÇİMİ" 70
-        draw_box_middle "" 70
-        draw_box_middle "  ${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}" 70
-        draw_box_middle "" 70
-        draw_box_middle "  ${GREEN}1${NC}) ${CYAN}QUICK START MODE${NC} ${YELLOW}(Önerilen)${NC}" 70
-        draw_box_middle "      → Vibe coder'lar ve yeni başlayanlar için" 70
-        draw_box_middle "      → Basit sorular, otomatik kurulum" 70
-        draw_box_middle "      → Sizi yormaz, sadece gerekli araçları kurar" 70
-        draw_box_middle "" 70
-        draw_box_middle "  ${GREEN}2${NC}) ${CYAN}ADVANCED MODE${NC}" 70
-        draw_box_middle "      → İleri düzey kullanıcılar için" 70
-        draw_box_middle "      → Detaylı kontrol, her aracı ayrı seçin" 70
-        draw_box_middle "      → 18 farklı kurulum seçeneği" 70
-        draw_box_middle "" 70
-        draw_box_middle "  ${GREEN}0${NC}) ${RED}Çıkış${NC}" 70
-        draw_box_middle "" 70
-        draw_box_bottom 70
+        draw_box_top "🎯 1453.AI - MOD SEÇİMİ" 80
+        draw_box_middle "" 80
+        draw_box_middle "  ${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}" 80
+        draw_box_middle "" 80
+        draw_box_middle "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE${NC} ${YELLOW}(Önerilen)${NC}" 80
+        draw_box_middle "      → Vibe coder'lar ve yeni başlayanlar için" 80
+        draw_box_middle "      → Basit sorular, otomatik kurulum" 80
+        draw_box_middle "      → Sizi yormaz, sadece gerekli araçları kurar" 80
+        draw_box_middle "" 80
+        draw_box_middle "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}" 80
+        draw_box_middle "      → İleri düzey kullanıcılar için" 80
+        draw_box_middle "      → Detaylı kontrol, her aracı ayrı seçin" 80
+        draw_box_middle "      → 18 farklı kurulum seçeneği" 80
+        draw_box_middle "" 80
+        draw_box_middle "  ${GREEN}0${NC}) ${RED}❌ Çıkış${NC}" 80
+        draw_box_middle "" 80
+        draw_box_bottom 80
         echo ""
 
         # CRITICAL FIX: Flush stdin buffer before reading
@@ -164,33 +164,33 @@ show_advanced_menu() {
 run_advanced_mode() {
     # Run pre-flight checks with TUI
     clear
-    draw_box_top "ADVANCED MODE - SİSTEM KONTROLÜ" 70
-    draw_box_middle "" 70
+    draw_box_top "🔍 ADVANCED MODE - SİSTEM KONTROLÜ" 80
+    draw_box_middle "" 80
 
     if ! run_preflight_checks; then
-        draw_box_middle "" 70
-        draw_box_middle "  ${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!" 70
-        draw_box_middle "  ${YELLOW}[!]${NC} Menüye yönlendiriliyorsunuz..." 70
-        draw_box_middle "  ${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir." 70
-        draw_box_middle "" 70
-        draw_box_bottom 70
+        draw_box_middle "" 80
+        draw_box_middle "  ${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!" 80
+        draw_box_middle "  ${YELLOW}[!]${NC} Menüye yönlendiriliyorsunuz..." 80
+        draw_box_middle "  ${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir." 80
+        draw_box_middle "" 80
+        draw_box_bottom 80
         sleep 3
     else
-        draw_box_middle "  ${GREEN}[✓]${NC} Sistem kontrolleri başarılı!" 70
-        draw_box_middle "" 70
-        draw_box_bottom 70
+        draw_box_middle "  ${GREEN}[✓]${NC} Sistem kontrolleri başarılı!" 80
+        draw_box_middle "" 80
+        draw_box_bottom 80
         sleep 1
     fi
 
     # Detect package manager on startup with TUI
     clear
-    draw_box_top "PAKET YÖNETİCİSİ TESPİT EDİLİYOR" 70
-    draw_box_middle "" 70
+    draw_box_top "📦 PAKET YÖNETİCİSİ TESPİT EDİLİYOR" 80
+    draw_box_middle "" 80
     detect_package_manager
-    draw_box_middle "" 70
-    draw_box_middle "  ${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}" 70
-    draw_box_middle "" 70
-    draw_box_bottom 70
+    draw_box_middle "" 80
+    draw_box_middle "  ${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}" 80
+    draw_box_middle "" 80
+    draw_box_bottom 80
     sleep 1
 
     # Track installed components
@@ -212,11 +212,11 @@ run_advanced_mode() {
             case $choice in
                 1)
                     clear
-                    draw_box_top "TAM KURULUM BAŞLATILIYOR" 70
-                    draw_box_middle "" 70
-                    draw_box_middle "  ${YELLOW}Tüm temel araçlar kurulacak...${NC}" 70
-                    draw_box_middle "" 70
-                    draw_box_bottom 70
+                    draw_box_top "✨ TAM KURULUM BAŞLATILIYOR" 80
+                    draw_box_middle "" 80
+                    draw_box_middle "  ${YELLOW}Tüm temel araçlar kurulacak...${NC}" 80
+                    draw_box_middle "" 80
+                    draw_box_bottom 80
                     sleep 2
 
                     update_system
@@ -233,11 +233,11 @@ run_advanced_mode() {
                     install_go
 
                     clear
-                    draw_box_top "TAM KURULUM TAMAMLANDI" 70
-                    draw_box_middle "" 70
-                    draw_box_middle "  ${GREEN}[✓]${NC} Tüm araçlar başarıyla kuruldu!" 70
-                    draw_box_middle "" 70
-                    draw_box_bottom 70
+                    draw_box_top "✅ TAM KURULUM TAMAMLANDI" 80
+                    draw_box_middle "" 80
+                    draw_box_middle "  ${GREEN}[✓]${NC} Tüm araçlar başarıyla kuruldu!" 80
+                    draw_box_middle "" 80
+                    draw_box_bottom 80
                     sleep 2
                     ;;
                 2) prepare_and_configure_git ;;
