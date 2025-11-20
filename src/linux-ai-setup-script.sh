@@ -132,6 +132,9 @@ fi
 echo ""
 
 # Phase 7: Initialize TUI and run main program
+echo -e "${YELLOW}[DEBUG]${NC} Phase 7: Initializing TUI..."
 init_tui
+echo -e "${YELLOW}[DEBUG]${NC} TUI initialized, showing banner..."
 show_banner
+echo -e "${YELLOW}[DEBUG]${NC} Banner shown, starting main..."
 main "$@"

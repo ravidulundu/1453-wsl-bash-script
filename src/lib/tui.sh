@@ -9,26 +9,36 @@ TUI_HEIGHT=20
 
 # Initialize TUI system
 init_tui() {
+    echo "[DEBUG TUI] Starting init_tui..." >&2
+
     # Check if dialog is available
     if command -v dialog &>/dev/null; then
         TUI_MODE="dialog"
         export DIALOGRC="${DIALOGRC:-}"
+        echo "[DEBUG TUI] Dialog mode enabled" >&2
     else
         TUI_MODE="bash"
+        echo "[DEBUG TUI] Bash mode (no dialog)" >&2
     fi
 
     # Get terminal dimensions
+    echo "[DEBUG TUI] Getting terminal dimensions..." >&2
     if command -v tput &>/dev/null && [ -n "${TERM:-}" ]; then
+        echo "[DEBUG TUI] Using tput..." >&2
         TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
         TUI_HEIGHT=$(tput lines 2>/dev/null || echo 24)
+        echo "[DEBUG TUI] Dimensions: ${TUI_WIDTH}x${TUI_HEIGHT}" >&2
     else
         TUI_WIDTH=80
         TUI_HEIGHT=24
+        echo "[DEBUG TUI] Using defaults: 80x24" >&2
     fi
 
     # Ensure minimum dimensions
     [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 70 ] && TUI_WIDTH=70
     [ -n "$TUI_HEIGHT" ] && [ "$TUI_HEIGHT" -lt 20 ] && TUI_HEIGHT=20
+
+    echo "[DEBUG TUI] init_tui completed!" >&2
 }
 
 # ═══════════════════════════════════════════════════════════
