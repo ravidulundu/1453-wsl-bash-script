@@ -35,7 +35,7 @@ WSL için AI geliştiricilere özel, tam Türkçe arayüzlü, modüler kurulum s
 - bat, eza, ripgrep, fd, starship, zoxide, fzf, vivid, fastfetch, lazygit, lazydocker
 
 ### AI Araçları
-- **CLI**: Claude Code, Gemini CLI, GitHub CLI, Qoder, OpenCode, Qwen
+- **CLI**: Claude Code, Gemini CLI, GitHub CLI, GitHub Copilot CLI, Qoder, OpenCode, Qwen, Kiro CLI
 - **Framework**: SuperGemini, SuperQwen, SuperClaude
 
 ### Shell Ortamı
