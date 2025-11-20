@@ -41,6 +41,9 @@ source "${SCRIPT_DIR}/lib/package-manager.sh"
 # shellcheck source=lib/installation-tracker.sh
 source "${SCRIPT_DIR}/lib/installation-tracker.sh"
 
+# shellcheck source=lib/tui.sh
+source "${SCRIPT_DIR}/lib/tui.sh"
+
 # Phase 4: Load feature modules
 # shellcheck source=modules/python.sh
 source "${SCRIPT_DIR}/modules/python.sh"

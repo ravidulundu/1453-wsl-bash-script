@@ -185,15 +185,27 @@ generate_installation_plan() {
 execute_installation_plan() {
     local -a tools=("$@")
 
-    echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                    KURULUM BAŞLIYOR!                        ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
+    # Initialize TUI
+    init_tui
+
+    # Show installation start
+    clear
+    draw_box_top "🚀 1453.AI KURULUM BAŞLIYOR" 70
+    draw_box_middle "" 70
+    draw_box_middle "  Kurulum planınız hazırlanıyor..." 70
+    draw_box_middle "  ${GREEN}${#tools[@]}${NC} araç kurulacak" 70
+    draw_box_middle "" 70
+    draw_box_bottom 70
+    sleep 2
 
     # Reset tracking for fresh start
     reset_tracking
 
     # Run pre-flight checks first
+    clear
+    draw_box_top "🔍 SİSTEM KONTROL EDİLİYOR" 70
+    draw_box_middle "" 70
+
     if ! run_preflight_checks; then
         echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
         echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
@@ -201,18 +213,80 @@ execute_installation_plan() {
     fi
 
     # Update system and configure git
+    clear
+    draw_box_top "📦 SİSTEM GÜNCELLENİYOR" 70
+    draw_box_middle "" 70
+    show_install_status "System Update" "installing"
+    echo ""
     update_system
+    show_install_status "System Update" "success"
+    sleep 1
+
+    clear
+    draw_box_top "🔧 GIT YAPILANDIRMASI" 70
+    draw_box_middle "" 70
+    show_install_status "Git Configuration" "installing"
+    echo ""
     configure_git
+    show_install_status "Git Configuration" "success"
+    sleep 1
 
     # Install Python + modern CLI tools first (base for all presets)
-    # Note: These functions already handle tracking internally
-    install_python
-    install_pip || echo -e "${YELLOW}[!]${NC} Pip güncellemesi atlandı, devam ediliyor..."
-    install_pipx || echo -e "${YELLOW}[!]${NC} Pipx kurulumu atlandı, devam ediliyor..."
-    install_uv || echo -e "${YELLOW}[!]${NC} UV kurulumu atlandı, devam ediliyor..."
-    install_modern_cli_tools || echo -e "${YELLOW}[!]${NC} Modern CLI araçları kurulumu atlandı, devam ediliyor..."
-    # Note: setup_custom_shell() already handles tracking internally
-    setup_custom_shell || echo -e "${YELLOW}[!]${NC} Shell kurulumu atlandı, devam ediliyor..."
+    clear
+    draw_box_top "🐍 PYTHON EKOSİSTEMİ KURULUYOR" 70
+    draw_box_middle "" 70
+
+    show_install_status "Python" "installing"
+    install_python && show_install_status "Python" "success" || show_install_status "Python" "failed"
+
+    show_install_status "Pip" "installing"
+    if install_pip; then
+        show_install_status "Pip" "success"
+    else
+        show_install_status "Pip" "skipped"
+        echo -e "${YELLOW}[!]${NC} Pip güncellemesi atlandı, devam ediliyor..."
+    fi
+
+    show_install_status "Pipx" "installing"
+    if install_pipx; then
+        show_install_status "Pipx" "success"
+    else
+        show_install_status "Pipx" "skipped"
+        echo -e "${YELLOW}[!]${NC} Pipx kurulumu atlandı, devam ediliyor..."
+    fi
+
+    show_install_status "UV" "installing"
+    if install_uv; then
+        show_install_status "UV" "success"
+    else
+        show_install_status "UV" "skipped"
+        echo -e "${YELLOW}[!]${NC} UV kurulumu atlandı, devam ediliyor..."
+    fi
+    sleep 1
+
+    clear
+    draw_box_top "⚡ MODERN CLI ARAÇLARI KURULUYOR" 70
+    draw_box_middle "" 70
+    show_install_status "Modern CLI Tools" "installing"
+    if install_modern_cli_tools; then
+        show_install_status "Modern CLI Tools" "success"
+    else
+        show_install_status "Modern CLI Tools" "skipped"
+        echo -e "${YELLOW}[!]${NC} Modern CLI araçları kurulumu atlandı, devam ediliyor..."
+    fi
+    sleep 1
+
+    clear
+    draw_box_top "🐚 SHELL ORTAMI YAPILANDIRILIYOR" 70
+    draw_box_middle "" 70
+    show_install_status "Shell Setup" "installing"
+    if setup_custom_shell; then
+        show_install_status "Shell Setup" "success"
+    else
+        show_install_status "Shell Setup" "skipped"
+        echo -e "${YELLOW}[!]${NC} Shell kurulumu atlandı, devam ediliyor..."
+    fi
+    sleep 1
 
     # Install tools
     for tool in "${tools[@]}"; do
@@ -221,73 +295,148 @@ execute_installation_plan() {
                 # Already installed above
                 ;;
             "nvm")
-                # Note: install_nvm() already handles tracking internally
-                install_nvm || echo -e "${YELLOW}[!]${NC} NVM kurulumu atlandı, devam ediliyor..."
+                clear
+                draw_box_top "🟢 NODE.JS KURULUYOR (NVM)" 70
+                draw_box_middle "" 70
+                show_install_status "NVM" "installing"
+                echo ""
+                if install_nvm; then
+                    show_install_status "NVM" "success"
+                else
+                    show_install_status "NVM" "skipped"
+                    echo -e "${YELLOW}[!]${NC} NVM kurulumu atlandı, devam ediliyor..."
+                fi
+                sleep 1
                 ;;
             "node")
                 # Already installed with nvm
                 ;;
             "bun")
-                # Note: install_bun() already handles tracking internally
-                install_bun || echo -e "${YELLOW}[!]${NC} Bun kurulumu atlandı, devam ediliyor..."
+                clear
+                draw_box_top "⚡ BUN.JS KURULUYOR" 70
+                draw_box_middle "" 70
+                show_install_status "Bun.js" "installing"
+                echo ""
+                if install_bun; then
+                    show_install_status "Bun.js" "success"
+                else
+                    show_install_status "Bun.js" "skipped"
+                    echo -e "${YELLOW}[!]${NC} Bun kurulumu atlandı, devam ediliyor..."
+                fi
+                sleep 1
                 ;;
             "php")
-                # Quick Start: Install PHP 8.3 (stable) automatically without menu
-                echo -e "${YELLOW}[QUICK START]${NC} PHP 8.3 otomatik kuruluyor..."
+                clear
+                draw_box_top "🐘 PHP 8.3 KURULUYOR" 70
+                draw_box_middle "" 70
+                show_install_status "PHP 8.3" "installing"
+                echo ""
                 if install_php_version "8.3"; then
+                    show_install_status "PHP 8.3" "success"
                     track_success "PHP 8.3"
                 else
+                    show_install_status "PHP 8.3" "skipped"
                     track_failure "PHP 8.3"
                     echo -e "${YELLOW}[!]${NC} PHP kurulumu atlandı, devam ediliyor..."
                 fi
+                sleep 1
                 ;;
             "composer")
-                # Note: install_composer() already handles tracking internally
-                install_composer || echo -e "${YELLOW}[!]${NC} Composer kurulumu atlandı, devam ediliyor..."
+                clear
+                draw_box_top "🎼 COMPOSER KURULUYOR" 70
+                draw_box_middle "" 70
+                show_install_status "Composer" "installing"
+                echo ""
+                if install_composer; then
+                    show_install_status "Composer" "success"
+                else
+                    show_install_status "Composer" "skipped"
+                    echo -e "${YELLOW}[!]${NC} Composer kurulumu atlandı, devam ediliyor..."
+                fi
+                sleep 1
                 ;;
             "go")
-                # Note: install_go() already handles tracking internally
-                install_go || echo -e "${YELLOW}[!]${NC} Go kurulumu atlandı, devam ediliyor..."
+                clear
+                draw_box_top "🔷 GO LANGUAGE KURULUYOR" 70
+                draw_box_middle "" 70
+                show_install_status "Go" "installing"
+                echo ""
+                if install_go; then
+                    show_install_status "Go" "success"
+                else
+                    show_install_status "Go" "skipped"
+                    echo -e "${YELLOW}[!]${NC} Go kurulumu atlandı, devam ediliyor..."
+                fi
+                sleep 1
                 ;;
             "ai_cli")
-                # Quick Start: Install essential AI CLI tools automatically
-                echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
-                # Note: These functions already handle tracking internally
-                install_claude_code || echo -e "${YELLOW}[!]${NC} Claude Code kurulumu atlandı..."
-                install_github_cli || echo -e "${YELLOW}[!]${NC} GitHub CLI kurulumu atlandı..."
+                clear
+                draw_box_top "🤖 AI CLI ARAÇLARI KURULUYOR" 70
+                draw_box_middle "" 70
+
+                show_install_status "Claude Code" "installing"
+                if install_claude_code; then
+                    show_install_status "Claude Code" "success"
+                else
+                    show_install_status "Claude Code" "skipped"
+                    echo -e "${YELLOW}[!]${NC} Claude Code kurulumu atlandı..."
+                fi
+
+                show_install_status "GitHub CLI" "installing"
+                if install_github_cli; then
+                    show_install_status "GitHub CLI" "success"
+                else
+                    show_install_status "GitHub CLI" "skipped"
+                    echo -e "${YELLOW}[!]${NC} GitHub CLI kurulumu atlandı..."
+                fi
+                sleep 1
                 ;;
             "ai_frameworks")
-                # Quick Start: Install SuperClaude framework automatically
-                echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
-                # Note: install_superclaude() already handles tracking internally
-                install_superclaude || echo -e "${YELLOW}[!]${NC} SuperClaude kurulumu atlandı..."
+                clear
+                draw_box_top "🧠 AI FRAMEWORK KURULUYOR" 70
+                draw_box_middle "" 70
+                show_install_status "SuperClaude" "installing"
+                echo ""
+                if install_superclaude; then
+                    show_install_status "SuperClaude" "success"
+                else
+                    show_install_status "SuperClaude" "skipped"
+                    echo -e "${YELLOW}[!]${NC} SuperClaude kurulumu atlandı..."
+                fi
+                sleep 1
                 ;;
             "git_config")
-                # Configure Git (will check existing config first)
-                configure_git || echo -e "${YELLOW}[!]${NC} Git yapılandırması atlandı..."
+                # Already handled above
                 ;;
         esac
     done
 
-    echo ""
-    echo -e "${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                  ✅ KURULUM TAMAMLANDI!                      ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}"
+    # Installation complete
+    clear
+    draw_box_top "✅ KURULUM TAMAMLANDI!" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${GREEN}Tüm araçlar başarıyla kuruldu!${NC}" 70
+    draw_box_middle "" 70
+    draw_box_bottom 70
     echo ""
 
     # Show installation summary
     show_installation_summary
 
-    echo -e "${YELLOW}🎉 Tebrikler! Geliştirme ortamınız hazır!${NC}"
     echo ""
-    echo -e "${CYAN}💡 Sonraki adımlar:${NC}"
-    echo -e "  1. ${GREEN}source ~/.bashrc${NC} (ya da terminali yeniden başlat)"
-    echo -e "  2. ${GREEN}python --version${NC} ile test edin"
-    echo -e "  3. ${GREEN}node --version${NC} ile test edin"
-    echo -e "  4. 🚀 Kodlamaya başlayın!"
-    echo ""
-    echo -e "${YELLOW}⚙️  İleri düzey araçlar için:${NC}"
-    echo -e "    Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
+    draw_box_top "🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}💡 Sonraki adımlar:${NC}" 70
+    draw_box_middle "" 70
+    draw_box_middle "  1. ${GREEN}source ~/.bashrc${NC} (ya da terminali yeniden başlat)" 70
+    draw_box_middle "  2. ${GREEN}python --version${NC} ile test edin" 70
+    draw_box_middle "  3. ${GREEN}node --version${NC} ile test edin" 70
+    draw_box_middle "  4. 🚀 Kodlamaya başlayın!" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${YELLOW}⚙️  İleri düzey araçlar için:${NC}" 70
+    draw_box_middle "     Scripti tekrar çalıştırıp 'Advanced Mode' seçin" 70
+    draw_box_middle "" 70
+    draw_box_bottom 70
     echo ""
 }
 
