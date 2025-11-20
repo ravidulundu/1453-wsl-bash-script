@@ -72,6 +72,67 @@ download_file() {
     fi
 }
 
+# Check if Gum is available
+has_gum() {
+    command -v gum &>/dev/null
+}
+
+# Install Gum for modern TUI
+install_gum_minimal() {
+    echo ""
+    echo -e "${CYAN}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
+
+    if has_gum; then
+        echo -e "${GREEN}[✓]${NC} Gum zaten kurulu"
+        return 0
+    fi
+
+    # Detect package manager
+    local pkg_mgr=""
+    if command -v apt &>/dev/null; then
+        pkg_mgr="apt"
+    elif command -v dnf &>/dev/null; then
+        pkg_mgr="dnf"
+    elif command -v yum &>/dev/null; then
+        pkg_mgr="yum"
+    elif command -v pacman &>/dev/null; then
+        pkg_mgr="pacman"
+    else
+        echo -e "${YELLOW}[!]${NC} Paket yöneticisi bulunamadı, Gum kurulumu atlanıyor"
+        return 1
+    fi
+
+    case $pkg_mgr in
+        apt)
+            sudo mkdir -p /etc/apt/keyrings 2>/dev/null
+            curl -fsSL https://repo.charm.sh/apt/gpg.key 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg 2>/dev/null
+            echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list >/dev/null
+            sudo apt update -qq 2>/dev/null
+            sudo apt install -y gum >/dev/null 2>&1
+            ;;
+        dnf|yum)
+            echo '[charm]
+name=Charm
+baseurl=https://repo.charm.sh/yum/
+enabled=1
+gpgcheck=1
+gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo >/dev/null
+            sudo ${pkg_mgr} install -y gum >/dev/null 2>&1
+            ;;
+        pacman)
+            sudo pacman -S --noconfirm gum >/dev/null 2>&1
+            ;;
+    esac
+
+    if has_gum; then
+        echo -e "${GREEN}[✓]${NC} Gum kuruldu!"
+        return 0
+    else
+        echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+        return 1
+    fi
+}
+
 # Ana kurulum fonksiyonu
 main() {
     clear
@@ -169,53 +230,93 @@ END_OF_LAUNCHER_SCRIPT
     echo -e "${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
     echo ""
 
-    # Kurulum başarılı mesajı
-    echo -e "${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
+    # Install Gum for modern TUI (critical dependency)
+    install_gum_minimal
+
+    # Kurulum başarılı mesajı (with Gum if available)
     echo ""
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}                    Kurulum Tamamlandı!                        ${NC}"
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-    echo ""
-    echo -e "${YELLOW}Kurulum betiğini çalıştırmak için şu yöntemlerden birini kullanın:${NC}"
-    echo ""
-    echo -e "  1. Doğrudan çalıştırma:"
-    echo -e "     ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
-    echo ""
-    echo -e "  2. PATH'e ekleyerek kolay erişim (isteğe bağlı):"
-    echo -e "     ${GREEN}echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc${NC}"
-    echo -e "     ${GREEN}source ~/.bashrc${NC}"
-    echo -e "     ${GREEN}1453-setup${NC}"
-    echo ""
-    echo -e "  3. Takma ad (alias) oluşturma (isteğe bağlı):"
-    echo -e "     ${GREEN}echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc${NC}"
-    echo -e "     ${GREEN}source ~/.bashrc${NC}"
-    echo -e "     ${GREEN}1453${NC}"
-    echo ""
-    echo -e "${CYAN}[İPUCU]${NC} Betik şu dizinde kurulu: ${INSTALL_DIR}"
-    echo -e "${CYAN}[İPUCU]${NC} Güncellemek için bu yükleyiciyi tekrar çalıştırın"
+    if has_gum; then
+        # Modern Gum success message
+        gum style \
+            --foreground 82 --border double --align center \
+            --width 70 --margin "1 2" --padding "2 4" \
+            "✅ Kurulum Tamamlandı!" \
+            "" \
+            "1453.AI WSL Setup başarıyla yüklendi" \
+            "Kurulum dizini: ${INSTALL_DIR}"
+
+        echo ""
+        gum style --foreground 226 "📌 Çalıştırma Yöntemleri:"
+        echo ""
+        echo "  1️⃣  Doğrudan: ${INSTALL_DIR}/1453-setup"
+        echo "  2️⃣  PATH'e ekle: echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc"
+        echo "  3️⃣  Alias oluştur: echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc"
+        echo ""
+        gum style --foreground 51 "💡 Güncellemek için bu installer'ı tekrar çalıştırın"
+    else
+        # Fallback: Traditional message
+        echo -e "${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
+        echo ""
+        echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+        echo -e "${GREEN}                    Kurulum Tamamlandı!                        ${NC}"
+        echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+        echo ""
+        echo -e "${YELLOW}Kurulum betiğini çalıştırmak için şu yöntemlerden birini kullanın:${NC}"
+        echo ""
+        echo -e "  1. Doğrudan çalıştırma:"
+        echo -e "     ${GREEN}${INSTALL_DIR}/1453-setup${NC}"
+        echo ""
+        echo -e "  2. PATH'e ekleyerek kolay erişim (isteğe bağlı):"
+        echo -e "     ${GREEN}echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc${NC}"
+        echo -e "     ${GREEN}source ~/.bashrc${NC}"
+        echo -e "     ${GREEN}1453-setup${NC}"
+        echo ""
+        echo -e "  3. Takma ad (alias) oluşturma (isteğe bağlı):"
+        echo -e "     ${GREEN}echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc${NC}"
+        echo -e "     ${GREEN}source ~/.bashrc${NC}"
+        echo -e "     ${GREEN}1453${NC}"
+        echo ""
+        echo -e "${CYAN}[İPUCU]${NC} Betik şu dizinde kurulu: ${INSTALL_DIR}"
+        echo -e "${CYAN}[İPUCU]${NC} Güncellemek için bu yükleyiciyi tekrar çalıştırın"
+    fi
+
     echo ""
 
     # Kullanıcıya kurulum betiğini şimdi çalıştırmak isteyip istemediğini sor
-    echo -e "${YELLOW}════════════════════════════════════════════════════════════════${NC}"
-    echo -ne "${YELLOW}Kurulum betiğini şimdi çalıştırmak ister misiniz? (e/E=Evet, Enter=Hayır): ${NC}"
-
-    # stdin'i terminal'e yönlendir (pipe'dan okuma sorunu için)
-    if [ -t 0 ]; then
-        read -r response
+    if has_gum; then
+        # Modern Gum confirm
+        if gum confirm "Kurulum betiğini şimdi çalıştırmak ister misiniz?"; then
+            echo ""
+            gum style --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
+            sleep 1
+            bash "${INSTALL_DIR}/1453-setup" </dev/tty
+        else
+            echo ""
+            gum style --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
+        fi
     else
-        read -r response </dev/tty
-    fi
+        # Fallback: Traditional prompt
+        echo -e "${YELLOW}════════════════════════════════════════════════════════════════${NC}"
+        echo -ne "${YELLOW}Kurulum betiğini şimdi çalıştırmak ister misiniz? (e/E=Evet, Enter=Hayır): ${NC}"
 
-    if [[ "$response" =~ ^[eE]$ ]]; then
-        echo ""
-        echo -e "${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
-        # Run with stdin explicitly from /dev/tty
-        bash "${INSTALL_DIR}/1453-setup" </dev/tty
-    else
-        echo ""
-        echo -e "${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
-        echo -e "${GREEN}${INSTALL_DIR}/1453-setup${NC}"
-        echo ""
+        # stdin'i terminal'e yönlendir (pipe'dan okuma sorunu için)
+        if [ -t 0 ]; then
+            read -r response
+        else
+            read -r response </dev/tty
+        fi
+
+        if [[ "$response" =~ ^[eE]$ ]]; then
+            echo ""
+            echo -e "${GREEN}[BİLGİ]${NC} Kurulum betiği başlatılıyor..."
+            # Run with stdin explicitly from /dev/tty
+            bash "${INSTALL_DIR}/1453-setup" </dev/tty
+        else
+            echo ""
+            echo -e "${CYAN}[BİLGİ]${NC} Kurulum betiğini daha sonra çalıştırabilirsiniz:"
+            echo -e "${GREEN}${INSTALL_DIR}/1453-setup${NC}"
+            echo ""
+        fi
     fi
 }
 
