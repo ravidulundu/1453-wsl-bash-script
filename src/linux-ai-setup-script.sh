@@ -138,11 +138,23 @@ else
 fi
 
 echo ""
+echo -e "${YELLOW}[DEBUG]${NC} Fonksiyon kontrolleri yapılıyor..."
+echo -e "${YELLOW}[DEBUG]${NC} init_tui fonksiyonu tipi: $(type -t init_tui 2>&1 || echo 'TANIMSIZ!')"
+echo -e "${YELLOW}[DEBUG]${NC} show_banner fonksiyonu tipi: $(type -t show_banner 2>&1 || echo 'TANIMSIZ!')"
+echo -e "${YELLOW}[DEBUG]${NC} main fonksiyonu tipi: $(type -t main 2>&1 || echo 'TANIMSIZ!')"
+
 echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..."
 
 # Phase 7: Initialize TUI and run main program
-init_tui
-echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı, show_banner çağrılıyor..."
+if type -t init_tui >/dev/null 2>&1; then
+    init_tui
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı ✓"
+else
+    echo -e "${RED}[HATA]${NC} init_tui fonksiyonu tanımlı değil!"
+    exit 1
+fi
+
+echo -e "${YELLOW}[DEBUG]${NC} show_banner çağrılıyor..."
 show_banner
 echo -e "${YELLOW}[DEBUG]${NC} show_banner tamamlandı, main çağrılıyor..."
 main "$@"
