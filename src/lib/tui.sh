@@ -503,7 +503,14 @@ gum_spin() {
 # Outputs styled text
 gum_style() {
     if has_gum; then
-        gum style "$@"
+        # Unset conflicting environment variables to prevent Gum errors
+        # Gum reads BOLD, ITALIC, UNDERLINE, etc. as flag values
+        (
+            unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
+            unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
+            unset ALIGN HEIGHT WIDTH MARGIN PADDING
+            gum style "$@"
+        )
     else
         # Fallback: just echo the last argument (the text)
         echo -e "${CYAN}${!#}${NC}"

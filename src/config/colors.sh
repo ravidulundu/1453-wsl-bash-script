@@ -10,6 +10,7 @@ export BLUE='\033[0;34m'
 export CYAN='\033[0;36m'
 export NC='\033[0m' # No Color
 
-# Additional color variants if needed
-export BOLD='\033[1m'
-export UNDERLINE='\033[4m'
+# Additional color variants if needed (commented out to avoid Gum conflicts)
+# These conflict with Gum TUI environment variables
+# export BOLD='\033[1m'
+# export UNDERLINE='\033[4m'
