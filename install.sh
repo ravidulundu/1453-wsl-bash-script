@@ -257,12 +257,12 @@ main() {
     # Kurulum dizin yapısını oluştur
     if has_gum; then
         gum_print --foreground 226 "[KURULUM] Dizin yapısı oluşturuluyor..."
-        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
+        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
         gum_print --foreground 82 "[✓] Dizin yapısı oluşturuldu"
         echo ""
     else
         echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
-        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
+        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
         echo -e "  ${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
         echo ""
     fi
