@@ -285,10 +285,8 @@ cleanup_nodejs() {
 
         # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove NVM from shell configs
-        # FIX BUG-030: Use specific patterns to avoid deleting unrelated lines
-        sed '/export NVM_DIR=/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
-        sed '/NVM_DIR\/nvm.sh/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
-        sed '/NVM_DIR\/bash_completion/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
+        # Note: We no longer use sed here to avoid deleting unrelated lines (BUG-030).
+        # cleanup_shell_configs handles .bashrc cleanup more safely.
 
         echo -e "${GREEN}[BAŞARILI]${NC} NVM kaldırıldı"
     fi
@@ -476,6 +474,10 @@ cleanup_shell_configs() {
 
     # Remove 1453 Setup related lines from .bashrc - SAFE CLEANUP
     if [ -f ~/.bashrc ]; then
+        # Create a backup before modification
+        cp ~/.bashrc "$HOME/.bashrc.bak.$(date +%Y%m%d_%H%M%S)"
+        echo -e "${CYAN}[BİLGİ]${NC} .bashrc yedeği alındı: .bashrc.bak.$(date +%Y%m%d_%H%M%S)"
+
         # Create a temp file for safe editing
         local temp_bashrc=$(mktemp)
         local in_1453_block=0
@@ -487,18 +489,14 @@ cleanup_shell_configs() {
 
             # Detect START of 1453 WSL Setup blocks
             # FIX BUG-017: Use constants instead of hardcoded magic strings
-            if [[ "$line" =~ "$BASHRC_MARKER_FUNCTIONS_START" ]] || \
-               [[ "$line" =~ "$BASHRC_MARKER_CONFIG_START" ]] || \
-               [[ "$line" =~ $BASHRC_MARKER_GENERIC_PATTERN ]]; then
+            if [[ "$line" =~ $BASHRC_MARKER_GENERIC_PATTERN ]]; then
                 in_1453_block=1
                 skip_line=1
             fi
 
             # Detect END of 1453 WSL Setup blocks
             # FIX BUG-017: Use constants instead of hardcoded magic strings
-            if [[ "$line" =~ "$BASHRC_MARKER_FUNCTIONS_END" ]] || \
-               [[ "$line" =~ "$BASHRC_MARKER_CONFIG_END" ]] || \
-               [[ "$line" =~ "===== END:".*"1453 WSL Setup =====" ]]; then
+            if [[ "$line" =~ "===== END:".*"1453 WSL Setup =====" ]]; then
                 in_1453_block=0
                 skip_line=1
             fi
@@ -509,13 +507,11 @@ cleanup_shell_configs() {
             fi
 
             # Skip specific lines we added (exact matches only)
+            # Note: NVM and Bun lines are intentionally excluded here to prevent
+            # unintended deletion of user configurations. They are safe to leave
+            # if the directories are removed.
             if [[ "$line" == *'eval "$(starship init bash)"'* ]] || \
                [[ "$line" == *'eval "$(zoxide init bash)"'* ]] || \
-               [[ "$line" == 'export NVM_DIR="$HOME/.nvm"' ]] || \
-               [[ "$line" == *'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'* ]] || \
-               [[ "$line" == *'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"'* ]] || \
-               [[ "$line" == 'export BUN_INSTALL="$HOME/.bun"' ]] || \
-               [[ "$line" == *'export PATH="$BUN_INSTALL/bin:$PATH"'* ]] || \
                [[ "$line" == *'export LS_COLORS="$(vivid generate'* ]] || \
                [[ "$line" == *'[ -f ~/.fzf.bash ] && source ~/.fzf.bash'* ]] || \
                [[ "$line" == *'source ~/.bash_aliases'* && "$line" == *'# 1453'* ]]; then

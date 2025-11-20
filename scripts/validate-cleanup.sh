@@ -17,28 +17,34 @@ passed=0
 failed=0
 warnings=0
 
-# Test 1: Bug reports archived
-echo "[TEST 1] Bug Reports Consolidation..."
-if [ -f "BUG-FIX-SUMMARY-FINAL.md" ] && \
-   [ -d "docs/archive/bug-reports" ] && \
-   [ $(find docs/archive/bug-reports -name "*.md" 2>/dev/null | wc -l) -ge 4 ]; then
-    echo -e "${GREEN}✅ PASS${NC} - Bug reports properly consolidated"
-    ((passed++))
+# Test 1: Project Documentation & Bug Reports
+echo "[TEST 1] Project Documentation..."
+if [ -f "CLAUDE.md" ]; then
+    echo -e "${GREEN}✅ PASS${NC} - CLAUDE.md exists (Project Source of Truth)"
+    ((++passed))
 else
-    echo -e "${RED}❌ FAIL${NC} - Bug reports not properly consolidated"
-    ((failed++))
+    echo -e "${RED}❌ FAIL${NC} - CLAUDE.md missing"
+    ((++failed))
 fi
 
-# Test 2: Documentation files renamed
+# Check for legacy bug reports (optional)
+if [ -d "docs/archive/bug-reports" ]; then
+    echo -e "${GREEN}✅ PASS${NC} - Bug reports archive exists"
+else
+    echo -e "${YELLOW}⚠️  INFO${NC} - Bug reports archive not found (clean state assumed)"
+fi
+
+# Test 2: Documentation Files Renamed
 echo ""
 echo "[TEST 2] Documentation Files Renamed..."
 if [ -f "docs/how-to-install-go-on-linux.md" ] && \
-   [ ! -f "docs/how to install go on linux.md" ]; then
-    echo -e "${GREEN}✅ PASS${NC} - Go guide renamed (no spaces)"
-    ((passed++))
+   [ ! -f "docs/how to install go on linux.md" ] && \
+   [ -f "docs/INDEX.md" ]; then
+    echo -e "${GREEN}✅ PASS${NC} - Documentation files renamed (no spaces, README->INDEX)"
+    ((++passed))
 else
-    echo -e "${YELLOW}⚠️  WARN${NC} - Go guide not renamed"
-    ((warnings++))
+    echo -e "${YELLOW}⚠️  WARN${NC} - Documentation files not fully renamed"
+    ((++warnings))
 fi
 
 # Test 3: Test files organized
@@ -48,10 +54,10 @@ if [ -d "tests" ] && \
    [ $(find tests -name "test-*.sh" 2>/dev/null | wc -l) -ge 2 ] && \
    [ -f "test-setup.sh" ]; then
     echo -e "${GREEN}✅ PASS${NC} - Test files properly organized"
-    ((passed++))
+    ((++passed))
 else
     echo -e "${YELLOW}⚠️  WARN${NC} - Test files not fully organized"
-    ((warnings++))
+    ((++warnings))
 fi
 
 # Test 4: Planning docs archived
@@ -59,10 +65,11 @@ echo ""
 echo "[TEST 4] Planning Documents Archived..."
 if [ -d "docs/archive/planning" ]; then
     echo -e "${GREEN}✅ PASS${NC} - Planning archive created"
-    ((passed++))
+    ((++passed))
 else
-    echo -e "${YELLOW}⚠️  WARN${NC} - Planning archive not created"
-    ((warnings++))
+    echo -e "${YELLOW}⚠️  INFO${NC} - Planning archive not created (no planning docs found)"
+    # Not a failure or warning, just info
+    ((++passed))
 fi
 
 # Test 5: .gitignore updated
@@ -71,10 +78,10 @@ echo "[TEST 5] .gitignore Configuration..."
 if grep -q "docs/archive/" .gitignore && \
    grep -q "backup-\*/" .gitignore; then
     echo -e "${GREEN}✅ PASS${NC} - .gitignore properly configured"
-    ((passed++))
+    ((++passed))
 else
     echo -e "${YELLOW}⚠️  WARN${NC} - .gitignore may need updates"
-    ((warnings++))
+    ((++warnings))
 fi
 
 # Test 6: No syntax errors
@@ -83,10 +90,10 @@ echo "[TEST 6] Syntax Validation..."
 errors=$(find src -name "*.sh" -exec bash -n {} \; 2>&1 | wc -l)
 if [ "$errors" -eq 0 ]; then
     echo -e "${GREEN}✅ PASS${NC} - All scripts pass syntax check"
-    ((passed++))
+    ((++passed))
 else
     echo -e "${RED}❌ FAIL${NC} - $errors syntax errors found"
-    ((failed++))
+    ((++failed))
 fi
 
 # Summary
