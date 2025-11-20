@@ -66,6 +66,9 @@ gum_print() {
 show_banner() {
     clear
 
+    # Re-detect terminal width (in case terminal was resized)
+    TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+
     if has_gum; then
         # Check terminal width for responsiveness (100 chars threshold)
         if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 100 ]; then
@@ -394,6 +397,9 @@ END_OF_LAUNCHER_SCRIPT
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""
     if has_gum; then
+        # Re-detect terminal width (in case terminal was resized)
+        TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+
         # Calculate responsive width - aggressive limiting for narrow terminals
         local box_width=60
         if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
