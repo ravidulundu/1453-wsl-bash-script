@@ -20,21 +20,21 @@ configure_git() {
         echo -e "  Kullanıcı: ${GREEN}$current_user${NC}"
         echo -e "  E-posta: ${GREEN}$current_email${NC}"
         echo ""
-        echo -ne "${YELLOW}Yeni yapılandırma yapmak istiyor musunuz? (e/E=Evet, Enter=Hayır): ${NC}"
-        read -r reconfigure </dev/tty
 
-        if [[ ! "$reconfigure" =~ ^[eE]$ ]]; then
+        # Use Gum confirm if available
+        if ! gum_confirm "Yeni yapılandırma yapmak istiyor musunuz?"; then
             echo -e "${CYAN}[!]${NC} Git yapılandırması değiştirilmedi"
             track_skip "Git Yapılandırması" "Mevcut yapılandırma korundu"
             return 0
         fi
     fi
 
-    echo -ne "${YELLOW}Git kullanıcı adınızı girin: ${NC}"
-    read -r git_user </dev/tty
+    # Use Gum input if available
+    local git_user
+    local git_email
 
-    echo -ne "${YELLOW}Git e-posta adresinizi girin: ${NC}"
-    read -r git_email </dev/tty
+    git_user=$(gum_input --placeholder "Git kullanıcı adınızı girin" --value "$current_user")
+    git_email=$(gum_input --placeholder "Git e-posta adresinizi girin" --value "$current_email")
 
     if [ -z "$git_user" ] || [ -z "$git_email" ]; then
         echo -e "${RED}[HATA]${NC} Kullanıcı adı ve e-posta gereklidir!"
@@ -94,73 +94,109 @@ show_mode_selection() {
         show_banner
         echo ""
 
-        # TUI Mode Selection
-        draw_box_top "🎯 1453.AI - MOD SEÇİMİ" 80
-        draw_box_middle "" 80
-        draw_box_middle "  ${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}" 80
-        draw_box_middle "" 80
-        draw_box_middle "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE${NC} ${YELLOW}(Önerilen)${NC}" 80
-        draw_box_middle "      → Vibe coder'lar ve yeni başlayanlar için" 80
-        draw_box_middle "      → Basit sorular, otomatik kurulum" 80
-        draw_box_middle "      → Sizi yormaz, sadece gerekli araçları kurar" 80
-        draw_box_middle "" 80
-        draw_box_middle "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}" 80
-        draw_box_middle "      → İleri düzey kullanıcılar için" 80
-        draw_box_middle "      → Detaylı kontrol, her aracı ayrı seçin" 80
-        draw_box_middle "      → 18 farklı kurulum seçeneği" 80
-        draw_box_middle "" 80
-        draw_box_middle "  ${GREEN}0${NC}) ${RED}❌ Çıkış${NC}" 80
-        draw_box_middle "" 80
-        draw_box_bottom 80
-        echo ""
+        # Modern TUI with Gum if available
+        if has_gum; then
+            # Gum-powered modern menu
+            gum_style \
+                --foreground 212 --border double --align center \
+                --width 60 --margin "1 2" --padding "2 4" \
+                "🎯 1453.AI - MOD SEÇİMİ" \
+                "" \
+                "Hangi kurulum modunu tercih edersiniz?"
 
-        # CRITICAL FIX: Flush stdin buffer before reading
-        # Only flush if stdin is a terminal to avoid infinite loop on EOF
-        if [ -t 0 ]; then
-            while read -r -t 0 <&0; do
-                read -r -t 0.01 -N 1000 <&0 || break
-            done 2>/dev/null
-        fi
+            echo ""
 
-        echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
+            local selection
+            selection=$(gum_choose \
+                "🚀 QUICK START MODE (Önerilen)" \
+                "⚙️  ADVANCED MODE" \
+                "❌ Çıkış")
 
-        # Read from /dev/tty if available, otherwise from stdin
-        if [ -e /dev/tty ] && [ -c /dev/tty ]; then
-            read -r mode_choice </dev/tty 2>/dev/null || read -r mode_choice
+            case "$selection" in
+                "🚀 QUICK START MODE (Önerilen)")
+                    echo ""
+                    run_quickstart_mode
+                    continue
+                    ;;
+                "⚙️  ADVANCED MODE")
+                    echo ""
+                    run_advanced_mode
+                    break
+                    ;;
+                "❌ Çıkış")
+                    echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
+                    exit 0
+                    ;;
+                *)
+                    continue
+                    ;;
+            esac
         else
-            read -r mode_choice
-        fi
+            # Fallback: Traditional menu
+            draw_box_top "🎯 1453.AI - MOD SEÇİMİ" 80
+            draw_box_middle "" 80
+            draw_box_middle "  ${YELLOW}Hangi kurulum modunu tercih edersiniz?${NC}" 80
+            draw_box_middle "" 80
+            draw_box_middle "  ${GREEN}1${NC}) ${CYAN}🚀 QUICK START MODE${NC} ${YELLOW}(Önerilen)${NC}" 80
+            draw_box_middle "      → Vibe coder'lar ve yeni başlayanlar için" 80
+            draw_box_middle "      → Basit sorular, otomatik kurulum" 80
+            draw_box_middle "      → Sizi yormaz, sadece gerekli araçları kurar" 80
+            draw_box_middle "" 80
+            draw_box_middle "  ${GREEN}2${NC}) ${CYAN}⚙️  ADVANCED MODE${NC}" 80
+            draw_box_middle "      → İleri düzey kullanıcılar için" 80
+            draw_box_middle "      → Detaylı kontrol, her aracı ayrı seçin" 80
+            draw_box_middle "      → 18 farklı kurulum seçeneği" 80
+            draw_box_middle "" 80
+            draw_box_middle "  ${GREEN}0${NC}) ${RED}❌ Çıkış${NC}" 80
+            draw_box_middle "" 80
+            draw_box_bottom 80
+            echo ""
 
-        # Boş input kontrolü
-        if [ -z "$mode_choice" ]; then
-            echo -e "\n${RED}[HATA]${NC} Boş giriş! Lütfen 0, 1 veya 2 girin."
-            sleep 2
-            continue
-        fi
+            # CRITICAL FIX: Flush stdin buffer before reading
+            if [ -t 0 ]; then
+                while read -r -t 0 <&0; do
+                    read -r -t 0.01 -N 1000 <&0 || break
+                done 2>/dev/null
+            fi
 
-        case $mode_choice in
-            1)
-                echo ""
-                run_quickstart_mode
-                # Quick start bittikten sonra tekrar menüye dön
-                continue
-                ;;
-            2)
-                echo ""
-                run_advanced_mode
-                # Advanced mode bittikten sonra çık
-                break
-                ;;
-            0)
-                echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
-                exit 0
-                ;;
-            *)
-                echo -e "\n${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0, 1 veya 2 girin."
+            echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
+
+            # Read from /dev/tty if available, otherwise from stdin
+            if [ -e /dev/tty ] && [ -c /dev/tty ]; then
+                read -r mode_choice </dev/tty 2>/dev/null || read -r mode_choice
+            else
+                read -r mode_choice
+            fi
+
+            # Boş input kontrolü
+            if [ -z "$mode_choice" ]; then
+                echo -e "\n${RED}[HATA]${NC} Boş giriş! Lütfen 0, 1 veya 2 girin."
                 sleep 2
                 continue
-                ;;
-        esac
+            fi
+
+            case $mode_choice in
+                1)
+                    echo ""
+                    run_quickstart_mode
+                    continue
+                    ;;
+                2)
+                    echo ""
+                    run_advanced_mode
+                    break
+                    ;;
+                0)
+                    echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
+                    exit 0
+                    ;;
+                *)
+                    echo -e "\n${RED}[HATA]${NC} Geçersiz seçim! Lütfen 0, 1 veya 2 girin."
+                    sleep 2
+                    continue
+                    ;;
+            esac
+        fi
     done
 }
 
@@ -173,6 +209,13 @@ show_advanced_menu() {
 
 # Main program loop - Advanced Mode
 run_advanced_mode() {
+    # Install Gum first for modern TUI (optional, skip if fails)
+    if ! has_gum; then
+        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum - opsiyonel)..."
+        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulumunu atlandı"
+        sleep 1
+    fi
+
     # Run pre-flight checks with TUI
     clear
     draw_box_top "🔍 ADVANCED MODE - SİSTEM KONTROLÜ" 80

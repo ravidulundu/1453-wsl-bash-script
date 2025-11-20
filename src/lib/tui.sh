@@ -351,6 +351,172 @@ tui_infobox() {
 }
 
 # ═══════════════════════════════════════════════════════════
+# GUM TUI WRAPPER FUNCTIONS
+# ═══════════════════════════════════════════════════════════
+
+# Check if Gum is available
+has_gum() {
+    command -v gum &>/dev/null
+}
+
+# Gum-powered menu selection
+# Usage: gum_choose "option1" "option2" "option3"
+# Returns: selected option
+gum_choose() {
+    if has_gum; then
+        gum choose "$@"
+    else
+        # Fallback to traditional menu
+        local options=("$@")
+        PS3="Seçiminiz (1-${#options[@]}): "
+        select opt in "${options[@]}"; do
+            if [ -n "$opt" ]; then
+                echo "$opt"
+                return 0
+            fi
+        done
+    fi
+}
+
+# Gum-powered input
+# Usage: gum_input --placeholder "Enter value" [--password]
+# Returns: user input
+gum_input() {
+    if has_gum; then
+        gum input "$@"
+    else
+        # Fallback to read
+        local placeholder=""
+        local is_password=false
+
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --placeholder)
+                    placeholder="$2"
+                    shift 2
+                    ;;
+                --password)
+                    is_password=true
+                    shift
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+
+        if [ -n "$placeholder" ]; then
+            echo -ne "${YELLOW}${placeholder}: ${NC}"
+        fi
+
+        if [ "$is_password" = true ]; then
+            read -rs input
+            echo "" # New line after password
+        else
+            if [ -e /dev/tty ] && [ -c /dev/tty ]; then
+                read -r input </dev/tty
+            else
+                read -r input
+            fi
+        fi
+
+        echo "$input"
+    fi
+}
+
+# Gum-powered confirmation
+# Usage: gum_confirm "Are you sure?"
+# Returns: 0 for yes, 1 for no
+gum_confirm() {
+    local message="$1"
+
+    if has_gum; then
+        gum confirm "$message"
+    else
+        # Fallback to traditional yes/no
+        echo -ne "${YELLOW}${message} (e/E=Evet, Enter=Hayır): ${NC}"
+        if [ -e /dev/tty ] && [ -c /dev/tty ]; then
+            read -r response </dev/tty
+        else
+            read -r response
+        fi
+        [[ "$response" =~ ^[eE]$ ]]
+    fi
+}
+
+# Gum-powered spinner
+# Usage: gum_spin --title "Loading..." -- command args
+# Runs command with spinner
+gum_spin() {
+    if has_gum; then
+        gum spin "$@"
+    else
+        # Fallback: just run the command
+        local title=""
+        local cmd=()
+        local parsing_cmd=false
+
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --title)
+                    title="$2"
+                    shift 2
+                    ;;
+                --spinner)
+                    shift 2  # Skip spinner type
+                    ;;
+                --)
+                    parsing_cmd=true
+                    shift
+                    ;;
+                *)
+                    if [ "$parsing_cmd" = true ]; then
+                        cmd+=("$1")
+                    fi
+                    shift
+                    ;;
+            esac
+        done
+
+        if [ -n "$title" ]; then
+            echo -e "${YELLOW}${title}${NC}"
+        fi
+
+        "${cmd[@]}"
+    fi
+}
+
+# Gum-powered styled output
+# Usage: gum_style --foreground 212 --border double "text"
+# Outputs styled text
+gum_style() {
+    if has_gum; then
+        gum style "$@"
+    else
+        # Fallback: just echo the last argument (the text)
+        echo -e "${CYAN}${!#}${NC}"
+    fi
+}
+
+# Gum-powered filter (fuzzy search)
+# Usage: echo -e "option1\noption2\noption3" | gum_filter
+# Returns: selected option
+gum_filter() {
+    if has_gum; then
+        gum filter "$@"
+    else
+        # Fallback: use grep or just cat
+        if [ -t 0 ]; then
+            echo -e "${RED}[HATA]${NC} No input to filter"
+            return 1
+        fi
+
+        # Simple line numbering for selection
+        cat
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════
 # EXPORT FUNCTIONS
 # ═══════════════════════════════════════════════════════════
 
@@ -369,3 +535,11 @@ export -f display_install_progress
 export -f tui_menu
 export -f tui_yesno
 export -f tui_infobox
+# Gum wrappers
+export -f has_gum
+export -f gum_choose
+export -f gum_input
+export -f gum_confirm
+export -f gum_spin
+export -f gum_style
+export -f gum_filter

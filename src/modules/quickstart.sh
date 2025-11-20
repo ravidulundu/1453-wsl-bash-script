@@ -460,6 +460,12 @@ BANNER
 
 # Main Quick Start flow
 run_quickstart_mode() {
+    # Install Gum first for modern TUI (silently if possible)
+    if ! has_gum; then
+        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum)..."
+        install_gum || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+    fi
+
     # Show welcome
     if ! show_quickstart_welcome; then
         return 1
@@ -477,10 +483,20 @@ run_quickstart_mode() {
 
     # Execute installation immediately
     execute_installation_plan "${tools[@]}"
-    echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
-    read -r more </dev/tty
-    if [[ ! "$more" =~ ^[yY]$ ]]; then
-        exit 0
+
+    # Ask if user wants more (using Gum if available)
+    if has_gum; then
+        if gum_confirm "Başka bir şey kurmak ister misin?"; then
+            return 0
+        else
+            exit 0
+        fi
+    else
+        echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
+        read -r more </dev/tty
+        if [[ ! "$more" =~ ^[yY]$ ]]; then
+            exit 0
+        fi
     fi
 
     return 0

@@ -3,6 +3,95 @@
 # Description: Modern replacements for traditional CLI tools
 # Dependencies: package-manager.sh, common.sh
 
+# Install Charm Gum - Modern TUI framework for shell scripts
+install_gum() {
+    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}║      CHARM GUM TUI KURULUYOR                  ║${NC}"
+    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+
+    # Check if already installed
+    if command -v gum &>/dev/null; then
+        local version
+        version=$(gum --version 2>/dev/null | head -1 || echo "unknown")
+        echo -e "${CYAN}[!]${NC} Gum zaten kurulu: $version"
+        track_skip "Charm Gum" "Zaten kurulu: $version"
+        return 0
+    fi
+
+    # Detect package manager
+    if [ -z "$PKG_MANAGER" ]; then
+        detect_package_manager
+    fi
+
+    case $PKG_MANAGER in
+        apt)
+            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
+
+            # Add Charm repository
+            sudo mkdir -p /etc/apt/keyrings
+            curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+
+            echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
+            sudo apt update -qq
+
+            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
+            sudo apt install -y gum
+            ;;
+        dnf)
+            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
+            echo '[charm]
+name=Charm
+baseurl=https://repo.charm.sh/yum/
+enabled=1
+gpgcheck=1
+gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
+
+            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
+            sudo dnf install -y gum
+            ;;
+        yum)
+            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
+            echo '[charm]
+name=Charm
+baseurl=https://repo.charm.sh/yum/
+enabled=1
+gpgcheck=1
+gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
+
+            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
+            sudo yum install -y gum
+            ;;
+        pacman)
+            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor (AUR/community)..."
+            sudo pacman -S --noconfirm gum
+            ;;
+        *)
+            echo -e "${RED}[HATA]${NC} Desteklenmeyen paket yöneticisi: $PKG_MANAGER"
+            echo -e "${YELLOW}[BİLGİ]${NC} Manuel kurulum için: https://github.com/charmbracelet/gum"
+            track_failure "Charm Gum" "Desteklenmeyen paket yöneticisi"
+            return 1
+            ;;
+    esac
+
+    # Verify installation
+    if command -v gum &>/dev/null; then
+        local version
+        version=$(gum --version 2>/dev/null | head -1 || echo "unknown")
+        echo -e "${GREEN}[BAŞARILI]${NC} Gum başarıyla kuruldu: $version"
+        track_success "Charm Gum" "Kuruldu: $version"
+
+        # Show quick demo
+        echo -e "\n${CYAN}[!]${NC} Gum kullanıma hazır!"
+        echo -e "${CYAN}[!]${NC} Script artık modern TUI component'leri kullanacak"
+        return 0
+    else
+        echo -e "${RED}[HATA]${NC} Gum kurulumu başarısız oldu"
+        track_failure "Charm Gum" "Kurulum başarısız"
+        return 1
+    fi
+}
+
 # Install modern CLI tools (batcat, ripgrep, fd-find, eza, etc.)
 install_modern_cli_tools() {
     echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
@@ -403,6 +492,7 @@ install_lazydocker_generic() {
 }
 
 # Export functions
+export -f install_gum
 export -f install_modern_cli_tools
 export -f fix_bat_fd_symlinks
 export -f install_modern_tools_apt
