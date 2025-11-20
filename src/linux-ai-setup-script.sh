@@ -94,11 +94,13 @@ elif command -v python &>/dev/null; then
     python -c "import fcntl, os; flags = fcntl.fcntl(0, fcntl.F_GETFL); fcntl.fcntl(0, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)" 2>/dev/null
 fi
 
-# Redirect stdin to /dev/tty
-# Use || true to prevent script exit if redirection fails in non-interactive contexts
-if [ -e /dev/tty ]; then
-    exec 0</dev/tty 2>/dev/null || true
-fi
+# CRITICAL FIX: Don't use exec for stdin redirection
+# exec causes the script to hang when stdin is already redirected
+# Instead, all read operations will explicitly use /dev/tty or safe_read
+# This line is commented out to prevent hanging
+# if [ -e /dev/tty ]; then
+#     exec 0</dev/tty 2>/dev/null || true
+# fi
 
 # Phase 6: Sudo authentication and keep-alive
 # Request sudo password once at the start
