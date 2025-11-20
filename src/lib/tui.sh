@@ -45,26 +45,39 @@ except:
 
 # Initialize TUI system
 init_tui() {
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: Başlangıç"
+
     # Check if dialog is available
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: dialog kontrolü..."
     if command -v dialog &>/dev/null; then
         TUI_MODE="dialog"
         export DIALOGRC="${DIALOGRC:-}"
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: dialog bulundu, TUI_MODE=dialog"
     else
         TUI_MODE="bash"
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: dialog bulunamadı, TUI_MODE=bash"
     fi
 
     # Get terminal dimensions
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: Terminal boyutları alınıyor..."
     if command -v tput &>/dev/null && [ -n "${TERM:-}" ]; then
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: tput komutu bulundu, TERM=$TERM"
         TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: tput cols tamamlandı, TUI_WIDTH=$TUI_WIDTH"
         TUI_HEIGHT=$(tput lines 2>/dev/null || echo 24)
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: tput lines tamamlandı, TUI_HEIGHT=$TUI_HEIGHT"
     else
         TUI_WIDTH=80
         TUI_HEIGHT=24
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: tput bulunamadı, varsayılan boyutlar kullanılıyor"
     fi
 
     # Ensure minimum dimensions (wider for emoji support)
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: Minimum boyut kontrolü..."
     [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 80 ] && TUI_WIDTH=80
     [ -n "$TUI_HEIGHT" ] && [ "$TUI_HEIGHT" -lt 20 ] && TUI_HEIGHT=20
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: Final boyutlar - WIDTH=$TUI_WIDTH, HEIGHT=$TUI_HEIGHT"
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: Tamamlandı ✓"
 }
 
 # ═══════════════════════════════════════════════════════════
