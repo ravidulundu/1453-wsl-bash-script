@@ -9,36 +9,26 @@ TUI_HEIGHT=20
 
 # Initialize TUI system
 init_tui() {
-    echo "[DEBUG TUI] Starting init_tui..." >&2
-
     # Check if dialog is available
     if command -v dialog &>/dev/null; then
         TUI_MODE="dialog"
         export DIALOGRC="${DIALOGRC:-}"
-        echo "[DEBUG TUI] Dialog mode enabled" >&2
     else
         TUI_MODE="bash"
-        echo "[DEBUG TUI] Bash mode (no dialog)" >&2
     fi
 
     # Get terminal dimensions
-    echo "[DEBUG TUI] Getting terminal dimensions..." >&2
     if command -v tput &>/dev/null && [ -n "${TERM:-}" ]; then
-        echo "[DEBUG TUI] Using tput..." >&2
         TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
         TUI_HEIGHT=$(tput lines 2>/dev/null || echo 24)
-        echo "[DEBUG TUI] Dimensions: ${TUI_WIDTH}x${TUI_HEIGHT}" >&2
     else
         TUI_WIDTH=80
         TUI_HEIGHT=24
-        echo "[DEBUG TUI] Using defaults: 80x24" >&2
     fi
 
     # Ensure minimum dimensions
     [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 70 ] && TUI_WIDTH=70
     [ -n "$TUI_HEIGHT" ] && [ "$TUI_HEIGHT" -lt 20 ] && TUI_HEIGHT=20
-
-    echo "[DEBUG TUI] init_tui completed!" >&2
 }
 
 # ═══════════════════════════════════════════════════════════
@@ -136,7 +126,11 @@ show_install_status() {
 draw_box_top() {
     local title="$1"
     local width="${2:-70}"
-    local title_len=${#title}
+
+    # Strip ANSI color codes to get actual visible length
+    local visible_title
+    visible_title=$(echo -e "$title" | sed 's/\x1b\[[0-9;]*m//g')
+    local title_len=${#visible_title}
     local padding=$(( (width - title_len - 4) / 2 ))
 
     echo -e "${CYAN}╔$(printf '%0.s═' $(seq 1 $((width-2))))╗${NC}"
@@ -151,7 +145,11 @@ draw_box_top() {
 draw_box_middle() {
     local content="$1"
     local width="${2:-70}"
-    local content_len=${#content}
+
+    # Strip ANSI color codes to get actual visible length
+    local visible_content
+    visible_content=$(echo -e "$content" | sed 's/\x1b\[[0-9;]*m//g')
+    local content_len=${#visible_content}
     local padding=$((width - content_len - 4))
 
     echo -ne "${CYAN}║${NC} "
