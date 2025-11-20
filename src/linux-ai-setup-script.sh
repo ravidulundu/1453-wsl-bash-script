@@ -118,12 +118,13 @@ if sudo -v; then
 
     # Keep-alive: update sudo timestamp in background every 60 seconds
     # This prevents repeated password prompts during long installations
+    # CRITICAL: Close stdin/stdout/stderr to prevent blocking
     (
         while true; do
             sleep 60
             sudo -v
         done
-    ) &
+    ) </dev/null >/dev/null 2>&1 &
     SUDO_KEEPALIVE_PID=$!
 else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
