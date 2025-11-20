@@ -91,6 +91,8 @@ show_menu() {
 show_mode_selection() {
     while true; do
         clear
+        show_banner
+        echo ""
 
         # TUI Mode Selection
         draw_box_top "🎯 1453.AI - MOD SEÇİMİ" 70
