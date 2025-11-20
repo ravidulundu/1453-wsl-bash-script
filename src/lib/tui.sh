@@ -330,12 +330,11 @@ tui_yesno() {
         dialog --title "$title" --yesno "$message" 10 60
         return $?
     else
-        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║${NC} ${YELLOW}${title}${NC}"
-        echo -e "${BLUE}╠═══════════════════════════════════════════════╣${NC}"
-        echo -e "${BLUE}║${NC} ${message}"
-        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
-        echo -ne "\n${YELLOW}(e/E=Evet, Enter=Hayır): ${NC}"
+        echo ""
+        echo -e "${YELLOW}${title}${NC}"
+        echo -e "${message}"
+        echo ""
+        echo -ne "${YELLOW}(e/E=Evet, Enter=Hayır): ${NC}"
         read -r response </dev/tty
         [[ "$response" =~ ^[eE]$ ]]
         return $?
@@ -353,11 +352,10 @@ tui_infobox() {
         dialog --title "$title" --infobox "$message" 10 60
         sleep "$duration"
     else
-        echo -e "\n${CYAN}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${CYAN}║${NC} ${GREEN}${title}${NC}"
-        echo -e "${CYAN}╠═══════════════════════════════════════════════╣${NC}"
-        echo -e "${CYAN}║${NC} ${message}"
-        echo -e "${CYAN}╚═══════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${GREEN}${title}${NC}"
+        echo -e "${message}"
+        echo ""
         sleep "$duration"
     fi
 }
@@ -500,20 +498,48 @@ gum_spin() {
 
 # Gum-powered styled output
 # Usage: gum_style --foreground 212 --border double "text"
-# Outputs styled text
+# Outputs styled text with automatic responsive padding
 gum_style() {
     if has_gum; then
-        # Unset conflicting environment variables to prevent Gum errors
-        # Gum reads BOLD, ITALIC, UNDERLINE, etc. as flag values
-        (
-            unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
-            unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
-            unset ALIGN HEIGHT WIDTH MARGIN PADDING
-            gum style "$@"
-        )
+        # Check if padding/margin already specified
+        local has_spacing=false
+        for arg in "$@"; do
+            if [[ "$arg" == "--padding" ]] || [[ "$arg" == "--margin" ]]; then
+                has_spacing=true
+                break
+            fi
+        done
+
+        # Add default responsive margin if not specified
+        if [ "$has_spacing" = false ]; then
+            # Calculate responsive margin based on terminal width
+            local margin_left=2
+            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 100 ]; then
+                margin_left=$((($TUI_WIDTH - 80) / 2))
+                [ "$margin_left" -lt 2 ] && margin_left=2
+                [ "$margin_left" -gt 10 ] && margin_left=10
+            fi
+
+            # Unset conflicting environment variables to prevent Gum errors
+            # Gum reads BOLD, ITALIC, UNDERLINE, etc. as flag values
+            (
+                unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
+                unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
+                unset ALIGN HEIGHT WIDTH MARGIN PADDING
+                gum style --margin "0 $margin_left" "$@"
+            )
+        else
+            # User specified spacing, use as-is
+            (
+                unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
+                unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
+                unset ALIGN HEIGHT WIDTH MARGIN PADDING
+                gum style "$@"
+            )
+        fi
     else
-        # Fallback: just echo the last argument (the text)
-        echo -e "${CYAN}${!#}${NC}"
+        # Fallback: add 2-space padding
+        echo -e "  ${CYAN}${!#}${NC}"
     fi
 }
 

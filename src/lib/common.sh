@@ -207,9 +207,9 @@ check_apt_repositories() {
 # Run all pre-flight checks
 # Returns 0 if all critical checks pass, 1 otherwise
 run_preflight_checks() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║           🔍 SİSTEM GEREKSİNİMLERİ KONTROL EDİLİYOR          ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${CYAN}🔍 SİSTEM GEREKSİNİMLERİ KONTROL EDİLİYOR${NC}"
+    echo ""
 
     local all_passed=true
 

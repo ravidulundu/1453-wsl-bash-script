@@ -5,9 +5,8 @@
 
 # Install Python3
 install_python() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Python kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Ensure package manager is detected
     if [ -z "$INSTALL_CMD" ]; then
@@ -69,9 +68,8 @@ install_python() {
 
 # Install/update pip
 install_pip() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Pip kurulumu/güncelleme başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if ! command -v python3 &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Python kurulu değil, önce Python kuruluyor..."
@@ -131,9 +129,8 @@ install_pip() {
 
 # Install pipx
 install_pipx() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Pipx kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v pipx &> /dev/null; then
@@ -231,9 +228,8 @@ install_pipx() {
 
 # Install UV (Ultra-fast Python package installer)
 install_uv() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} UV (Ultra-fast Python package installer) kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v uv &> /dev/null; then

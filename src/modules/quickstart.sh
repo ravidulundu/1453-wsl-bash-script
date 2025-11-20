@@ -6,33 +6,47 @@
 # Show welcome screen for Quick Start mode
 show_quickstart_welcome() {
     clear
+    show_banner
+    echo ""
 
-    echo -e "${CYAN}"
-    cat << 'EOF'
-    ╔════════════════════════════════════════════════════════════════╗
-    ║                                                                ║
-    ║        🚀 1453.AI QUICK START - VIBE CODERS İÇİN 🚀           ║
-    ║                                                                ║
-    ╚════════════════════════════════════════════════════════════════╝
-EOF
-    echo -e "${NC}"
-    echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
-    echo ""
-    echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
-    echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
-    echo ""
-    echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-    echo -e "${YELLOW}💡 Nasıl çalışır?${NC}"
-    echo -e "  1. Deneyim seviyenizi belirtirsiniz"
-    echo -e "  2. Ne yapmak istediğinizi seçersiniz"
-    echo -e "  3. Size önerilen araçları otomatik kurarım"
-    echo ""
-    echo -e "${YELLOW}🎯 Sonunda şunları elde edersiniz:${NC}"
-    echo -e "  ✓ İhtiyacınız olan tüm geliştirici araçları"
-    echo -e "  ✓ Hazır ortam"
-    echo -e "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
-    echo ""
-    echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+    if has_gum; then
+        gum_style --foreground 82 --bold "🚀 QUICK START MODE - VIBE CODERS İÇİN"
+        echo ""
+        echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
+        echo ""
+        echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
+        echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
+        echo ""
+        gum_style --foreground 226 "💡 Nasıl çalışır?"
+        echo "  1. Deneyim seviyenizi belirtirsiniz"
+        echo "  2. Ne yapmak istediğinizi seçersiniz"
+        echo "  3. Size önerilen araçları otomatik kurarım"
+        echo ""
+        gum_style --foreground 82 "🎯 Sonunda şunları elde edersiniz:"
+        echo "  ✓ İhtiyacınız olan tüm geliştirici araçları"
+        echo "  ✓ Hazır ortam"
+        echo "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
+    else
+        echo -e "${GREEN}🚀 QUICK START MODE - VIBE CODERS İÇİN${NC}"
+        echo ""
+        echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
+        echo ""
+        echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
+        echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
+        echo ""
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+        echo -e "${YELLOW}💡 Nasıl çalışır?${NC}"
+        echo -e "  1. Deneyim seviyenizi belirtirsiniz"
+        echo -e "  2. Ne yapmak istediğinizi seçersiniz"
+        echo -e "  3. Size önerilen araçları otomatik kurarım"
+        echo ""
+        echo -e "${YELLOW}🎯 Sonunda şunları elde edersiniz:${NC}"
+        echo -e "  ✓ İhtiyacınız olan tüm geliştirici araçları"
+        echo -e "  ✓ Hazır ortam"
+        echo -e "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
+        echo ""
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+    fi
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
@@ -53,72 +67,92 @@ EOF
 
 # Show preset selection
 show_presets() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                    KURULUM PAKETLERİ                        ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun: ${NC}"
-    echo ""
-    echo -e "  ${GREEN}1${NC}) 🌐 ${YELLOW}WEB DEVELOPMENT${NC}"
-    echo -e "     ${CYAN}Python + Node.js + PHP + Composer${NC}"
-    echo -e "     ${CYAN}Web siteleri, API'ler, full-stack uygulamalar için${NC}"
-    echo ""
-    echo -e "  ${GREEN}2${NC}) 🤖 ${YELLOW}AI DEVELOPMENT${NC}"
-    echo -e "     ${CYAN}Python + AI CLI Tools + AI Frameworks${NC}"
-    echo -e "     ${CYAN}Makine öğrenmesi, AI modelleri, veri analizi${NC}"
-    echo ""
-    echo -e "  ${GREEN}3${NC}) ⚙️  ${YELLOW}BACKEND DEVELOPMENT${NC}"
-    echo -e "     ${CYAN}Python + Go + PHP + Composer${NC}"
-    echo -e "     ${CYAN}API'ler, mikroservisler, sunucu tarafı${NC}"
-    echo ""
-    echo -e "  ${GREEN}4${NC}) 🚀 ${YELLOW}EVERYTHING${NC}"
-    echo -e "     ${CYAN}Her şeyi kur, full-stack + AI + Backend${NC}"
-    echo -e "     ${CYAN}Her türlü geliştirme için komple ortam${NC}"
-    echo ""
-    echo -e "  ${GREEN}5${NC}) 📱 ${YELLOW}MOBILE + WEB${NC}"
-    echo -e "     ${CYAN}Python + Node.js + PHP + Flutter araçları${NC}"
-    echo -e "     ${CYAN}Mobil + web uygulamaları${NC}"
-    echo ""
-    echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
     echo ""
 
-    # CRITICAL FIX: Flush stdin buffer before reading
-    while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+    if has_gum; then
+        gum_style --foreground 212 --bold "📦 KURULUM PAKETLERİ"
+        echo ""
+        echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun:${NC}"
+        echo ""
 
-    echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-    read -r preset </dev/tty
+        local selection
+        selection=$(gum_choose \
+            "🌐 WEB DEVELOPMENT - Python + Node.js + PHP + Composer" \
+            "🤖 AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
+            "⚙️  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
+            "🚀 EVERYTHING - Full-stack + AI + Backend (hepsi)" \
+            "📱 MOBILE + WEB - Python + Node.js + PHP + Flutter")
 
-    case $preset in
-        1)
-            QUICKSTART_PRESET_CHOICE="web"
-            ;;
-        2)
-            QUICKSTART_PRESET_CHOICE="ai"
-            ;;
-        3)
-            QUICKSTART_PRESET_CHOICE="backend"
-            ;;
-        4)
-            QUICKSTART_PRESET_CHOICE="everything"
-            ;;
-        5)
-            QUICKSTART_PRESET_CHOICE="mobile"
-            ;;
-        *)
-            echo -e "\n${RED}[HATA]${NC} 1-5 arası seç, toy! 😄"
-            sleep 1
-            show_presets
-            ;;
-    esac
+        case "$selection" in
+            *"WEB DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="web" ;;
+            *"AI DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="ai" ;;
+            *"BACKEND DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="backend" ;;
+            *"EVERYTHING"*) QUICKSTART_PRESET_CHOICE="everything" ;;
+            *"MOBILE + WEB"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
+            *)
+                echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
+                sleep 1
+                show_presets
+                ;;
+        esac
+    else
+        # Traditional fallback
+        echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun: ${NC}"
+        echo ""
+        echo -e "  ${GREEN}1${NC}) 🌐 ${YELLOW}WEB DEVELOPMENT${NC}"
+        echo -e "     ${CYAN}Python + Node.js + PHP + Composer${NC}"
+        echo -e "     ${CYAN}Web siteleri, API'ler, full-stack uygulamalar için${NC}"
+        echo ""
+        echo -e "  ${GREEN}2${NC}) 🤖 ${YELLOW}AI DEVELOPMENT${NC}"
+        echo -e "     ${CYAN}Python + AI CLI Tools + AI Frameworks${NC}"
+        echo -e "     ${CYAN}Makine öğrenmesi, AI modelleri, veri analizi${NC}"
+        echo ""
+        echo -e "  ${GREEN}3${NC}) ⚙️  ${YELLOW}BACKEND DEVELOPMENT${NC}"
+        echo -e "     ${CYAN}Python + Go + PHP + Composer${NC}"
+        echo -e "     ${CYAN}API'ler, mikroservisler, sunucu tarafı${NC}"
+        echo ""
+        echo -e "  ${GREEN}4${NC}) 🚀 ${YELLOW}EVERYTHING${NC}"
+        echo -e "     ${CYAN}Her şeyi kur, full-stack + AI + Backend${NC}"
+        echo -e "     ${CYAN}Her türlü geliştirme için komple ortam${NC}"
+        echo ""
+        echo -e "  ${GREEN}5${NC}) 📱 ${YELLOW}MOBILE + WEB${NC}"
+        echo -e "     ${CYAN}Python + Node.js + PHP + Flutter araçları${NC}"
+        echo -e "     ${CYAN}Mobil + web uygulamaları${NC}"
+        echo ""
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+        echo ""
+
+        # CRITICAL FIX: Flush stdin buffer before reading
+        while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+
+        echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
+        read -r preset </dev/tty
+
+        case $preset in
+            1) QUICKSTART_PRESET_CHOICE="web" ;;
+            2) QUICKSTART_PRESET_CHOICE="ai" ;;
+            3) QUICKSTART_PRESET_CHOICE="backend" ;;
+            4) QUICKSTART_PRESET_CHOICE="everything" ;;
+            5) QUICKSTART_PRESET_CHOICE="mobile" ;;
+            *)
+                echo -e "\n${RED}[HATA]${NC} 1-5 arası seç, toy! 😄"
+                sleep 1
+                show_presets
+                ;;
+        esac
+    fi
 }
 
 # Generate installation plan based on preset
 generate_installation_plan() {
     local preset=$1
 
-    echo -e "\n${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║                  KURULUM BAŞLIYOR! 🚀                       ║${NC}"
-    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    if has_gum; then
+        gum_style --foreground 82 --bold "🚀 KURULUM BAŞLIYOR!"
+    else
+        echo -e "${GREEN}🚀 KURULUM BAŞLIYOR!${NC}"
+    fi
     echo ""
 
     # Always install base tools
@@ -190,30 +224,20 @@ execute_installation_plan() {
 
     # Show installation start with banner
     clear
-
-    # Display the 1453 ASCII Art Banner
-    echo -e "${CYAN}"
-    cat << 'BANNER'
-   /$$ /$$   /$$ /$$$$$$$   /$$$$$$
- /$$$$| $$  | $$| $$____/  /$$__  $$
-|_  $$| $$  | $$| $$      |__/  \ $$
-  | $$| $$$$$$$$| $$$$$$$    /$$$$$/
-  | $$|_____  $$|_____  $$  |___  $$
-  | $$      | $$ /$$  \ $$ /$$  \ $$
- /$$$$$$    | $$|  $$$$$$/|  $$$$$$/
-|______/    |__/ \______/  \______/
-BANNER
-    echo -e "${NC}"
+    show_banner
     echo ""
 
-    draw_box_top "🚀 QUICK START MODE - KURULUM BAŞLIYOR" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${YELLOW}Kurulum planınız hazırlanıyor...${NC}" 70
-    draw_box_middle "  ${GREEN}${#tools[@]}${NC} araç otomatik kurulacak" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')" 70
-    draw_box_middle "" 70
-    draw_box_bottom 70
+    if has_gum; then
+        gum_style --foreground 82 --bold "🚀 QUICK START MODE - KURULUM BAŞLIYOR"
+    else
+        echo -e "${GREEN}🚀 QUICK START MODE - KURULUM BAŞLIYOR${NC}"
+    fi
+    echo ""
+    echo -e "${YELLOW}Kurulum planınız hazırlanıyor...${NC}"
+    echo -e "${GREEN}${#tools[@]}${NC} araç otomatik kurulacak"
+    echo ""
+    echo -e "${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')"
+    echo ""
     sleep 3
 
     # Reset tracking for fresh start
@@ -221,8 +245,14 @@ BANNER
 
     # Run pre-flight checks first
     clear
-    draw_box_top "🔍 SİSTEM KONTROL EDİLİYOR" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 51 --bold "🔍 SİSTEM KONTROL EDİLİYOR"
+    else
+        echo -e "${CYAN}🔍 SİSTEM KONTROL EDİLİYOR${NC}"
+    fi
+    echo ""
 
     if ! run_preflight_checks; then
         echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
@@ -232,8 +262,14 @@ BANNER
 
     # Update system and configure git
     clear
-    draw_box_top "📦 SİSTEM GÜNCELLENİYOR" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 212 --bold "📦 SİSTEM GÜNCELLENİYOR"
+    else
+        echo -e "${YELLOW}📦 SİSTEM GÜNCELLENİYOR${NC}"
+    fi
+    echo ""
     show_install_status "System Update" "installing"
     echo ""
     update_system
@@ -241,8 +277,14 @@ BANNER
     sleep 1
 
     clear
-    draw_box_top "🔧 GIT YAPILANDIRMASI" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 226 --bold "🔧 GIT YAPILANDIRMASI"
+    else
+        echo -e "${YELLOW}🔧 GIT YAPILANDIRMASI${NC}"
+    fi
+    echo ""
     show_install_status "Git Configuration" "installing"
     echo ""
     configure_git
@@ -251,8 +293,14 @@ BANNER
 
     # Install Python + modern CLI tools first (base for all presets)
     clear
-    draw_box_top "🐍 PYTHON EKOSİSTEMİ KURULUYOR" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 81 --bold "🐍 PYTHON EKOSİSTEMİ KURULUYOR"
+    else
+        echo -e "${CYAN}🐍 PYTHON EKOSİSTEMİ KURULUYOR${NC}"
+    fi
+    echo ""
 
     show_install_status "Python" "installing"
     install_python && show_install_status "Python" "success" || show_install_status "Python" "failed"
@@ -283,8 +331,14 @@ BANNER
     sleep 1
 
     clear
-    draw_box_top "⚡ MODERN CLI ARAÇLARI KURULUYOR" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 212 --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+    else
+        echo -e "${YELLOW}⚡ MODERN CLI ARAÇLARI KURULUYOR${NC}"
+    fi
+    echo ""
     show_install_status "Modern CLI Tools" "installing"
     if install_modern_cli_tools; then
         show_install_status "Modern CLI Tools" "success"
@@ -295,8 +349,14 @@ BANNER
     sleep 1
 
     clear
-    draw_box_top "🐚 SHELL ORTAMI YAPILANDIRILIYOR" 70
-    draw_box_middle "" 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 51 --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+    else
+        echo -e "${CYAN}🐚 SHELL ORTAMI YAPILANDIRILIYOR${NC}"
+    fi
+    echo ""
     show_install_status "Shell Setup" "installing"
     if setup_custom_shell; then
         show_install_status "Shell Setup" "success"
@@ -314,8 +374,14 @@ BANNER
                 ;;
             "nvm")
                 clear
-                draw_box_top "🟢 NODE.JS KURULUYOR (NVM)" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 82 --bold "🟢 NODE.JS KURULUYOR (NVM)"
+                else
+                    echo -e "${GREEN}🟢 NODE.JS KURULUYOR (NVM)${NC}"
+                fi
+                echo ""
                 show_install_status "NVM" "installing"
                 echo ""
                 if install_nvm; then
@@ -331,8 +397,14 @@ BANNER
                 ;;
             "bun")
                 clear
-                draw_box_top "⚡ BUN.JS KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 212 --bold "⚡ BUN.JS KURULUYOR"
+                else
+                    echo -e "${YELLOW}⚡ BUN.JS KURULUYOR${NC}"
+                fi
+                echo ""
                 show_install_status "Bun.js" "installing"
                 echo ""
                 if install_bun; then
@@ -345,8 +417,14 @@ BANNER
                 ;;
             "php")
                 clear
-                draw_box_top "🐘 PHP 8.3 KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 141 --bold "🐘 PHP 8.3 KURULUYOR"
+                else
+                    echo -e "${YELLOW}🐘 PHP 8.3 KURULUYOR${NC}"
+                fi
+                echo ""
                 show_install_status "PHP 8.3" "installing"
                 echo ""
                 if install_php_version "8.3"; then
@@ -361,8 +439,14 @@ BANNER
                 ;;
             "composer")
                 clear
-                draw_box_top "🎼 COMPOSER KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 226 --bold "🎼 COMPOSER KURULUYOR"
+                else
+                    echo -e "${YELLOW}🎼 COMPOSER KURULUYOR${NC}"
+                fi
+                echo ""
                 show_install_status "Composer" "installing"
                 echo ""
                 if install_composer; then
@@ -375,8 +459,14 @@ BANNER
                 ;;
             "go")
                 clear
-                draw_box_top "🔷 GO LANGUAGE KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 51 --bold "🔷 GO LANGUAGE KURULUYOR"
+                else
+                    echo -e "${CYAN}🔷 GO LANGUAGE KURULUYOR${NC}"
+                fi
+                echo ""
                 show_install_status "Go" "installing"
                 echo ""
                 if install_go; then
@@ -389,8 +479,14 @@ BANNER
                 ;;
             "ai_cli")
                 clear
-                draw_box_top "🤖 AI CLI ARAÇLARI KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 212 --bold "🤖 AI CLI ARAÇLARI KURULUYOR"
+                else
+                    echo -e "${YELLOW}🤖 AI CLI ARAÇLARI KURULUYOR${NC}"
+                fi
+                echo ""
 
                 show_install_status "Claude Code" "installing"
                 if install_claude_code; then
@@ -411,8 +507,14 @@ BANNER
                 ;;
             "ai_frameworks")
                 clear
-                draw_box_top "🧠 AI FRAMEWORK KURULUYOR" 70
-                draw_box_middle "" 70
+                show_banner
+                echo ""
+                if has_gum; then
+                    gum_style --foreground 141 --bold "🧠 AI FRAMEWORK KURULUYOR"
+                else
+                    echo -e "${YELLOW}🧠 AI FRAMEWORK KURULUYOR${NC}"
+                fi
+                echo ""
                 show_install_status "SuperClaude" "installing"
                 echo ""
                 if install_superclaude; then
@@ -431,30 +533,36 @@ BANNER
 
     # Installation complete
     clear
-    draw_box_top "✅ KURULUM TAMAMLANDI!" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${GREEN}Tüm araçlar başarıyla kuruldu!${NC}" 70
-    draw_box_middle "" 70
-    draw_box_bottom 70
+    show_banner
+    echo ""
+    if has_gum; then
+        gum_style --foreground 82 --bold "✅ KURULUM TAMAMLANDI!"
+    else
+        echo -e "${GREEN}✅ KURULUM TAMAMLANDI!${NC}"
+    fi
+    echo ""
+    echo -e "${GREEN}Tüm araçlar başarıyla kuruldu!${NC}"
     echo ""
 
     # Show installation summary
     show_installation_summary
 
     echo ""
-    draw_box_top "🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${CYAN}💡 Sonraki adımlar:${NC}" 70
-    draw_box_middle "" 70
-    draw_box_middle "  1. ${GREEN}source ~/.bashrc${NC} (ya da terminali yeniden başlat)" 70
-    draw_box_middle "  2. ${GREEN}python --version${NC} ile test edin" 70
-    draw_box_middle "  3. ${GREEN}node --version${NC} ile test edin" 70
-    draw_box_middle "  4. 🚀 Kodlamaya başlayın!" 70
-    draw_box_middle "" 70
-    draw_box_middle "  ${YELLOW}⚙️  İleri düzey araçlar için:${NC}" 70
-    draw_box_middle "     Scripti tekrar çalıştırıp 'Advanced Mode' seçin" 70
-    draw_box_middle "" 70
-    draw_box_bottom 70
+    if has_gum; then
+        gum_style --foreground 212 --bold "🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
+    else
+        echo -e "${YELLOW}🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!${NC}"
+    fi
+    echo ""
+    echo -e "${CYAN}💡 Sonraki adımlar:${NC}"
+    echo ""
+    echo -e "  1. ${GREEN}source ~/.bashrc${NC} (ya da terminali yeniden başlat)"
+    echo -e "  2. ${GREEN}python --version${NC} ile test edin"
+    echo -e "  3. ${GREEN}node --version${NC} ile test edin"
+    echo -e "  4. 🚀 Kodlamaya başlayın!"
+    echo ""
+    echo -e "${YELLOW}⚙️  İleri düzey araçlar için:${NC}"
+    echo -e "   Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
     echo ""
 }
 

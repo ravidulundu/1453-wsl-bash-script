@@ -5,9 +5,8 @@
 
 # Install Claude Code CLI
 install_claude_code() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed (command is 'claude', not 'claude-code')
     if command -v claude &> /dev/null; then
@@ -69,9 +68,8 @@ install_claude_code() {
 
 # Install Gemini CLI
 install_gemini_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Gemini CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if python3 -c "import google.generativeai" 2>/dev/null; then
@@ -105,9 +103,8 @@ install_gemini_cli() {
 
 # Install OpenCode CLI
 install_opencode_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} OpenCode CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v opencode &> /dev/null; then
@@ -150,9 +147,8 @@ install_opencode_cli() {
 
 # Install Qwen CLI
 install_qwen_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Qwen CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v qwen &> /dev/null; then
@@ -195,9 +191,8 @@ install_qwen_cli() {
 
 # Install Copilot CLI
 install_copilot_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v github-copilot-cli &> /dev/null; then
@@ -236,9 +231,8 @@ install_copilot_cli() {
 
 # Install GitHub CLI
 install_github_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v gh &> /dev/null; then
@@ -343,9 +337,9 @@ install_ai_cli_tools_menu() {
         esac
     else
         # Fallback: Traditional menu
-        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║         AI CLI Araçları Kurulumu              ║${NC}"
-        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}🤖 AI CLI Araçları Kurulumu${NC}"
+        echo ""
         echo -e "  ${CYAN}1${NC}) Claude Code CLI"
         echo -e "  ${CYAN}2${NC}) Gemini CLI"
         echo -e "  ${CYAN}3${NC}) OpenCode CLI"
@@ -387,9 +381,8 @@ install_ai_cli_tools_menu() {
 
 # Install Qoder CLI
 install_qoder_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v qoder &> /dev/null; then
@@ -446,9 +439,8 @@ install_qoder_cli() {
 
 # Install Kiro CLI
 install_kiro_cli() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Kiro CLI kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v kiro &> /dev/null; then

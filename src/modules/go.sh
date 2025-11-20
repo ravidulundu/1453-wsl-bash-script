@@ -16,9 +16,8 @@ is_go_installed() {
 
 # Configure Go environment variables
 configure_go_env() {
-    echo -e "\n${BLUE}╔══════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Go ortam değişkenleri yapılandırılıyor..."
-    echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 
     # Add Go binary to PATH
     local go_bin_path="/usr/local/go/bin"
@@ -48,9 +47,8 @@ configure_go_env() {
 
 # Install Go using official binary
 install_go_official() {
-    echo -e "\n${BLUE}╔══════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Go resmi binary kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if is_go_installed; then
@@ -146,9 +144,8 @@ install_go_official() {
 
 # Install Go using package manager
 install_go_package() {
-    echo -e "\n${BLUE}╔══════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Go paket yöneticisi kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if is_go_installed; then
@@ -220,9 +217,8 @@ install_go_package() {
 
 # Main Go installation function (intelligent selection)
 install_go() {
-    echo -e "\n${BLUE}╔══════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Go kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if is_go_installed; then
@@ -281,9 +277,9 @@ install_go_menu() {
         esac
     else
         # Fallback: Traditional menu
-        echo -e "\n${CYAN}╔══════════════════════════════════════╗${NC}"
-        echo -e "${CYAN}║              Go Kurulum              ║${NC}"
-        echo -e "${CYAN}╚══════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${CYAN}🐹 Go Language Kurulumu${NC}"
+        echo ""
         echo -e "  ${GREEN}1${NC}) Otomatik Kurulum (Önerilen)"
         echo -e "  ${GREEN}2${NC}) Resmi Binary Kurulumu"
         echo -e "  ${GREEN}3${NC}) Paket Yöneticisi Kurulumu"
@@ -307,9 +303,8 @@ install_go_menu() {
 
 # Uninstall Go
 remove_go() {
-    echo -e "\n${BLUE}╔══════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Go kaldırılıyor..."
-    echo -e "${BLUE}╚══════════════════════════════════════╝${NC}"
 
     # Remove Go binary
     if [ -d "/usr/local/go" ]; then
@@ -341,9 +336,9 @@ remove_go() {
 
 # Show Go information
 show_go_info() {
-    echo -e "\n${CYAN}╔══════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║              Go Bilgisi              ║${NC}"
-    echo -e "${CYAN}╚══════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "${CYAN}Go Bilgisi${NC}"
+    echo ""
 
     if is_go_installed; then
         echo -e "${GREEN}Kurulu Sürüm:${NC} $(go version)"

@@ -41,9 +41,7 @@ track_skip() {
 # Show installation summary
 show_installation_summary() {
     echo ""
-    echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                  KURULUM ÖZETİ                                 ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${CYAN}KURULUM ÖZETİ${NC}"
     echo ""
 
     # Count totals

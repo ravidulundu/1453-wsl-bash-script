@@ -5,9 +5,8 @@
 
 # Configure Git
 configure_git() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Git yapılandırması başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check existing git configuration
     local current_user

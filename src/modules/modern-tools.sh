@@ -5,9 +5,7 @@
 
 # Install Charm Gum - Modern TUI framework for shell scripts
 install_gum() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      CHARM GUM TUI KURULUYOR                  ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+    echo ""
 
     # Check if already installed
     if command -v gum &>/dev/null; then
@@ -94,9 +92,7 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 
 # Install modern CLI tools (batcat, ripgrep, fd-find, eza, etc.)
 install_modern_cli_tools() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      MODERN CLI ARAÇLARI KURULUYOR            ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+    echo ""
 
     # Check which tools are already installed
     local already_installed=()

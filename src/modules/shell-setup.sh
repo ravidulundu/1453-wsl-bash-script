@@ -5,9 +5,7 @@
 
 # Main shell setup function
 setup_custom_shell() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║          SHELL ORTAMI HAZIRLANIYOR            ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+    echo ""
 
     # Run setup functions with error checking
     if ! setup_bash_aliases; then

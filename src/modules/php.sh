@@ -51,9 +51,8 @@ ensure_php_repository() {
 
 # Install Composer
 install_composer() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Composer kurulumu denetleniyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if command -v composer &> /dev/null; then
         local version
@@ -133,9 +132,8 @@ install_composer() {
 # Install a specific PHP version with extensions
 install_php_version() {
     local version="$1"
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} PHP ${version} ve Laravel eklentileri kuruluyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     ensure_php_repository || return 1
 
@@ -261,9 +259,9 @@ install_php_version_menu() {
         esac
     else
         # Fallback: Traditional menu
-        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║            PHP Sürüm Seçimi                   ║${NC}"
-        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}🐘 PHP Sürüm Seçimi${NC}"
+        echo ""
 
         local index=1
         for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do

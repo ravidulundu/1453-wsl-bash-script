@@ -85,9 +85,7 @@ confirm_cleanup() {
 # Show installed items
 show_installed_items() {
     clear
-    echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                  KURULU BİLEŞENLER                          ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
     echo ""
 
     echo -e "${CYAN}[Python Ekosistemi]${NC}"
@@ -196,9 +194,7 @@ show_installed_items() {
 
 # Cleanup System Packages (installed by update_system())
 cleanup_system_packages() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║    Sistem Paketleri Temizleniyor       ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     echo -e "${CYAN}[BİLGİ]${NC} update_system() tarafından kurulan paketler kaldırılıyor..."
     echo ""
@@ -237,9 +233,7 @@ cleanup_system_packages() {
 
 # Cleanup Python ecosystem
 cleanup_python() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║     Python Ekosistemi Temizleniyor     ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # pipx packages and executable
     if command -v pipx &>/dev/null; then
@@ -282,9 +276,7 @@ cleanup_python() {
 
 # Cleanup Node.js and NVM
 cleanup_nodejs() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      Node.js Ekosistemi Temizleniyor   ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # NVM
     if [ -d "$HOME/.nvm" ]; then
@@ -315,9 +307,7 @@ cleanup_nodejs() {
 
 # Cleanup PHP and Composer
 cleanup_php() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║       PHP Ekosistemi Temizleniyor      ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # Composer
     if command -v composer &>/dev/null; then
@@ -355,9 +345,7 @@ cleanup_php() {
 
 # Cleanup Go
 cleanup_go() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║          Go Temizleniyor               ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     if [ -d "/usr/local/go" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Go kaldırılıyor..."
@@ -376,9 +364,7 @@ cleanup_go() {
 
 # Cleanup Modern CLI Tools
 cleanup_modern_tools() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║    Modern CLI Tools Temizleniyor       ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     echo -e "${CYAN}[BİLGİ]${NC} 1453 WSL Setup'ın kurduğu modern CLI tools kaldırılıyor..."
     echo ""
@@ -454,9 +440,7 @@ cleanup_modern_tools() {
 
 # Cleanup Shell Configs
 cleanup_shell_configs() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║     Shell Config Temizleniyor          ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # Backup first
     if [ -f ~/.bashrc ]; then
@@ -574,9 +558,7 @@ cleanup_shell_configs() {
 
 # Cleanup AI CLI Tools
 cleanup_ai_tools() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      AI CLI Tools Temizleniyor         ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # Tools installed via native installers (curl | bash)
     # These are NOT installed via pipx, they use their own installers
@@ -631,9 +613,7 @@ cleanup_ai_tools() {
 
 # Cleanup AI Frameworks
 cleanup_ai_frameworks() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║     AI Frameworks Temizleniyor         ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # Use existing cleanup functions from ai-frameworks.sh
     if declare -f remove_supergemini &>/dev/null; then
@@ -653,9 +633,7 @@ cleanup_ai_frameworks() {
 
 # Cleanup Docker
 cleanup_docker() {
-    echo -e "\n${BLUE}╔════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║         Docker Temizleniyor            ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════╝${NC}\n"
+    echo ""
 
     # Check if Docker is installed
     if ! command -v docker &>/dev/null && [ ! -f /etc/apt/sources.list.d/docker.list ]; then
@@ -735,9 +713,9 @@ cleanup_docker() {
 
 # Cleanup all installations (keep configs)
 cleanup_installations() {
-    echo -e "\n${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║              TÜM KURULUMLAR TEMİZLENİYOR                    ║${NC}"
-    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${RED}🗑️  TÜM KURULUMLAR TEMİZLENİYOR${NC}"
+    echo ""
 
     if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
         return 1
@@ -759,10 +737,9 @@ cleanup_installations() {
 # Full reset (white flag)
 cleanup_full_reset() {
     clear
-    echo -e "${RED}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${RED}║                  🔴 TAM SIFIRLAMA 🔴                         ║${NC}"
-    echo -e "${RED}║              WSL'i İLK HALİNE GETİR                          ║${NC}"
-    echo -e "${RED}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${RED}🔴 TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
+    echo ""
 
     echo -e "${RED}⚠️  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
     echo -e "${YELLOW}Silinecekler:${NC}"
@@ -829,9 +806,9 @@ cleanup_full_reset() {
         source ~/.bashrc 2>/dev/null || true
     fi
 
-    echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                  ✅ TAM SIFIRLAMA TAMAMLANDI                 ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${GREEN}✅ TAM SIFIRLAMA TAMAMLANDI${NC}"
+    echo ""
     echo -e "${CYAN}[BİLGİ]${NC} WSL ilk kurulum haline getirildi."
     echo -e "${YELLOW}[ÖNEMLİ]${NC} Değişikliklerin tam aktif olması için:"
     echo -e "  ${RED}1. Tüm terminal pencerelerini kapatın${NC}"
@@ -920,9 +897,7 @@ show_individual_cleanup_menu() {
         # Fallback: Traditional menu
         while true; do
             clear
-            echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-            echo -e "${BLUE}║              TEK TEK TEMİZLEME MENÜSÜ                       ║${NC}"
-            echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
             echo -e "  ${GREEN}1${NC}) Sistem Paketleri (jq, zip, unzip, build-essential)"
             echo -e "  ${GREEN}2${NC}) Python (python3, pip, pipx, uv)"
             echo -e "  ${GREEN}3${NC}) Node.js (nvm, node, npm, bun)"
@@ -1062,9 +1037,7 @@ show_cleanup_menu() {
         # Fallback: Traditional menu
         while true; do
             clear
-            echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-            echo -e "${BLUE}║           🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ               ║${NC}"
-            echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
             echo ""
             echo -e "  ${RED}1${NC}) ${RED}🔴 TAM SIFIRLAMA (Beyaz Bayrak)${NC}"
             echo -e "     ${YELLOW}Her şeyi sil, temiz kurulum için hazırla${NC}"

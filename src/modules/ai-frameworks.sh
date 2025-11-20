@@ -5,9 +5,8 @@
 
 # Install SuperGemini Framework
 install_supergemini() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperGemini Framework kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Pipx kurulu değil. Önce pipx kuruluyor..."
@@ -44,9 +43,8 @@ install_supergemini() {
 
 # Install SuperQwen Framework
 install_superqwen() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperQwen Framework kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Pipx kurulu değil. Önce pipx kuruluyor..."
@@ -83,9 +81,8 @@ install_superqwen() {
 
 # Install SuperClaude Framework
 install_superclaude() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperClaude Framework kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if ! command -v pipx &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Pipx kurulu değil. Önce pipx kuruluyor..."
@@ -122,9 +119,8 @@ install_superclaude() {
 
 # Remove SuperGemini Framework
 remove_supergemini() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperGemini Framework kaldırılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if pipx list 2>/dev/null | grep -q "supergemini"; then
         pipx uninstall supergemini
@@ -136,9 +132,8 @@ remove_supergemini() {
 
 # Remove SuperQwen Framework
 remove_superqwen() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperQwen Framework kaldırılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if pipx list 2>/dev/null | grep -q "superqwen"; then
         pipx uninstall superqwen
@@ -150,9 +145,8 @@ remove_superqwen() {
 
 # Remove SuperClaude Framework
 remove_superclaude() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} SuperClaude Framework kaldırılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     if pipx list 2>/dev/null | grep -q "superclaude"; then
         pipx uninstall superclaude
@@ -193,9 +187,9 @@ install_ai_frameworks_menu() {
         esac
     else
         # Fallback: Traditional menu
-        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║       AI Framework'leri Kurulumu              ║${NC}"
-        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${YELLOW}🧠 AI Framework'leri Kurulumu${NC}"
+        echo ""
         echo -e "  ${CYAN}1${NC}) SuperGemini (Gemini Framework)"
         echo -e "  ${CYAN}2${NC}) SuperQwen (Qwen Framework)"
         echo -e "  ${CYAN}3${NC}) SuperClaude (Claude Framework)"
@@ -251,9 +245,9 @@ remove_ai_frameworks_menu() {
         esac
     else
         # Fallback: Traditional menu
-        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║       AI Framework'leri Kaldırma              ║${NC}"
-        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${RED}❌ AI Framework'leri Kaldırma${NC}"
+        echo ""
         echo -e "  ${CYAN}1${NC}) SuperGemini'yi Kaldır"
         echo -e "  ${CYAN}2${NC}) SuperQwen'i Kaldır"
         echo -e "  ${CYAN}3${NC}) SuperClaude'u Kaldır"

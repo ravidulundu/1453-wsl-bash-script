@@ -6,9 +6,9 @@
 # Install Docker Engine
 # Install Docker Engine
 install_docker_engine() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║          Docker Engine Kurulumu                ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${YELLOW}Docker Engine Kurulumu${NC}"
+    echo ""
 
     # Check if Docker is already installed
     if command -v docker &> /dev/null; then
@@ -120,9 +120,9 @@ install_docker_engine() {
 
 # Install Docker Compose (standalone - if needed)
 install_docker_compose() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║         Docker Compose Kurulumu                ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${YELLOW}Docker Compose Kurulumu${NC}"
+    echo ""
 
     # Check if docker compose plugin is available
     if docker compose version &> /dev/null; then
@@ -137,9 +137,9 @@ install_docker_compose() {
 
 # Install lazydocker
 install_lazydocker_tool() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║           lazydocker Kurulumu                  ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}\n"
+    echo ""
+    echo -e "${YELLOW}lazydocker Kurulumu${NC}"
+    echo ""
 
     # Check if already installed
     if command -v lazydocker &> /dev/null; then
@@ -228,14 +228,14 @@ install_docker_menu() {
         # Fallback: Traditional menu
         while true; do
             clear
-            echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-            echo -e "${BLUE}║                  Docker Kurulum Menüsü                      ║${NC}"
-            echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+            echo ""
+            echo -e "${CYAN}🐳 Docker Kurulum Menüsü${NC}"
+            echo ""
             echo -e "  ${GREEN}1${NC}) Docker Engine Kurulumu (Önerilen)"
             echo -e "  ${GREEN}2${NC}) lazydocker Kurulumu (Terminal UI)"
             echo -e "  ${GREEN}3${NC}) Tümünü Kur (Docker Engine + lazydocker)"
             echo -e "  ${GREEN}0${NC}) Ana menüye dön"
-            echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
+            echo ""
 
             echo -ne "\n${YELLOW}Seçiminizi yapın (0-3): ${NC}"
             read -r choice </dev/tty

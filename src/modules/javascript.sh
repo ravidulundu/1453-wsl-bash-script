@@ -5,9 +5,8 @@
 
 # Install NVM (Node Version Manager)
 install_nvm() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} NVM kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if NVM is already installed
     export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
@@ -102,9 +101,8 @@ END_NVM_CONFIG
 
 # Install Bun.js
 install_bun() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+    echo ""
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js kurulumu başlatılıyor..."
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
 
     # Check if already installed
     if command -v bun &> /dev/null; then
