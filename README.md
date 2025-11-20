@@ -26,6 +26,8 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 - **Tek Satır Kurulum** - curl/wget ile anında kurulum
 - **Modüler Mimari** - 2,331 satırlık monolitik scriptten 14 modüler dosyaya refactor edildi
 - **Türkçe Arayüz** - Tüm mesajlar ve menüler Türkçe
+- **Modern TUI (Gum)** - Charm Gum framework ile profesyonel terminal arayüzü (v2.3.2)
+- **Responsive Padding** - Terminal genişliğine göre otomatik layout ayarı (v2.3.2)
 - **İnteraktif Menüler** - Kullanıcı dostu çoklu seçim desteği
 - **Otomatik Algılama** - Paket yöneticisi ve işletim sistemi otomatik tespit
 - **PEP 668 Uyumlu** - Python'un harici yönetilen ortam standardına uyumlu
@@ -57,7 +59,7 @@ WSL (Windows Subsystem for Linux) için kapsamlı otomatik kurulum scripti. AI g
 **Güvenlik Durumu:**
 - **Güvenlik Riski:** HIGH → **LOW** ✅
 - **Compliance:** Production-ready ✅
-- **Current Version:** v2.3.1 (2025-11-18)
+- **Current Version:** v2.3.2 (2025-11-20)
 
 #### Güvenlik Özellikleri
 - **Command Injection Koruması** - 16 eval kullanımı kaldırıldı, güvenli array-based execution
@@ -858,6 +860,56 @@ MIT Lisansı - Detaylar için [LICENSE.md](LICENSE.md) dosyasına bakın.
 
 ## 🔐 Güvenlik Güncellemeleri
 
+### v2.3.2 - Modern TUI with Responsive Padding (2025-11-20)
+
+**🎨 Complete Gum TUI integration + responsive layout system!**
+
+#### ✨ UI/UX Improvements
+
+**Full Gum TUI Integration (2 commits)**
+- ✅ **Styled Boxes Removed** (Commit: d07b1c3)
+  - 15+ modules: Removed ALL styled boxes (╔═══╗, ╚═══╝, ║)
+  - Replaced with unified show_banner() + simple gum_style titles
+  - Pattern: show_banner() → gum_style --bold "Title"
+  - Files: quickstart.sh (15+ instances), python.sh, javascript.sh, php.sh, go.sh, ai-cli.sh, ai-frameworks.sh, docker.sh, modern-tools.sh, shell-setup.sh, cleanup.sh, common.sh, tui.sh, installation-tracker.sh
+
+- ✅ **Responsive Padding System** (Commit: d07b1c3)
+  - Updated gum_style wrapper with automatic default padding
+  - Responsive margin calculation:
+    • Terminal ≤ 100 cols → margin: 2 (normal padding)
+    • Terminal > 100 cols → margin: (width - 80) / 2 (centered)
+    • Min: 2, Max: 10 (prevents overflow)
+  - Banner elements responsive:
+    • ASCII art: dynamic width (80 to terminal width)
+    • Title box: responsive width (TUI_WIDTH - 4)
+    • Info lines: centered + responsive width
+  - 2-space padding for fallback mode (no Gum)
+
+- ✅ **Install.sh Padding** (Commit: 8ec3fb8)
+  - Removed styled boxes from installer
+  - Added 2-space padding to 20+ messages
+  - Consistent with main script styling
+
+#### 📊 İstatistikler
+
+| Kategori | Değişiklik |
+|----------|-----------|
+| Files Modified | 17 files (16 modules + install.sh) |
+| Styled Boxes Removed | 40+ instances |
+| Auto-padding Applied | 40+ gum_style calls |
+| Lines Changed | +491, -403 |
+| Commits | 2 commits |
+
+#### 🎯 Impact
+
+- ✅ Professional UI - no more "sola yapışık" (left-aligned)
+- ✅ Responsive - terminal resize → automatic layout adjustment
+- ✅ Consistent spacing across all modules
+- ✅ Banner centers on wide terminals
+- ✅ Modern UX with Gum framework
+
+---
+
 ### v2.3.1 - GitHub Copilot Code Quality Fixes (2025-11-18)
 
 **🎯 4 Code Quality bugs düzeltildi - Copilot AI önerileri uygulandı!**
@@ -1111,8 +1163,9 @@ Detaylı analiz için: [BUG-REPORT.md](BUG-REPORT.md)
 
 ---
 
-**Versiyon**: 2.3.1 (2025-11-18)
+**Versiyon**: 2.3.2 (2025-11-20)
 **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
 **Platform**: WSL (Windows Subsystem for Linux)
 **Dil**: Bash + Türkçe Arayüz
+**Modern UI**: Gum TUI + Responsive Padding ✅
 **Portability**: Full BSD/macOS Support ✅
