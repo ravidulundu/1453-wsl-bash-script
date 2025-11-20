@@ -115,7 +115,12 @@ show_mode_selection() {
         echo ""
 
         # CRITICAL FIX: Flush stdin buffer before reading
-        while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
+        # Only flush if stdin is a terminal to avoid infinite loop on EOF
+        if [ -t 0 ]; then
+            while read -r -t 0 <&0; do
+                read -r -t 0.01 -N 1000 <&0 || break
+            done 2>/dev/null
+        fi
 
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
         read -r mode_choice </dev/tty
