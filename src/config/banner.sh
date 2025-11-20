@@ -8,46 +8,64 @@ show_banner() {
 
     # Check if Gum is available for modern display
     if command -v gum &>/dev/null; then
-        # Calculate responsive widths based on terminal size
-        local ascii_width=80
-        local title_width=76
-        local info_width=76
+        # Check terminal width for responsiveness
+        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 60 ]; then
+            # Terminal too narrow - show compact banner
+            gum style \
+                --foreground 212 --bold --align center \
+                "1453.AI WSL Setup"
+            echo ""
+            gum style --foreground 51 --align center "WSL Vibe Coder'lar İçin Otomatik Kurulum"
+            echo ""
+            gum style --foreground 226 --align center "📌 v2.0 Modular"
+            echo ""
+        else
+            # Calculate responsive widths based on terminal size
+            local ascii_width=80
+            local title_width=76
+            local info_width=76
 
-        # If terminal is wider than 80, use dynamic widths
-        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-            ascii_width=$TUI_WIDTH
-            title_width=$((TUI_WIDTH - 4))
-            info_width=$((TUI_WIDTH - 4))
+            # If terminal is wider than 80, use dynamic widths
+            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
+                ascii_width=$TUI_WIDTH
+                title_width=$((TUI_WIDTH - 4))
+                info_width=$((TUI_WIDTH - 4))
+            fi
+
+            # Ensure widths don't exceed terminal
+            [ "$ascii_width" -gt "$TUI_WIDTH" ] && ascii_width=$TUI_WIDTH
+            [ "$title_width" -gt $((TUI_WIDTH - 4)) ] && title_width=$((TUI_WIDTH - 4))
+            [ "$info_width" -gt $((TUI_WIDTH - 4)) ] && info_width=$((TUI_WIDTH - 4))
+
+            # Modern Gum banner - ASCII art (responsive)
+            gum style \
+                --foreground 51 --bold \
+                --align center --width "$ascii_width" \
+                '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
+                ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
+                '|_  $$| $$  | $$| $$      |__/  \ $$' \
+                '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
+                '  | $$|_____  $$|_____  $$  |___  $$' \
+                '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
+                ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
+                '|______/    |__/ \______/  \______/ '
+
+            echo ""
+
+            # Title box (responsive)
+            gum style \
+                --foreground 212 --border rounded --align center \
+                --width "$title_width" --padding "1 2" \
+                "1453.AI - WSL Vibe Coder'lar İçin Otomatik Kurulum Rehberi"
+
+            echo ""
+
+            # Info lines (centered + responsive)
+            gum style --foreground 226 --align center --width "$info_width" "📌 Script Sürümü: v2.0 Modular"
+            gum style --foreground 51 --align center --width "$info_width" "🔗 GitHub: https://github.com/ravidulundu/1453-wsl-bash-script"
+            gum style --foreground 141 --align center --width "$info_width" "📅 Tarih: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo ""
         fi
-
-        # Modern Gum banner - ASCII art (responsive)
-        gum style \
-            --foreground 51 --bold \
-            --align center --width "$ascii_width" \
-            '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
-            ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
-            '|_  $$| $$  | $$| $$      |__/  \ $$' \
-            '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
-            '  | $$|_____  $$|_____  $$  |___  $$' \
-            '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
-            ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
-            '|______/    |__/ \______/  \______/ '
-
-        echo ""
-
-        # Title box (responsive)
-        gum style \
-            --foreground 212 --border rounded --align center \
-            --width "$title_width" --padding "1 2" \
-            "1453.AI - WSL Vibe Coder'lar İçin Otomatik Kurulum Rehberi"
-
-        echo ""
-
-        # Info lines (centered + responsive)
-        gum style --foreground 226 --align center --width "$info_width" "📌 Script Sürümü: v2.0 Modular"
-        gum style --foreground 51 --align center --width "$info_width" "🔗 GitHub: https://github.com/ravidulundu/1453-wsl-bash-script"
-        gum style --foreground 141 --align center --width "$info_width" "📅 Tarih: $(date '+%Y-%m-%d %H:%M:%S')"
-        echo ""
     else
         # Traditional ASCII banner (fallback with padding)
         echo ""

@@ -67,76 +67,85 @@ show_banner() {
     clear
 
     if has_gum; then
-        # Calculate responsive widths based on terminal size
-        local ascii_width=80
-        local title_width=76
+        # Check terminal width for responsiveness
+        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 60 ]; then
+            # Terminal too narrow - show compact banner
+            gum style \
+                --foreground 212 --bold --align center \
+                "1453.AI WSL Setup"
+            echo ""
+            gum_print --foreground 51 "🚀 Hızlı Yükleyici"
+            echo ""
+        else
+            # Calculate responsive widths based on terminal size
+            local ascii_width=80
+            local title_width=76
 
-        # If terminal is wider than 80, use dynamic widths
-        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-            ascii_width=$TUI_WIDTH
-            title_width=$((TUI_WIDTH - 4))
+            # If terminal is wider than 80, use dynamic widths
+            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
+                ascii_width=$TUI_WIDTH
+                title_width=$((TUI_WIDTH - 4))
+            fi
+
+            # Ensure widths don't exceed terminal
+            [ "$ascii_width" -gt "$TUI_WIDTH" ] && ascii_width=$TUI_WIDTH
+            [ "$title_width" -gt $((TUI_WIDTH - 4)) ] && title_width=$((TUI_WIDTH - 4))
+
+            # Modern Gum banner - ASCII art (responsive)
+            gum style \
+                --foreground 51 --bold \
+                --align center --width "$ascii_width" \
+                '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
+                ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
+                '|_  $$| $$  | $$| $$      |__/  \ $$' \
+                '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
+                '  | $$|_____  $$|_____  $$  |___  $$' \
+                '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
+                ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
+                '|______/    |__/ \______/  \______/ '
+
+            echo ""
+
+            # Title (responsive)
+            gum style \
+                --foreground 212 --border rounded --align center \
+                --width "$title_width" --padding "1 2" \
+                "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
+
+            echo ""
         fi
-
-        # Modern Gum banner - ASCII art (responsive)
-        gum style \
-            --foreground 51 --bold \
-            --align center --width "$ascii_width" \
-            '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
-            ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
-            '|_  $$| $$  | $$| $$      |__/  \ $$' \
-            '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
-            '  | $$|_____  $$|_____  $$  |___  $$' \
-            '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
-            ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
-            '|______/    |__/ \______/  \______/ '
-
-        echo ""
-
-        # Title (responsive)
-        gum style \
-            --foreground 212 --border rounded --align center \
-            --width "$title_width" --padding "1 2" \
-            "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
-
-        echo ""
     else
         # Traditional ASCII banner (fallback with padding)
-        echo ""
-        echo -e "  ${CYAN}"
-        echo '     /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
-        echo '   /$$$$| $$  | $$| $$____/  /$$__  $$'
-        echo '  |_  $$| $$  | $$| $$      |__/  \ $$'
-        echo '    | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
-        echo '    | $$|_____  $$|_____  $$  |___  $$'
-        echo '    | $$      | $$ /$$  \ $$ /$$  \ $$'
-        echo '   /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
-        echo '  |______/    |__/ \______/  \______/ '
-        echo -e "${NC}"
         echo ""
         echo -e "  ${CYAN}🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici${NC}"
         echo ""
     fi
 }
 
-# Dosya indirme fonksiyonu
+# Dosya indirme fonksiyonu (sessiz mod için)
+download_file_silent() {
+    local url="$1"
+    local dest="$2"
+    curl -fsSL "$url" -o "$dest" 2>/dev/null
+}
+
+# Dosya indirme fonksiyonu (verbose mod)
 download_file() {
     local url="$1"
     local dest="$2"
     local desc="$3"
 
     if has_gum; then
-        gum_print --foreground 226 "[İNDİRİLİYOR] $desc"
         if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-            gum_print --foreground 82 "[✓] $desc"
             return 0
         else
             gum_print --foreground 196 "[✗] İndirilemedi: $desc"
             return 1
         fi
     else
-        echo -e "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc"
+        echo -ne "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc\r"
         if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-            echo -e "  ${GREEN}[✓]${NC} $desc"
+            echo -e "  ${GREEN}[✓]${NC} $desc        "
             return 0
         else
             echo -e "  ${RED}[✗]${NC} İndirilemedi: $desc"
@@ -274,34 +283,77 @@ main() {
     )
 
     # Tüm dosyaları indir
-    if has_gum; then
-        gum_print --foreground 51 "[BİLGİ] Modüler bileşenler indiriliyor..."
-        echo ""
-    else
-        echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor..."
-        echo ""
-    fi
-
+    local total_files=${#files[@]}
     local failed=0
-    for file_info in "${files[@]}"; do
-        IFS=':' read -r file_path description <<< "$file_info"
-        local url="${BASE_URL}/${file_path}"
-        local dest="${INSTALL_DIR}/${file_path}"
+    local failed_files=()
 
-        if ! download_file "$url" "$dest" "$description"; then
-            ((failed++))
-        fi
-    done
+    if has_gum; then
+        gum_print --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
+        echo ""
+
+        # Download with spinner
+        local count=0
+        for file_info in "${files[@]}"; do
+            IFS=':' read -r file_path description <<< "$file_info"
+            local url="${BASE_URL}/${file_path}"
+            local dest="${INSTALL_DIR}/${file_path}"
+            ((count++))
+
+            # Use gum spinner for each file
+            if ! gum spin --spinner dot --title "[$count/$total_files] $description" -- \
+                bash -c "curl -fsSL '$url' -o '$dest' 2>/dev/null"; then
+                ((failed++))
+                failed_files+=("$description")
+            fi
+        done
+    else
+        echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
+        echo ""
+
+        # Download with progress indicator
+        for file_info in "${files[@]}"; do
+            IFS=':' read -r file_path description <<< "$file_info"
+            local url="${BASE_URL}/${file_path}"
+            local dest="${INSTALL_DIR}/${file_path}"
+
+            if ! download_file "$url" "$dest" "$description"; then
+                ((failed++))
+                failed_files+=("$description")
+            fi
+        done
+    fi
 
     echo ""
 
+    # Show summary
+    if [ $failed -eq 0 ]; then
+        if has_gum; then
+            gum_print --foreground 82 "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
+        else
+            echo -e "  ${GREEN}[✓]${NC} Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
+        fi
+        echo ""
+    fi
+
     if [ $failed -gt 0 ]; then
         if has_gum; then
-            gum_print --foreground 196 "[HATA] $failed dosya indirilemedi."
+            gum_print --foreground 196 "❌ $failed/$total_files dosya indirilemedi"
+            echo ""
+            gum_print --foreground 226 "Başarısız dosyalar:"
+            for failed_file in "${failed_files[@]}"; do
+                gum_print --foreground 196 "  • $failed_file"
+            done
+            echo ""
             gum_print --foreground 226 "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-            gum_print --foreground 226 "      git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+            gum_print --foreground 51 "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         else
-            echo -e "  ${RED}[HATA]${NC} $failed dosya indirilemedi."
+            echo -e "  ${RED}[HATA]${NC} $failed/$total_files dosya indirilemedi"
+            echo ""
+            echo -e "  ${YELLOW}Başarısız dosyalar:${NC}"
+            for failed_file in "${failed_files[@]}"; do
+                echo -e "    ${RED}•${NC} $failed_file"
+            done
+            echo ""
             echo -e "  ${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
             echo -e "        git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         fi
