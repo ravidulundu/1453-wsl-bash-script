@@ -98,6 +98,7 @@ main() {
         "src/lib/common.sh:Ortak araçlar"
         "src/lib/package-manager.sh:Paket yöneticisi tespiti"
         "src/lib/installation-tracker.sh:Kurulum takip sistemi"
+        "src/lib/tui.sh:TUI sistem modülü"
         "src/config/colors.sh:Renk tanımlamaları"
         "src/config/constants.sh:Global sabitler (CRITICAL)"
         "src/config/tool-versions.sh:Araç versiyonları"
