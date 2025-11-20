@@ -96,8 +96,8 @@ show_mode_selection() {
 
         # Modern TUI with Gum if available
         if has_gum; then
-            # Gum-powered modern menu (banner already shown above)
-            gum_style --foreground 226 "🎯 Hangi kurulum modunu tercih edersiniz?"
+            # Banner shown above, now show mode selection question
+            gum_style --foreground 212 --bold "🎯 Hangi kurulum modunu tercih edersiniz?"
             echo ""
 
             local selection
