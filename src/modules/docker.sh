@@ -200,46 +200,74 @@ install_lazydocker_tool() {
 
 # Docker installation menu
 install_docker_menu() {
-    while true; do
-        clear
-        echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${BLUE}║                  Docker Kurulum Menüsü                      ║${NC}"
-        echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-        echo -e "  ${GREEN}1${NC}) Docker Engine Kurulumu (Önerilen)"
-        echo -e "  ${GREEN}2${NC}) lazydocker Kurulumu (Terminal UI)"
-        echo -e "  ${GREEN}3${NC}) Tümünü Kur (Docker Engine + lazydocker)"
-        echo -e "  ${GREEN}0${NC}) Ana menüye dön"
-        echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
+    if has_gum; then
+        # Modern Gum menu
+        echo ""
+        gum_style --foreground 39 --border double --align center --width 60 --padding "1 3" \
+            "🐳 Docker Kurulum Menüsü"
+        echo ""
 
-        echo -ne "\n${YELLOW}Seçiminizi yapın (0-3): ${NC}"
-        read -r choice </dev/tty
+        local selection
+        selection=$(gum_choose \
+            "🐳 Docker Engine Kurulumu (Önerilen)" \
+            "📊 lazydocker Kurulumu (Terminal UI)" \
+            "━━━━━━━━━━━━━━━━━━━━━" \
+            "📦 Tümünü Kur (Engine + lazydocker)" \
+            "◀ Ana menüye dön")
 
-        case $choice in
-            1)
-                install_docker_engine
-                echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                read -r </dev/tty
-                ;;
-            2)
-                install_lazydocker_tool
-                echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                read -r </dev/tty
-                ;;
-            3)
+        case "$selection" in
+            *"Docker Engine"*) install_docker_engine ;;
+            *"lazydocker"*) install_lazydocker_tool ;;
+            *"Tümünü Kur"*)
                 install_docker_engine
                 install_lazydocker_tool
-                echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                read -r </dev/tty
                 ;;
-            0)
-                break
-                ;;
-            *)
-                echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
-                sleep 1
-                ;;
+            *"Ana menüye dön"*|"") return ;;
+            "━"*) return ;; # Separator
         esac
-    done
+    else
+        # Fallback: Traditional menu
+        while true; do
+            clear
+            echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
+            echo -e "${BLUE}║                  Docker Kurulum Menüsü                      ║${NC}"
+            echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
+            echo -e "  ${GREEN}1${NC}) Docker Engine Kurulumu (Önerilen)"
+            echo -e "  ${GREEN}2${NC}) lazydocker Kurulumu (Terminal UI)"
+            echo -e "  ${GREEN}3${NC}) Tümünü Kur (Docker Engine + lazydocker)"
+            echo -e "  ${GREEN}0${NC}) Ana menüye dön"
+            echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
+
+            echo -ne "\n${YELLOW}Seçiminizi yapın (0-3): ${NC}"
+            read -r choice </dev/tty
+
+            case $choice in
+                1)
+                    install_docker_engine
+                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
+                    read -r </dev/tty
+                    ;;
+                2)
+                    install_lazydocker_tool
+                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
+                    read -r </dev/tty
+                    ;;
+                3)
+                    install_docker_engine
+                    install_lazydocker_tool
+                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
+                    read -r </dev/tty
+                    ;;
+                0)
+                    break
+                    ;;
+                *)
+                    echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
+                    sleep 1
+                    ;;
+            esac
+        done
+    fi
 }
 
 # Export functions

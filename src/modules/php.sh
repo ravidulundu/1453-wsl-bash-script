@@ -223,44 +223,84 @@ install_php_version() {
 
 # Menu for PHP version selection
 install_php_version_menu() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║            PHP Sürüm Seçimi                   ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+    if has_gum; then
+        # Modern Gum menu
+        echo ""
+        gum_style --foreground 212 --border double --align center --width 60 --padding "1 3" \
+            "🐘 PHP Sürüm Seçimi"
+        echo ""
 
-    local index=1
-    for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
-        echo -e "  ${CYAN}${index}${NC}) PHP ${ver}"
-        ((index++))
-    done
-    echo -e "  ${CYAN}${index}${NC}) Tüm sürümleri kur"
-    echo -e "  ${CYAN}$((index+1))${NC}) Ana menüye dön"
-
-    echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
-    read -r choice </dev/tty
-
-    # FIX BUG-018: Validate numeric input before comparison
-    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-        echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen bir sayı girin."
-        return
-    fi
-
-    # FIX BUG-007: Explicit array bounds checking for safety
-    local array_length="${#PHP_SUPPORTED_VERSIONS[@]}"
-
-    if [ "$choice" = "$((index+1))" ]; then
-        # Ana menüye dön
-        return
-    elif [ "$choice" = "$index" ]; then
-        # Tüm sürümleri kur
+        # Build menu options
+        local -a options=()
         for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
-            install_php_version "$ver"
+            options+=("PHP ${ver}")
         done
-    elif [ "$choice" -ge 1 ] && [ "$choice" -le "$array_length" ]; then
-        # Individual version - validate bounds explicitly
-        local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
-        install_php_version "$selected_version"
+        options+=("━━━━━━━━━━━━━━━━━━━━━")
+        options+=("📦 Tüm sürümleri kur")
+        options+=("◀ Ana menüye dön")
+
+        local selection
+        selection=$(gum_choose "${options[@]}")
+
+        case "$selection" in
+            "◀ Ana menüye dön"|"")
+                return
+                ;;
+            "📦 Tüm sürümleri kur")
+                for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
+                    install_php_version "$ver"
+                done
+                ;;
+            "━"*)
+                # Separator, ignore
+                return
+                ;;
+            "PHP "*)
+                local version="${selection#PHP }"
+                install_php_version "$version"
+                ;;
+        esac
     else
-        echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen 1-$((index+1)) arası bir sayı girin."
+        # Fallback: Traditional menu
+        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+        echo -e "${BLUE}║            PHP Sürüm Seçimi                   ║${NC}"
+        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+
+        local index=1
+        for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
+            echo -e "  ${CYAN}${index}${NC}) PHP ${ver}"
+            ((index++))
+        done
+        echo -e "  ${CYAN}${index}${NC}) Tüm sürümleri kur"
+        echo -e "  ${CYAN}$((index+1))${NC}) Ana menüye dön"
+
+        echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
+        read -r choice </dev/tty
+
+        # FIX BUG-018: Validate numeric input before comparison
+        if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+            echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen bir sayı girin."
+            return
+        fi
+
+        # FIX BUG-007: Explicit array bounds checking for safety
+        local array_length="${#PHP_SUPPORTED_VERSIONS[@]}"
+
+        if [ "$choice" = "$((index+1))" ]; then
+            # Ana menüye dön
+            return
+        elif [ "$choice" = "$index" ]; then
+            # Tüm sürümleri kur
+            for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
+                install_php_version "$ver"
+            done
+        elif [ "$choice" -ge 1 ] && [ "$choice" -le "$array_length" ]; then
+            # Individual version - validate bounds explicitly
+            local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
+            install_php_version "$selected_version"
+        else
+            echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen 1-$((index+1)) arası bir sayı girin."
+        fi
     fi
 }
 

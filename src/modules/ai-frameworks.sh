@@ -164,58 +164,120 @@ remove_superclaude() {
 
 # AI Frameworks installation menu
 install_ai_frameworks_menu() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║       AI Framework'leri Kurulumu              ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
-    echo -e "  ${CYAN}1${NC}) SuperGemini (Gemini Framework)"
-    echo -e "  ${CYAN}2${NC}) SuperQwen (Qwen Framework)"
-    echo -e "  ${CYAN}3${NC}) SuperClaude (Claude Framework)"
-    echo -e "  ${CYAN}4${NC}) Tümünü Kur"
-    echo -e "  ${CYAN}5${NC}) Ana menüye dön"
+    if has_gum; then
+        # Modern Gum menu
+        echo ""
+        gum_style --foreground 212 --border double --align center --width 60 --padding "1 3" \
+            "🧠 AI Framework'leri Kurulumu"
+        echo ""
 
-    echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
-    read -r choice </dev/tty
+        local selection
+        selection=$(gum_choose \
+            "✨ SuperGemini (Gemini Framework)" \
+            "🌟 SuperQwen (Qwen Framework)" \
+            "🧠 SuperClaude (Claude Framework)" \
+            "━━━━━━━━━━━━━━━━━━━━━" \
+            "📦 Tümünü Kur" \
+            "◀ Ana menüye dön")
 
-    case $choice in
-        1) install_supergemini ;;
-        2) install_superqwen ;;
-        3) install_superclaude ;;
-        4)
-            install_supergemini
-            install_superqwen
-            install_superclaude
-            ;;
-        5) return ;;
-        *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
-    esac
+        case "$selection" in
+            *"SuperGemini"*) install_supergemini ;;
+            *"SuperQwen"*) install_superqwen ;;
+            *"SuperClaude"*) install_superclaude ;;
+            *"Tümünü Kur"*)
+                install_supergemini
+                install_superqwen
+                install_superclaude
+                ;;
+            *"Ana menüye dön"*|"") return ;;
+            "━"*) return ;; # Separator
+        esac
+    else
+        # Fallback: Traditional menu
+        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+        echo -e "${BLUE}║       AI Framework'leri Kurulumu              ║${NC}"
+        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo -e "  ${CYAN}1${NC}) SuperGemini (Gemini Framework)"
+        echo -e "  ${CYAN}2${NC}) SuperQwen (Qwen Framework)"
+        echo -e "  ${CYAN}3${NC}) SuperClaude (Claude Framework)"
+        echo -e "  ${CYAN}4${NC}) Tümünü Kur"
+        echo -e "  ${CYAN}5${NC}) Ana menüye dön"
+
+        echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
+        read -r choice </dev/tty
+
+        case $choice in
+            1) install_supergemini ;;
+            2) install_superqwen ;;
+            3) install_superclaude ;;
+            4)
+                install_supergemini
+                install_superqwen
+                install_superclaude
+                ;;
+            5) return ;;
+            *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
+        esac
+    fi
 }
 
 # AI Frameworks removal menu
 remove_ai_frameworks_menu() {
-    echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║       AI Framework'leri Kaldırma              ║${NC}"
-    echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
-    echo -e "  ${CYAN}1${NC}) SuperGemini'yi Kaldır"
-    echo -e "  ${CYAN}2${NC}) SuperQwen'i Kaldır"
-    echo -e "  ${CYAN}3${NC}) SuperClaude'u Kaldır"
-    echo -e "  ${CYAN}4${NC}) Tümünü Kaldır"
-    echo -e "  ${CYAN}5${NC}) Ana menüye dön"
+    if has_gum; then
+        # Modern Gum menu
+        echo ""
+        gum_style --foreground 196 --border double --align center --width 60 --padding "1 3" \
+            "❌ AI Framework'leri Kaldırma"
+        echo ""
 
-    echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
-    read -r choice </dev/tty
+        local selection
+        selection=$(gum_choose \
+            "🗑️  SuperGemini'yi Kaldır" \
+            "🗑️  SuperQwen'i Kaldır" \
+            "🗑️  SuperClaude'u Kaldır" \
+            "━━━━━━━━━━━━━━━━━━━━━" \
+            "🚮 Tümünü Kaldır" \
+            "◀ Ana menüye dön")
 
-    case $choice in
-        1) remove_supergemini ;;
-        2) remove_superqwen ;;
-        3) remove_superclaude ;;
-        4)
-            remove_supergemini
-            remove_superqwen
-            remove_superclaude
-            ;;
-        5) return ;;
-        *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
-    esac
+        case "$selection" in
+            *"SuperGemini"*) remove_supergemini ;;
+            *"SuperQwen"*) remove_superqwen ;;
+            *"SuperClaude"*) remove_superclaude ;;
+            *"Tümünü Kaldır"*)
+                remove_supergemini
+                remove_superqwen
+                remove_superclaude
+                ;;
+            *"Ana menüye dön"*|"") return ;;
+            "━"*) return ;; # Separator
+        esac
+    else
+        # Fallback: Traditional menu
+        echo -e "\n${BLUE}╔═══════════════════════════════════════════════╗${NC}"
+        echo -e "${BLUE}║       AI Framework'leri Kaldırma              ║${NC}"
+        echo -e "${BLUE}╚═══════════════════════════════════════════════╝${NC}"
+        echo -e "  ${CYAN}1${NC}) SuperGemini'yi Kaldır"
+        echo -e "  ${CYAN}2${NC}) SuperQwen'i Kaldır"
+        echo -e "  ${CYAN}3${NC}) SuperClaude'u Kaldır"
+        echo -e "  ${CYAN}4${NC}) Tümünü Kaldır"
+        echo -e "  ${CYAN}5${NC}) Ana menüye dön"
+
+        echo -ne "\n${YELLOW}Seçiminizi yapın (1-5): ${NC}"
+        read -r choice </dev/tty
+
+        case $choice in
+            1) remove_supergemini ;;
+            2) remove_superqwen ;;
+            3) remove_superclaude ;;
+            4)
+                remove_supergemini
+                remove_superqwen
+                remove_superclaude
+                ;;
+            5) return ;;
+            *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
+        esac
+    fi
 }
 
 # Export functions for use in other modules

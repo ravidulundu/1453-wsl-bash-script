@@ -218,33 +218,47 @@ run_advanced_mode() {
 
     # Run pre-flight checks with TUI
     clear
-    draw_box_top "🔍 ADVANCED MODE - SİSTEM KONTROLÜ" 80
-    draw_box_middle "" 80
+    if has_gum; then
+        gum_style --foreground 212 --border double --align center --width 60 --margin "1 2" --padding "1 4" \
+            "🔍 ADVANCED MODE - SİSTEM KONTROLÜ"
+        echo ""
+    else
+        draw_box_top "🔍 ADVANCED MODE - SİSTEM KONTROLÜ" 80
+        draw_box_middle "" 80
+    fi
 
     if ! run_preflight_checks; then
-        draw_box_middle "" 80
-        draw_box_middle "  ${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!" 80
-        draw_box_middle "  ${YELLOW}[!]${NC} Menüye yönlendiriliyorsunuz..." 80
-        draw_box_middle "  ${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir." 80
-        draw_box_middle "" 80
-        draw_box_bottom 80
-        sleep 3
+        if has_gum; then
+            gum_style --foreground 196 --border rounded --align center --width 60 --padding "1 2" \
+                "❌ Sistem gereksinimleri karşılanamadı!" \
+                "Bazı kurulumlar başarısız olabilir."
+        else
+            draw_box_middle "" 80
+            draw_box_middle "  ${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı!" 80
+            draw_box_middle "  ${CYAN}[ℹ]${NC} Bazı kurulumlar başarısız olabilir." 80
+            draw_box_middle "" 80
+            draw_box_bottom 80
+        fi
+        sleep 2
     else
-        draw_box_middle "  ${GREEN}[✓]${NC} Sistem kontrolleri başarılı!" 80
-        draw_box_middle "" 80
-        draw_box_bottom 80
+        if has_gum; then
+            gum_style --foreground 82 "✅ Sistem kontrolleri başarılı!"
+        else
+            draw_box_middle "  ${GREEN}[✓]${NC} Sistem kontrolleri başarılı!" 80
+            draw_box_middle "" 80
+            draw_box_bottom 80
+        fi
         sleep 1
     fi
 
-    # Detect package manager on startup with TUI
-    clear
-    draw_box_top "📦 PAKET YÖNETİCİSİ TESPİT EDİLİYOR" 80
-    draw_box_middle "" 80
+    # Detect package manager
+    echo ""
     detect_package_manager
-    draw_box_middle "" 80
-    draw_box_middle "  ${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}" 80
-    draw_box_middle "" 80
-    draw_box_bottom 80
+    if has_gum; then
+        gum_style --foreground 82 "📦 Paket yöneticisi: $PKG_MANAGER"
+    else
+        echo -e "${GREEN}[✓]${NC} Paket yöneticisi: ${CYAN}${PKG_MANAGER}${NC}"
+    fi
     sleep 1
 
     # Track installed components
@@ -252,27 +266,47 @@ run_advanced_mode() {
     local PYTHON_INSTALLED=false
 
     while true; do
-        show_advanced_menu
-        echo -ne "\n${YELLOW}Seçiminizi yapın (virgülle ayırarak birden fazla seçebilirsiniz): ${NC}"
-        read -r choices </dev/tty
+        clear
+        show_banner
+        echo ""
 
-        # Convert choices to array
-        IFS=',' read -ra choice_array <<< "$choices"
+        if has_gum; then
+            # Modern Gum menu
+            gum_style --foreground 212 --border double --align center --width 70 --margin "0 2" --padding "1 3" \
+                "⚙️  ADVANCED MODE - ANA MENÜ"
+            echo ""
 
-        for choice in "${choice_array[@]}"; do
-            # Trim whitespace
-            choice=$(echo "$choice" | xargs)
+            local selection
+            selection=$(gum_choose \
+                "✨ Tam Kurulum (Tüm Araçlar)" \
+                "🔧 Hazırlık (Sistem + Git)" \
+                "━━━ Python & JavaScript ━━━" \
+                "  🐍 Python Ekosistemi (Python, pip, pipx, UV)" \
+                "  📦 NVM (Node Version Manager)" \
+                "  ⚡ Bun.js" \
+                "━━━ Backend & Languages ━━━" \
+                "  🐘 PHP Kurulum" \
+                "  🎼 Composer" \
+                "  🐹 Go Language" \
+                "━━━ AI & Modern Tools ━━━" \
+                "  🤖 AI CLI Araçları" \
+                "  🧠 AI Frameworks" \
+                "  ✨ Modern CLI Tools" \
+                "  🎨 Shell Ortamı Yapılandırma" \
+                "━━━ Docker & Utilities ━━━" \
+                "  🐳 Docker (Engine + lazydocker)" \
+                "━━━ Maintenance ━━━" \
+                "  ❌ AI Frameworks Kaldır" \
+                "  🗑️  Temizleme & Sıfırlama" \
+                "━━━━━━━━━━━━━━━━━━━━━" \
+                "◀ Ana Menüye Dön" \
+                "🚪 Çıkış")
 
-            case $choice in
-                1)
-                    clear
-                    draw_box_top "✨ TAM KURULUM BAŞLATILIYOR" 80
-                    draw_box_middle "" 80
-                    draw_box_middle "  ${YELLOW}Tüm temel araçlar kurulacak...${NC}" 80
-                    draw_box_middle "" 80
-                    draw_box_bottom 80
-                    sleep 2
-
+            case "$selection" in
+                "✨ Tam Kurulum (Tüm Araçlar)")
+                    echo ""
+                    gum_style --foreground 226 "🚀 Tam kurulum başlatılıyor..."
+                    sleep 1
                     update_system
                     configure_git
                     install_python && PYTHON_INSTALLED=true
@@ -285,14 +319,88 @@ run_advanced_mode() {
                     install_claude_code
                     install_github_cli
                     install_go
-
-                    clear
-                    draw_box_top "✅ TAM KURULUM TAMAMLANDI" 80
-                    draw_box_middle "" 80
-                    draw_box_middle "  ${GREEN}[✓]${NC} Tüm araçlar başarıyla kuruldu!" 80
-                    draw_box_middle "" 80
-                    draw_box_bottom 80
+                    echo ""
+                    gum_style --foreground 82 --border rounded --padding "1 3" "✅ Tam kurulum tamamlandı!"
                     sleep 2
+                    ;;
+                "🔧 Hazırlık (Sistem + Git)")
+                    prepare_and_configure_git
+                    ;;
+                *"Python Ekosistemi"*)
+                    install_python && PYTHON_INSTALLED=true
+                    install_pip
+                    install_pipx
+                    install_uv
+                    ;;
+                *"NVM"*)
+                    install_nvm && NVM_INSTALLED=true
+                    ;;
+                *"Bun.js"*)
+                    install_bun
+                    ;;
+                *"PHP Kurulum"*)
+                    install_php_version_menu
+                    ;;
+                *"Composer"*)
+                    install_composer
+                    ;;
+                *"Go Language"*)
+                    install_go_menu
+                    ;;
+                *"AI CLI Araçları"*)
+                    install_ai_cli_tools_menu
+                    ;;
+                *"AI Frameworks"*)
+                    install_ai_frameworks_menu
+                    ;;
+                *"Modern CLI Tools"*)
+                    install_modern_cli_tools
+                    ;;
+                *"Shell Ortamı"*)
+                    setup_custom_shell
+                    ;;
+                *"Docker"*)
+                    install_docker_menu
+                    ;;
+                *"AI Frameworks Kaldır"*)
+                    remove_ai_frameworks_menu
+                    ;;
+                *"Temizleme"*)
+                    show_cleanup_menu
+                    ;;
+                *"Ana Menüye Dön"*)
+                    show_mode_selection
+                    ;;
+                *"Çıkış"*)
+                    echo ""
+                    gum_style --foreground 82 "👋 Görüşürüz!"
+                    exit 0
+                    ;;
+                "━"*)
+                    # Separator selected, ignore
+                    continue
+                    ;;
+            esac
+        else
+            # Fallback: Traditional menu
+            show_menu
+            echo -ne "\n${YELLOW}Seçiminizi yapın (0-18): ${NC}"
+            read -r choice </dev/tty
+
+            case $choice in
+                1)
+                    update_system
+                    configure_git
+                    install_python && PYTHON_INSTALLED=true
+                    install_pip
+                    install_pipx
+                    install_uv
+                    install_nvm && NVM_INSTALLED=true
+                    install_bun
+                    install_composer
+                    install_claude_code
+                    install_github_cli
+                    install_go
                     ;;
                 2) prepare_and_configure_git ;;
                 3) install_python && PYTHON_INSTALLED=true ;;
@@ -311,27 +419,33 @@ run_advanced_mode() {
                 16) setup_custom_shell ;;
                 17) show_cleanup_menu ;;
                 18) install_docker_menu ;;
-                0)
-                    echo -e "\n${GREEN}[BİLGİ]${NC} Ana menüye dönülüyor..."
-                    sleep 1
-                    show_mode_selection
-                    ;;
-                *)
-                    echo -e "${RED}[HATA]${NC} Geçersiz seçim: $choice"
-                    ;;
+                0) show_mode_selection ;;
+                *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
             esac
-        done
+        fi
 
         # Check if critical tools were installed
         if [ "$NVM_INSTALLED" = true ] || [ "$PYTHON_INSTALLED" = true ]; then
-            echo -e "\n${YELLOW}[ÖNEMLİ]${NC} Yeni kurulumlar tespit edildi."
-            echo -e "${CYAN}[İPUCU]${NC} Değişikliklerin aktif olması için:"
-            echo -e "  1) ${GREEN}source ~/.bashrc${NC} veya ${GREEN}source ~/.zshrc${NC} komutunu çalıştırın"
-            echo -e "  2) Ya da terminali yeniden başlatın"
+            echo ""
+            if has_gum; then
+                gum_style --foreground 226 --border rounded --padding "1 2" \
+                    "⚠️  Yeni kurulumlar tespit edildi!" \
+                    "Değişikliklerin aktif olması için:" \
+                    "  • source ~/.bashrc (veya ~/.zshrc)" \
+                    "  • Ya da terminali yeniden başlatın"
+            else
+                echo -e "${YELLOW}[ÖNEMLİ]${NC} Yeni kurulumlar tespit edildi."
+                echo -e "${CYAN}[İPUCU]${NC} source ~/.bashrc veya terminali yeniden başlatın"
+            fi
         fi
 
-        echo -e "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-        read -r </dev/tty
+        echo ""
+        if has_gum; then
+            gum_confirm "Menüye dön?" || exit 0
+        else
+            echo -ne "${YELLOW}Devam için Enter...${NC}"
+            read -r </dev/tty
+        fi
     done
 }
 
