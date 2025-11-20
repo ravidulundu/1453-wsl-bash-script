@@ -8,6 +8,9 @@
 # Note: set -e may affect sourced modules, but this is an entry point script
 set -eo pipefail
 
+# TEMPORARY DEBUG: Enable bash debug mode to trace execution
+set -x
+
 # Get the directory where this script resides
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
