@@ -302,8 +302,7 @@ install_ai_cli_tools_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 212 --border double --align center --width 60 --padding "1 3" \
-            "🤖 AI CLI Araçları Kurulumu"
+        gum_style --foreground 212 --bold "🤖 AI CLI Araçları Kurulumu"
         echo ""
 
         local selection

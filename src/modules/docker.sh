@@ -203,8 +203,7 @@ install_docker_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 39 --border double --align center --width 60 --padding "1 3" \
-            "🐳 Docker Kurulum Menüsü"
+        gum_style --foreground 39 --bold "🐳 Docker Kurulum Menüsü"
         echo ""
 
         local selection

@@ -167,8 +167,7 @@ install_ai_frameworks_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 212 --border double --align center --width 60 --padding "1 3" \
-            "🧠 AI Framework'leri Kurulumu"
+        gum_style --foreground 212 --bold "🧠 AI Framework'leri Kurulumu"
         echo ""
 
         local selection
@@ -226,8 +225,7 @@ remove_ai_frameworks_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 196 --border double --align center --width 60 --padding "1 3" \
-            "❌ AI Framework'leri Kaldırma"
+        gum_style --foreground 196 --bold "❌ AI Framework'leri Kaldırma"
         echo ""
 
         local selection

@@ -846,8 +846,7 @@ show_individual_cleanup_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 226 --border double --align center --width 60 --padding "1 3" \
-            "📦 Tek Tek Temizleme Menüsü"
+        gum_style --foreground 226 --bold "📦 Tek Tek Temizleme Menüsü"
         echo ""
 
         local selection
@@ -1018,8 +1017,7 @@ show_cleanup_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 196 --border double --align center --width 70 --padding "1 3" \
-            "🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
+        gum_style --foreground 196 --bold "🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
         echo ""
 
         local selection

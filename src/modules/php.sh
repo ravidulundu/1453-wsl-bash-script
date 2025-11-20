@@ -226,8 +226,7 @@ install_php_version_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 212 --border double --align center --width 60 --padding "1 3" \
-            "🐘 PHP Sürüm Seçimi"
+        gum_style --foreground 212 --bold "🐘 PHP Sürüm Seçimi"
         echo ""
 
         # Build menu options

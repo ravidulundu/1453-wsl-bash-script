@@ -265,11 +265,7 @@ run_advanced_mode() {
         echo ""
 
         if has_gum; then
-            # Modern Gum menu
-            gum_style --foreground 212 --border double --align center --width 70 --margin "0 2" --padding "1 3" \
-                "⚙️  ADVANCED MODE - ANA MENÜ"
-            echo ""
-
+            # Modern Gum menu (banner already shown)
             local selection
             selection=$(gum_choose \
                 "✨ Tam Kurulum (Tüm Araçlar)" \

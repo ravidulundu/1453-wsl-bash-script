@@ -263,8 +263,7 @@ install_go_menu() {
     if has_gum; then
         # Modern Gum menu
         echo ""
-        gum_style --foreground 81 --border double --align center --width 60 --padding "1 3" \
-            "🐹 Go Language Kurulumu"
+        gum_style --foreground 81 --bold "🐹 Go Language Kurulumu"
         echo ""
 
         local selection
