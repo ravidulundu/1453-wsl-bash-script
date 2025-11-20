@@ -77,24 +77,13 @@ show_banner() {
             gum style --foreground 51 --align center "🚀 Hızlı Yükleyici"
             echo ""
         else
-            # Calculate responsive widths based on terminal size
-            local ascii_width=80
-            local title_width=76
+            # Wide terminal - use margin for centering
+            local margin=$(calculate_margin)
 
-            # If terminal is wider than 80, use dynamic widths
-            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-                ascii_width=$TUI_WIDTH
-                title_width=$((TUI_WIDTH - 4))
-            fi
-
-            # Ensure widths don't exceed terminal
-            [ "$ascii_width" -gt "$TUI_WIDTH" ] && ascii_width=$TUI_WIDTH
-            [ "$title_width" -gt $((TUI_WIDTH - 4)) ] && title_width=$((TUI_WIDTH - 4))
-
-            # Modern Gum banner - ASCII art (responsive)
+            # Modern Gum banner - ASCII art (centered with margin)
             gum style \
                 --foreground 51 --bold \
-                --align center --width "$ascii_width" \
+                --align left --margin "0 $margin" \
                 '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
                 ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
                 '|_  $$| $$  | $$| $$      |__/  \ $$' \
@@ -106,10 +95,10 @@ show_banner() {
 
             echo ""
 
-            # Title (responsive)
+            # Title (centered with margin)
             gum style \
                 --foreground 212 --border rounded --align center \
-                --width "$title_width" --padding "1 2" \
+                --width 70 --margin "0 $margin" --padding "1 2" \
                 "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
 
             echo ""
