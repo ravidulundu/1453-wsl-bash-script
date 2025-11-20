@@ -207,12 +207,12 @@ execute_installation_plan() {
     # Install Python + modern CLI tools first (base for all presets)
     # Note: These functions already handle tracking internally
     install_python
-    install_pip
-    install_pipx
-    install_uv
-    install_modern_cli_tools
+    install_pip || echo -e "${YELLOW}[!]${NC} Pip güncellemesi atlandı, devam ediliyor..."
+    install_pipx || echo -e "${YELLOW}[!]${NC} Pipx kurulumu atlandı, devam ediliyor..."
+    install_uv || echo -e "${YELLOW}[!]${NC} UV kurulumu atlandı, devam ediliyor..."
+    install_modern_cli_tools || echo -e "${YELLOW}[!]${NC} Modern CLI araçları kurulumu atlandı, devam ediliyor..."
     # Note: setup_custom_shell() already handles tracking internally
-    setup_custom_shell
+    setup_custom_shell || echo -e "${YELLOW}[!]${NC} Shell kurulumu atlandı, devam ediliyor..."
 
     # Install tools
     for tool in "${tools[@]}"; do
@@ -222,14 +222,14 @@ execute_installation_plan() {
                 ;;
             "nvm")
                 # Note: install_nvm() already handles tracking internally
-                install_nvm
+                install_nvm || echo -e "${YELLOW}[!]${NC} NVM kurulumu atlandı, devam ediliyor..."
                 ;;
             "node")
                 # Already installed with nvm
                 ;;
             "bun")
                 # Note: install_bun() already handles tracking internally
-                install_bun
+                install_bun || echo -e "${YELLOW}[!]${NC} Bun kurulumu atlandı, devam ediliyor..."
                 ;;
             "php")
                 # Quick Start: Install PHP 8.3 (stable) automatically without menu
@@ -238,32 +238,33 @@ execute_installation_plan() {
                     track_success "PHP 8.3"
                 else
                     track_failure "PHP 8.3"
+                    echo -e "${YELLOW}[!]${NC} PHP kurulumu atlandı, devam ediliyor..."
                 fi
                 ;;
             "composer")
                 # Note: install_composer() already handles tracking internally
-                install_composer
+                install_composer || echo -e "${YELLOW}[!]${NC} Composer kurulumu atlandı, devam ediliyor..."
                 ;;
             "go")
                 # Note: install_go() already handles tracking internally
-                install_go
+                install_go || echo -e "${YELLOW}[!]${NC} Go kurulumu atlandı, devam ediliyor..."
                 ;;
             "ai_cli")
                 # Quick Start: Install essential AI CLI tools automatically
                 echo -e "${YELLOW}[QUICK START]${NC} AI CLI araçları otomatik kuruluyor..."
                 # Note: These functions already handle tracking internally
-                install_claude_code
-                install_github_cli
+                install_claude_code || echo -e "${YELLOW}[!]${NC} Claude Code kurulumu atlandı..."
+                install_github_cli || echo -e "${YELLOW}[!]${NC} GitHub CLI kurulumu atlandı..."
                 ;;
             "ai_frameworks")
                 # Quick Start: Install SuperClaude framework automatically
                 echo -e "${YELLOW}[QUICK START]${NC} SuperClaude framework otomatik kuruluyor..."
                 # Note: install_superclaude() already handles tracking internally
-                install_superclaude
+                install_superclaude || echo -e "${YELLOW}[!]${NC} SuperClaude kurulumu atlandı..."
                 ;;
             "git_config")
                 # Configure Git (will check existing config first)
-                configure_git
+                configure_git || echo -e "${YELLOW}[!]${NC} Git yapılandırması atlandı..."
                 ;;
         esac
     done
