@@ -45,26 +45,38 @@ except:
 
 # Initialize TUI system
 init_tui() {
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: start" >&2
+
     # Check if dialog is available
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: checking dialog" >&2
     if command -v dialog &>/dev/null; then
         TUI_MODE="dialog"
         export DIALOGRC="${DIALOGRC:-}"
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: dialog found" >&2
     else
         TUI_MODE="bash"
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: dialog not found" >&2
     fi
 
     # Get terminal dimensions
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: getting terminal dimensions" >&2
     if command -v tput &>/dev/null && [ -n "${TERM:-}" ]; then
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: tput available, TERM=$TERM" >&2
         TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: cols done, WIDTH=$TUI_WIDTH" >&2
         TUI_HEIGHT=$(tput lines 2>/dev/null || echo 24)
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: lines done, HEIGHT=$TUI_HEIGHT" >&2
     else
         TUI_WIDTH=80
         TUI_HEIGHT=24
+        echo -e "${YELLOW}[DEBUG]${NC} init_tui: using defaults" >&2
     fi
 
     # Ensure minimum dimensions (wider for emoji support)
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: checking minimum dimensions" >&2
     [ -n "$TUI_WIDTH" ] && [ "$TUI_WIDTH" -lt 80 ] && TUI_WIDTH=80
     [ -n "$TUI_HEIGHT" ] && [ "$TUI_HEIGHT" -lt 20 ] && TUI_HEIGHT=20
+    echo -e "${YELLOW}[DEBUG]${NC} init_tui: done - WIDTH=$TUI_WIDTH HEIGHT=$TUI_HEIGHT" >&2
 }
 
 # ═══════════════════════════════════════════════════════════
