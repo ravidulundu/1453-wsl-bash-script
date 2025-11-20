@@ -6,6 +6,8 @@
 
 WSL için AI geliştiricilere özel, tam Türkçe arayüzlü, modüler kurulum scripti. Tek satırda tüm geliştirme ortamınızı hazırlayın.
 
+![WSL CLI Arayüzü](docs/wsl-cli.png)
+
 **Versiyon**: 2.3.2 (2025-11-20)
 
 ---
