@@ -132,7 +132,16 @@ show_mode_selection() {
 
         echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
         echo -e "${YELLOW}[DEBUG]${NC} read komutu çağrılıyor..."
-        read -r mode_choice </dev/tty
+
+        # Read from /dev/tty if available, otherwise from stdin
+        if [ -e /dev/tty ]; then
+            echo -e "${YELLOW}[DEBUG]${NC} /dev/tty mevcut, oradan okuyorum..."
+            read -r mode_choice </dev/tty || read -r mode_choice
+        else
+            echo -e "${YELLOW}[DEBUG]${NC} /dev/tty YOK, stdin'den okuyorum..."
+            read -r mode_choice
+        fi
+
         echo -e "${YELLOW}[DEBUG]${NC} read tamamlandı, seçim: '$mode_choice'"
 
         # Boş input kontrolü

@@ -2,6 +2,17 @@
 # Common Utility Functions
 # This file contains shared utilities used across all modules
 
+# Safe read function that handles /dev/tty availability
+# Usage: safe_read -r variable_name
+# Falls back to stdin if /dev/tty is not available
+safe_read() {
+    if [ -e /dev/tty ] && [ -c /dev/tty ]; then
+        read "$@" </dev/tty 2>/dev/null || read "$@"
+    else
+        read "$@"
+    fi
+}
+
 # Reload shell configuration files
 # Usage: reload_shell_configs [mode]
 # mode: "verbose" (default) or "silent"
@@ -352,6 +363,7 @@ export -f mask_secret
 export -f check_internet_connection
 export -f start_sudo_keepalive
 export -f check_sudo_access
+export -f safe_read
 export -f check_disk_space
 export -f check_apt_repositories
 export -f run_preflight_checks
