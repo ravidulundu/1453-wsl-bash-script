@@ -83,15 +83,37 @@ install_pip() {
     # Handle PEP 668 externally-managed-environment error
     # FIX BUG-011: Capture exit code properly from pip install, not from if/else or grep
     # FIX BUG-028: Capture output first, only run pip once (not twice)
+    # FIX: Add timeout to prevent hanging (2 minutes max for pip upgrade)
     local pip_output
-    pip_output=$(python3 -m pip install --upgrade pip 2>&1)
-    local pip_exit_code=$?
+    local pip_exit_code
+
+    if command -v timeout &>/dev/null; then
+        pip_output=$(timeout 120 python3 -m pip install --upgrade pip 2>&1)
+        pip_exit_code=$?
+        if [ $pip_exit_code -eq 124 ]; then
+            echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı (120 saniye)"
+            echo -e "${YELLOW}[!]${NC} İnternet bağlantınızı kontrol edin"
+            return 1
+        fi
+    else
+        pip_output=$(python3 -m pip install --upgrade pip 2>&1)
+        pip_exit_code=$?
+    fi
 
     # If PEP 668 error detected, retry with --break-system-packages
     if echo "$pip_output" | grep -q "externally-managed-environment"; then
         echo -e "${YELLOW}[BİLGİ]${NC} Externally-managed-environment hatası, --break-system-packages ile deneniyor..."
-        python3 -m pip install --upgrade pip --break-system-packages
-        pip_exit_code=$?
+        if command -v timeout &>/dev/null; then
+            timeout 120 python3 -m pip install --upgrade pip --break-system-packages
+            pip_exit_code=$?
+            if [ $pip_exit_code -eq 124 ]; then
+                echo -e "${RED}[HATA]${NC} Pip güncellemesi zaman aşımına uğradı (120 saniye)"
+                return 1
+            fi
+        else
+            python3 -m pip install --upgrade pip --break-system-packages
+            pip_exit_code=$?
+        fi
     fi
 
     if [ $pip_exit_code -eq 0 ]; then
