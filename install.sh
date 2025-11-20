@@ -13,11 +13,13 @@ if [ -z "${BASH_VERSION:-}" ]; then
     exit 1
 fi
 
-# CRITICAL: Redirect stdin to /dev/tty at the very beginning
-# Use || true to prevent script exit if redirection fails in non-interactive contexts
-if [ -e /dev/tty ]; then
-    exec 0</dev/tty 2>/dev/null || true
-fi
+# CRITICAL FIX: Don't use exec for stdin redirection
+# exec causes the installer to hang when piped (e.g., bash <(curl ...))
+# All interactive prompts use explicit /dev/tty redirection instead
+# This line is commented out to prevent hanging
+# if [ -e /dev/tty ]; then
+#     exec 0</dev/tty 2>/dev/null || true
+# fi
 
 # Renkli çıktı için tanımlamalar
 RED='\033[0;31m'
@@ -153,20 +155,14 @@ main() {
 #!/bin/bash
 # 1453.AI WSL Kurulum Başlatıcı
 
-# CRITICAL: Redirect stdin to /dev/tty
-# Use || true to prevent script exit if redirection fails
-if [ -e /dev/tty ]; then
-    exec 0</dev/tty 2>/dev/null || true
-fi
+# CRITICAL FIX: Don't use exec for stdin redirection
+# exec causes the script to hang when stdin is already redirected
+# The main script handles all input redirection internally
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# If stdin is not a terminal, redirect from /dev/tty
-if [ ! -t 0 ] && [ -e /dev/tty ]; then
-    bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@" </dev/tty
-else
-    bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
-fi
+# Simply run the main script
+bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
