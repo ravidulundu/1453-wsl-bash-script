@@ -41,6 +41,9 @@ source "${SCRIPT_DIR}/lib/package-manager.sh"
 # shellcheck source=lib/installation-tracker.sh
 source "${SCRIPT_DIR}/lib/installation-tracker.sh"
 
+# shellcheck source=lib/tui.sh
+source "${SCRIPT_DIR}/lib/tui.sh"
+
 # Phase 4: Load feature modules
 # shellcheck source=modules/python.sh
 source "${SCRIPT_DIR}/modules/python.sh"
@@ -128,6 +131,7 @@ fi
 
 echo ""
 
-# Phase 7: Display banner and run main program
+# Phase 7: Initialize TUI and run main program
+init_tui
 show_banner
 main "$@"
