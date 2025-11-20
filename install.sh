@@ -29,8 +29,7 @@ NC='\033[0m' # Renk Yok
 # GitHub depo bilgileri
 REPO_OWNER="ravidulundu"
 REPO_NAME="1453-wsl-bash-script"
-# Feature branch for TUI testing
-BRANCH="claude/quickstart-error-handling-01159c38NXFFZpbxc82CKZVm"
+BRANCH="master"
 BASE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}"
 
 # Kurulum dizini
