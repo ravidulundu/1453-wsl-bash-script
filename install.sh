@@ -287,15 +287,13 @@ main() {
     local failed=0
     local failed_files=()
 
-    # Download all files with clear progress
+    # Download all files with single-line progress
     local count=0
 
     if has_gum; then
         gum_print --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
-        echo ""
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
-        echo ""
     fi
 
     # Temporarily disable strict error handling for download loop
@@ -313,36 +311,24 @@ main() {
         local dest="${INSTALL_DIR}/${file_path}"
         count=$((count + 1))
 
-        # Show downloading status
-        if has_gum; then
-            gum_print --foreground 226 "  [$count/$total_files] İndiriliyor: $description"
-        else
-            echo -e "  ${YELLOW}[$count/$total_files]${NC} İndiriliyor: $description"
-        fi
+        # Calculate progress percentage
+        local percent=$((count * 100 / total_files))
+
+        # Show progress on same line (overwrite)
+        printf "\r  [$count/$total_files - %%${percent}] %-50s" "$description"
 
         # Download file silently
-        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-            # Success - show checkmark
-            if has_gum; then
-                gum_print --foreground 82 "    ✅ Başarılı"
-            else
-                echo -e "    ${GREEN}✅ Başarılı${NC}"
-            fi
-        else
-            # Failure - show error
+        if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
             failed=$((failed + 1))
             failed_files+=("$description")
-            if has_gum; then
-                gum_print --foreground 196 "    ❌ İndirilemedi!"
-            else
-                echo -e "    ${RED}❌ İndirilemedi!${NC}"
-            fi
         fi
     done
 
     # Re-enable strict error handling
     set -e
 
+    # Clear the progress line
+    printf "\r%*s\r" 120 ""
     echo ""
 
     # Show summary
