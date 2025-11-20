@@ -38,22 +38,84 @@ BASE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}
 # Kurulum dizini
 INSTALL_DIR="$HOME/.1453-wsl-setup"
 
+# Detect terminal width
+TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+
+# Calculate responsive margin
+calculate_margin() {
+    local margin=2
+    if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 100 ]; then
+        margin=$((($TUI_WIDTH - 80) / 2))
+        [ "$margin" -lt 2 ] && margin=2
+        [ "$margin" -gt 10 ] && margin=10
+    fi
+    echo "$margin"
+}
+
+# Gum style wrapper with responsive padding
+gum_print() {
+    if has_gum; then
+        local margin=$(calculate_margin)
+        gum style --margin "0 $margin" "$@"
+    else
+        echo -e "  ${CYAN}${!#}${NC}"
+    fi
+}
+
 # ASCII Art Banner
 show_banner() {
-    echo ""
-    echo -e "  ${CYAN}"
-    echo '     /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
-    echo '   /$$$$| $$  | $$| $$____/  /$$__  $$'
-    echo '  |_  $$| $$  | $$| $$      |__/  \ $$'
-    echo '    | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
-    echo '    | $$|_____  $$|_____  $$  |___  $$'
-    echo '    | $$      | $$ /$$  \ $$ /$$  \ $$'
-    echo '   /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
-    echo '  |______/    |__/ \______/  \______/ '
-    echo -e "${NC}"
-    echo ""
-    echo -e "  ${CYAN}🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici${NC}"
-    echo ""
+    clear
+
+    if has_gum; then
+        # Calculate responsive widths based on terminal size
+        local ascii_width=80
+        local title_width=76
+
+        # If terminal is wider than 80, use dynamic widths
+        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
+            ascii_width=$TUI_WIDTH
+            title_width=$((TUI_WIDTH - 4))
+        fi
+
+        # Modern Gum banner - ASCII art (responsive)
+        gum style \
+            --foreground 51 --bold \
+            --align center --width "$ascii_width" \
+            '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
+            ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
+            '|_  $$| $$  | $$| $$      |__/  \ $$' \
+            '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
+            '  | $$|_____  $$|_____  $$  |___  $$' \
+            '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
+            ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
+            '|______/    |__/ \______/  \______/ '
+
+        echo ""
+
+        # Title (responsive)
+        gum style \
+            --foreground 212 --border rounded --align center \
+            --width "$title_width" --padding "1 2" \
+            "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
+
+        echo ""
+    else
+        # Traditional ASCII banner (fallback with padding)
+        echo ""
+        echo -e "  ${CYAN}"
+        echo '     /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
+        echo '   /$$$$| $$  | $$| $$____/  /$$__  $$'
+        echo '  |_  $$| $$  | $$| $$      |__/  \ $$'
+        echo '    | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
+        echo '    | $$|_____  $$|_____  $$  |___  $$'
+        echo '    | $$      | $$ /$$  \ $$ /$$  \ $$'
+        echo '   /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
+        echo '  |______/    |__/ \______/  \______/ '
+        echo -e "${NC}"
+        echo ""
+        echo -e "  ${CYAN}🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici${NC}"
+        echo ""
+    fi
 }
 
 # Dosya indirme fonksiyonu
@@ -62,13 +124,24 @@ download_file() {
     local dest="$2"
     local desc="$3"
 
-    echo -e "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc"
-    if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-        echo -e "  ${GREEN}[✓]${NC} $desc"
-        return 0
+    if has_gum; then
+        gum_print --foreground 226 "[İNDİRİLİYOR] $desc"
+        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+            gum_print --foreground 82 "[✓] $desc"
+            return 0
+        else
+            gum_print --foreground 196 "[✗] İndirilemedi: $desc"
+            return 1
+        fi
     else
-        echo -e "  ${RED}[✗]${NC} İndirilemedi: $desc"
-        return 1
+        echo -e "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc"
+        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+            echo -e "  ${GREEN}[✓]${NC} $desc"
+            return 0
+        else
+            echo -e "  ${RED}[✗]${NC} İndirilemedi: $desc"
+            return 1
+        fi
     fi
 }
 
@@ -102,6 +175,7 @@ install_gum_minimal() {
         return 1
     fi
 
+    # Install Gum silently
     case $pkg_mgr in
         apt)
             sudo mkdir -p /etc/apt/keyrings 2>/dev/null
@@ -135,25 +209,42 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 
 # Ana kurulum fonksiyonu
 main() {
-    clear
     show_banner
 
-    echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-    echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum dizini: ${INSTALL_DIR}"
-    echo ""
+    if has_gum; then
+        gum_print --foreground 51 "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
+        gum_print --foreground 51 "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
+        echo ""
+    else
+        echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
+        echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum dizini: ${INSTALL_DIR}"
+        echo ""
+    fi
 
     # curl kontrolü
     if ! command -v curl &> /dev/null; then
-        echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
-        echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
+        if has_gum; then
+            gum_print --foreground 196 "[HATA] curl gerekli ama kurulu değil."
+            gum_print --foreground 226 "[İPUCU] curl'ü kurmak için: sudo apt install curl"
+        else
+            echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
+            echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
+        fi
         exit 1
     fi
 
     # Kurulum dizin yapısını oluştur
-    echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
-    mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
-    echo -e "  ${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
-    echo ""
+    if has_gum; then
+        gum_print --foreground 226 "[KURULUM] Dizin yapısı oluşturuluyor..."
+        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
+        gum_print --foreground 82 "[✓] Dizin yapısı oluşturuldu"
+        echo ""
+    else
+        echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
+        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules}
+        echo -e "  ${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
+        echo ""
+    fi
 
     # İndirilecek dosyaların listesi
     declare -a files=(
@@ -183,8 +274,13 @@ main() {
     )
 
     # Tüm dosyaları indir
-    echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor..."
-    echo ""
+    if has_gum; then
+        gum_print --foreground 51 "[BİLGİ] Modüler bileşenler indiriliyor..."
+        echo ""
+    else
+        echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor..."
+        echo ""
+    fi
 
     local failed=0
     for file_info in "${files[@]}"; do
@@ -200,9 +296,15 @@ main() {
     echo ""
 
     if [ $failed -gt 0 ]; then
-        echo -e "  ${RED}[HATA]${NC} $failed dosya indirilemedi."
-        echo -e "  ${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-        echo -e "        git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        if has_gum; then
+            gum_print --foreground 196 "[HATA] $failed dosya indirilemedi."
+            gum_print --foreground 226 "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
+            gum_print --foreground 226 "      git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        else
+            echo -e "  ${RED}[HATA]${NC} $failed dosya indirilemedi."
+            echo -e "  ${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
+            echo -e "        git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        fi
         exit 1
     fi
 
@@ -210,7 +312,11 @@ main() {
     chmod +x "${INSTALL_DIR}/src/linux-ai-setup-script.sh"
 
     # Kullanışlı bir başlatıcı betiği oluştur
-    echo -e "  ${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
+    if has_gum; then
+        gum_print --foreground 226 "[KURULUM] Başlatıcı betiği oluşturuluyor..."
+    else
+        echo -e "  ${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
+    fi
     # FIX BUG-017: Use unique heredoc delimiter to prevent conflicts
     cat > "${INSTALL_DIR}/1453-setup" << 'END_OF_LAUNCHER_SCRIPT'
 #!/bin/bash
@@ -227,8 +333,13 @@ bash "${SCRIPT_DIR}/src/linux-ai-setup-script.sh" "$@"
 END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
-    echo -e "  ${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
-    echo ""
+    if has_gum; then
+        gum_print --foreground 82 "[✓] Başlatıcı betiği oluşturuldu"
+        echo ""
+    else
+        echo -e "  ${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
+        echo ""
+    fi
 
     # Install Gum for modern TUI (critical dependency)
     install_gum_minimal
@@ -236,23 +347,30 @@ END_OF_LAUNCHER_SCRIPT
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""
     if has_gum; then
-        # Modern Gum success message
+        # Calculate responsive width
+        local box_width=70
+        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
+            box_width=$((TUI_WIDTH - 10))
+            [ "$box_width" -gt 80 ] && box_width=80
+        fi
+
+        # Modern Gum success message (responsive)
         gum style \
             --foreground 82 --border double --align center \
-            --width 70 --margin "1 2" --padding "2 4" \
+            --width "$box_width" --margin "1 2" --padding "2 4" \
             "✅ Kurulum Tamamlandı!" \
             "" \
             "1453.AI WSL Setup başarıyla yüklendi" \
             "Kurulum dizini: ${INSTALL_DIR}"
 
         echo ""
-        gum style --foreground 226 "📌 Çalıştırma Yöntemleri:"
+        gum_print --foreground 226 "📌 Çalıştırma Yöntemleri:"
         echo ""
-        echo "  1️⃣  Doğrudan: ${INSTALL_DIR}/1453-setup"
-        echo "  2️⃣  PATH'e ekle: echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc"
-        echo "  3️⃣  Alias oluştur: echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc"
+        gum_print "  1️⃣  Doğrudan: ${INSTALL_DIR}/1453-setup"
+        gum_print "  2️⃣  PATH'e ekle: echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.bashrc"
+        gum_print "  3️⃣  Alias oluştur: echo 'alias 1453=\"${INSTALL_DIR}/1453-setup\"' >> ~/.bashrc"
         echo ""
-        gum style --foreground 51 "💡 Güncellemek için bu installer'ı tekrar çalıştırın"
+        gum_print --foreground 51 "💡 Güncellemek için bu installer'ı tekrar çalıştırın"
     else
         # Fallback: Traditional message with padding
         echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
@@ -287,12 +405,12 @@ END_OF_LAUNCHER_SCRIPT
         # Modern Gum confirm
         if gum confirm "Kurulum betiğini şimdi çalıştırmak ister misiniz?"; then
             echo ""
-            gum style --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
+            gum_print --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
             sleep 1
             bash "${INSTALL_DIR}/1453-setup" </dev/tty
         else
             echo ""
-            gum style --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
+            gum_print --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
         fi
     else
         # Fallback: Traditional prompt with padding
