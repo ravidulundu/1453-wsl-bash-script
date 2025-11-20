@@ -285,8 +285,7 @@ install_go_menu() {
         echo -e "  ${GREEN}3${NC}) Paket Yöneticisi Kurulumu"
         echo -e "  ${GREEN}0${NC}) Ana menüye dön"
 
-        echo -ne "\n${YELLOW}Seçiminizi yapın: ${NC}"
-        read -r choice </dev/tty
+        choice=$(gum_input --placeholder "Seçiminizi yapın (0-3)")
 
         case $choice in
             1) install_go ;;

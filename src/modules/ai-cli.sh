@@ -351,8 +351,7 @@ install_ai_cli_tools_menu() {
         echo -e "  ${CYAN}9${NC}) Tümünü Kur"
         echo -e "  ${CYAN}10${NC}) Ana menüye dön"
 
-        echo -ne "\n${YELLOW}Seçiminizi yapın (1-10): ${NC}"
-        read -r choice </dev/tty
+        choice=$(gum_input --placeholder "Seçiminizi yapın (1-10)")
 
         case $choice in
             1) install_claude_code ;;

@@ -53,8 +53,7 @@ show_quickstart_welcome() {
     # Clear any pending input that might cause read to return immediately
     while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
-    echo -ne "${YELLOW}Başlayalım mı? (Enter=Evet, n=Hayır): ${NC}"
-    read -r response </dev/tty
+    response=$(gum_input --placeholder "Başlayalım mı? (Enter=Evet, n=Hayır)")
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
@@ -125,8 +124,7 @@ show_presets() {
         # CRITICAL FIX: Flush stdin buffer before reading
         while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
-        echo -ne "${YELLOW}Seç (1-5) → Enter'a bas, kurulsun: ${NC}"
-        read -r preset </dev/tty
+        preset=$(gum_input --placeholder "Seç (1-5) → Enter'a bas, kurulsun")
 
         case $preset in
             1) QUICKSTART_PRESET_CHOICE="web" ;;
@@ -617,8 +615,7 @@ run_quickstart_mode() {
             exit 0
         fi
     else
-        echo -e "\n${YELLOW}Başka bir şey kurmak ister misin? (y/N): ${NC}"
-        read -r more </dev/tty
+        more=$(gum_input --placeholder "Başka bir şey kurmak ister misin? (y/N)")
         if [[ ! "$more" =~ ^[yY]$ ]]; then
             exit 0
         fi

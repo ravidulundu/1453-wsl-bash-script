@@ -145,21 +145,8 @@ show_mode_selection() {
             draw_box_bottom 80
             echo ""
 
-            # CRITICAL FIX: Flush stdin buffer before reading
-            if [ -t 0 ]; then
-                while read -r -t 0 <&0; do
-                    read -r -t 0.01 -N 1000 <&0 || break
-                done 2>/dev/null
-            fi
-
-            echo -ne "${YELLOW}Seçiminiz (0-2): ${NC}"
-
-            # Read from /dev/tty if available, otherwise from stdin
-            if [ -e /dev/tty ] && [ -c /dev/tty ]; then
-                read -r mode_choice </dev/tty 2>/dev/null || read -r mode_choice
-            else
-                read -r mode_choice
-            fi
+            # Use GUM input for mode selection
+            mode_choice=$(gum_input --placeholder "Seçiminiz (0-2)")
 
             # Boş input kontrolü
             if [ -z "$mode_choice" ]; then
@@ -381,8 +368,8 @@ run_advanced_mode() {
         else
             # Fallback: Traditional menu
             show_menu
-            echo -ne "\n${YELLOW}Seçiminizi yapın (0-18): ${NC}"
-            read -r choice </dev/tty
+            # Use GUM input for menu selection
+            choice=$(gum_input --placeholder "Seçiminizi yapın (0-18)")
 
             case $choice in
                 1)

@@ -152,8 +152,7 @@ install_lazydocker_tool() {
     if ! command -v docker &> /dev/null; then
         echo -e "${YELLOW}[UYARI]${NC} Docker Engine kurulu değil!"
         echo -e "${CYAN}[BİLGİ]${NC} lazydocker çalışması için Docker Engine gereklidir."
-        echo -ne "${YELLOW}Önce Docker Engine kurmak ister misiniz? (e/h): ${NC}"
-        read -r install_docker </dev/tty
+        install_docker=$(gum_input --placeholder "Önce Docker Engine kurmak ister misiniz? (e/h)")
 
         if [[ "$install_docker" =~ ^[Ee]$ ]]; then
             install_docker_engine
@@ -237,25 +236,21 @@ install_docker_menu() {
             echo -e "  ${GREEN}0${NC}) Ana menüye dön"
             echo ""
 
-            echo -ne "\n${YELLOW}Seçiminizi yapın (0-3): ${NC}"
-            read -r choice </dev/tty
+            choice=$(gum_input --placeholder "Seçiminizi yapın (0-3)")
 
             case $choice in
                 1)
                     install_docker_engine
-                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                    read -r </dev/tty
+                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     ;;
                 2)
                     install_lazydocker_tool
-                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                    read -r </dev/tty
+                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     ;;
                 3)
                     install_docker_engine
                     install_lazydocker_tool
-                    echo -ne "\n${YELLOW}Devam etmek için Enter'a basın...${NC}"
-                    read -r </dev/tty
+                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     ;;
                 0)
                     break

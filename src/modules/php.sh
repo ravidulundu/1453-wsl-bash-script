@@ -271,8 +271,7 @@ install_php_version_menu() {
         echo -e "  ${CYAN}${index}${NC}) Tüm sürümleri kur"
         echo -e "  ${CYAN}$((index+1))${NC}) Ana menüye dön"
 
-        echo -ne "\n${YELLOW}Seçiminizi yapın (1-$((index+1))): ${NC}"
-        read -r choice </dev/tty
+        choice=$(gum_input --placeholder "Seçiminizi yapın (1-$((index+1)))")
 
         # FIX BUG-018: Validate numeric input before comparison
         if ! [[ "$choice" =~ ^[0-9]+$ ]]; then

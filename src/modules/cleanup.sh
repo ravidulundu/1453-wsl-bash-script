@@ -64,15 +64,13 @@ confirm_cleanup() {
     echo ""
 
     # Backup option
-    echo -ne "${YELLOW}Devam etmeden önce yedek oluşturulsun mu? (e/h): ${NC}"
-    read -r backup </dev/tty
+    backup=$(gum_input --placeholder "Devam etmeden önce yedek oluşturulsun mu? (e/h)")
     if [[ "$backup" =~ ^[Ee]$ ]]; then
         backup_configs
     fi
 
     echo ""
-    echo -ne "${RED}Silme işlemine devam edilsin mi? (evet yazın): ${NC}"
-    read -r confirm </dev/tty
+    confirm=$(gum_input --placeholder "Silme işlemine devam edilsin mi? (evet yazın)")
 
     if [[ "$confirm" != "evet" ]]; then
         echo -e "${CYAN}[BİLGİ]${NC} İptal edildi."
@@ -687,7 +685,7 @@ cleanup_docker() {
 
     # Check if running in interactive mode
     if [ -t 0 ]; then
-        read -r delete_data </dev/tty
+        delete_data=$(gum_input --placeholder "Docker verilerini de silmek ister misiniz? (e/h)")
     else
         # Default to 'no' in non-interactive mode (CI/CD, scripts)
         delete_data="h"
@@ -784,8 +782,7 @@ cleanup_full_reset() {
     for dir in "${source_dirs[@]}"; do
         if [ -d "$dir" ]; then
             echo -e "${YELLOW}[BİLGİ]${NC} Kaynak kod dizini bulundu: $dir"
-            echo -ne "${RED}Bu dizini de silmek ister misiniz? (e/h): ${NC}"
-            read -r remove_source </dev/tty
+            remove_source=$(gum_input --placeholder "Bu dizini de silmek ister misiniz? (e/h)")
             if [[ "$remove_source" =~ ^[Ee]$ ]]; then
                 rm -rf "$dir"
                 echo -e "${GREEN}[BAŞARILI]${NC} Kaynak kod dizini silindi: $dir"
@@ -907,68 +904,67 @@ show_individual_cleanup_menu() {
             echo -e "  ${GREEN}0${NC}) ← Geri"
             echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
 
-            echo -ne "\n${YELLOW}Seçiminiz (0-10): ${NC}"
-            read -r choice </dev/tty
+            choice=$(gum_input --placeholder "Seçiminiz (0-10)")
 
             case $choice in
                 1)
                     if confirm_cleanup "Sistem paketleri"; then
                         cleanup_system_packages
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 2)
                     if confirm_cleanup "Python ekosistemi"; then
                         cleanup_python
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 3)
                     if confirm_cleanup "Node.js ekosistemi"; then
                         cleanup_nodejs
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 4)
                     if confirm_cleanup "PHP ekosistemi"; then
                         cleanup_php
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 5)
                     if confirm_cleanup "Go"; then
                         cleanup_go
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 6)
                     if confirm_cleanup "Docker"; then
                         cleanup_docker
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 7)
                     if confirm_cleanup "Modern CLI Tools"; then
                         cleanup_modern_tools
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 8)
                     if confirm_cleanup "Shell Config"; then
                         cleanup_shell_configs
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 9)
                     if confirm_cleanup "AI CLI Tools"; then
                         cleanup_ai_tools
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 10)
                     if confirm_cleanup "AI Frameworks"; then
                         cleanup_ai_frameworks
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 0)
@@ -1057,8 +1053,7 @@ show_cleanup_menu() {
             echo ""
             echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
 
-            echo -ne "\n${YELLOW}Seçiminiz (0-5): ${NC}"
-            read -r choice </dev/tty
+            choice=$(gum_input --placeholder "Seçiminiz (0-5)")
 
             case $choice in
                 1)
@@ -1075,7 +1070,7 @@ show_cleanup_menu() {
                 4)
                     if confirm_cleanup "Shell Config dosyaları"; then
                         cleanup_shell_configs
-                        read -p "Devam etmek için Enter'a basın..."
+                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
                     fi
                     ;;
                 5)
