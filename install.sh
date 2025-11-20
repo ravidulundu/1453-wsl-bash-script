@@ -61,27 +61,6 @@ esac
 # Detect terminal width
 TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
-# Calculate responsive margin
-calculate_margin() {
-    local margin=2
-    if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 100 ]; then
-        margin=$((($TUI_WIDTH - 80) / 2))
-        [ "$margin" -lt 2 ] && margin=2
-        [ "$margin" -gt 10 ] && margin=10
-    fi
-    echo "$margin"
-}
-
-# Gum style wrapper with responsive padding
-gum_print() {
-    if has_gum; then
-        local margin=$(calculate_margin)
-        gum style --margin "0 $margin" "$@"
-    else
-        echo -e "  ${CYAN}${!#}${NC}"
-    fi
-}
-
 # ASCII Art Banner
 show_banner() {
     clear
@@ -100,13 +79,11 @@ show_banner() {
             gum style --foreground 51 --align center "🚀 Hızlı Yükleyici"
             echo ""
         else
-            # Wide terminal - use margin for centering
-            local margin=$(calculate_margin)
-
-            # Modern Gum banner - ASCII art (centered with margin)
+            # Wide terminal - use center alignment (not left + margin!)
+            # ASCII art width is 45 chars, use --width to constrain and center
             gum style \
                 --foreground 51 --bold \
-                --align left --margin "0 $margin" \
+                --align center \
                 '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
                 ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
                 '|_  $$| $$  | $$| $$      |__/  \ $$' \
@@ -118,10 +95,13 @@ show_banner() {
 
             echo ""
 
-            # Title (centered with margin)
+            # Title (truly centered, responsive width)
+            local title_width=$((TUI_WIDTH > 80 ? 70 : TUI_WIDTH - 10))
+            [ "$title_width" -lt 40 ] && title_width=40
+
             gum style \
                 --foreground 212 --border rounded --align center \
-                --width 70 --margin "0 $margin" --padding "1 2" \
+                --width "$title_width" --padding "1 2" \
                 "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
 
             echo ""
@@ -151,7 +131,7 @@ download_file() {
         if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
             return 0
         else
-            gum_print --foreground 196 "[✗] İndirilemedi: $desc"
+            gum style --foreground 196 "[✗] İndirilemedi: $desc"
             return 1
         fi
     else
@@ -233,8 +213,8 @@ main() {
     show_banner
 
     if has_gum; then
-        gum_print --foreground 51 "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-        gum_print --foreground 51 "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
+        gum style --foreground 51 "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
+        gum style --foreground 51 "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
         echo ""
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
@@ -245,8 +225,8 @@ main() {
     # curl kontrolü
     if ! command -v curl &> /dev/null; then
         if has_gum; then
-            gum_print --foreground 196 "[HATA] curl gerekli ama kurulu değil."
-            gum_print --foreground 226 "[İPUCU] curl'ü kurmak için: sudo apt install curl"
+            gum style --foreground 196 "[HATA] curl gerekli ama kurulu değil."
+            gum style --foreground 226 "[İPUCU] curl'ü kurmak için: sudo apt install curl"
         else
             echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
             echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
@@ -256,9 +236,9 @@ main() {
 
     # Kurulum dizin yapısını oluştur
     if has_gum; then
-        gum_print --foreground 226 "[KURULUM] Dizin yapısı oluşturuluyor..."
+        gum style --foreground 226 "[KURULUM] Dizin yapısı oluşturuluyor..."
         mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
-        gum_print --foreground 82 "[✓] Dizin yapısı oluşturuldu"
+        gum style --foreground 82 "[✓] Dizin yapısı oluşturuldu"
         echo ""
     else
         echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
@@ -304,13 +284,16 @@ main() {
     local count=0
 
     if has_gum; then
-        gum_print --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
+        gum style --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
     fi
 
     # Temporarily disable strict error handling for download loop
     set +e
+
+    # Re-detect terminal width for responsive progress
+    TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
     for file_info in "${files[@]}"; do
         IFS=':' read -r file_path description <<< "$file_info"
@@ -327,8 +310,19 @@ main() {
         # Calculate progress percentage
         local percent=$((count * 100 / total_files))
 
+        # Responsive description width (terminal width - progress info - padding)
+        local desc_width=$((TUI_WIDTH - 25))
+        [ "$desc_width" -lt 20 ] && desc_width=20
+        [ "$desc_width" -gt 50 ] && desc_width=50
+
+        # Truncate description if needed
+        local short_desc="$description"
+        if [ ${#description} -gt $desc_width ]; then
+            short_desc="${description:0:$((desc_width-3))}..."
+        fi
+
         # Show progress on same line (overwrite)
-        printf "\r  [$count/$total_files - %%${percent}] %-50s" "$description"
+        printf "\r  [%d/%d - %%%d] %-${desc_width}s" "$count" "$total_files" "$percent" "$short_desc"
 
         # Download file silently
         if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
@@ -340,14 +334,14 @@ main() {
     # Re-enable strict error handling
     set -e
 
-    # Clear the progress line
-    printf "\r%*s\r" 120 ""
+    # Clear the progress line (use terminal width, not hardcoded 120)
+    printf "\r%*s\r" "$TUI_WIDTH" ""
     echo ""
 
     # Show summary
     if [ $failed -eq 0 ]; then
         if has_gum; then
-            gum_print --foreground 82 "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
+            gum style --foreground 82 "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
         else
             echo -e "  ${GREEN}[✓]${NC} Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
         fi
@@ -356,15 +350,15 @@ main() {
 
     if [ $failed -gt 0 ]; then
         if has_gum; then
-            gum_print --foreground 196 "❌ $failed/$total_files dosya indirilemedi"
+            gum style --foreground 196 "❌ $failed/$total_files dosya indirilemedi"
             echo ""
-            gum_print --foreground 226 "Başarısız dosyalar:"
+            gum style --foreground 226 "Başarısız dosyalar:"
             for failed_file in "${failed_files[@]}"; do
-                gum_print --foreground 196 "  • $failed_file"
+                gum style --foreground 196 "  • $failed_file"
             done
             echo ""
-            gum_print --foreground 226 "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-            gum_print --foreground 51 "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+            gum style --foreground 226 "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
+            gum style --foreground 51 "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         else
             echo -e "  ${RED}[HATA]${NC} $failed/$total_files dosya indirilemedi"
             echo ""
@@ -384,7 +378,7 @@ main() {
 
     # Kullanışlı bir başlatıcı betiği oluştur
     if has_gum; then
-        gum_print --foreground 226 "[KURULUM] Başlatıcı betiği oluşturuluyor..."
+        gum style --foreground 226 "[KURULUM] Başlatıcı betiği oluşturuluyor..."
     else
         echo -e "  ${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
     fi
@@ -405,7 +399,7 @@ END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
     if has_gum; then
-        gum_print --foreground 82 "[✓] Başlatıcı betiği oluşturuldu"
+        gum style --foreground 82 "[✓] Başlatıcı betiği oluşturuldu"
         echo ""
     else
         echo -e "  ${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
@@ -440,11 +434,11 @@ END_OF_LAUNCHER_SCRIPT
             "1453.AI WSL Setup yüklendi"
 
         echo ""
-        gum_print --foreground 226 "📌 Çalıştırma:"
+        gum style --foreground 226 "📌 Çalıştırma:"
         echo ""
-        gum_print "  ${INSTALL_DIR}/1453-setup"
+         gum style "  ${INSTALL_DIR}/1453-setup"
         echo ""
-        gum_print --foreground 51 "💡 Güncellemek için installer'ı tekrar çalıştırın"
+        gum style --foreground 51 "💡 Güncellemek için installer'ı tekrar çalıştırın"
     else
         # Fallback: Traditional message with padding
         echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
@@ -487,12 +481,12 @@ END_OF_LAUNCHER_SCRIPT
         # Modern Gum confirm
         if gum confirm "Kurulum betiğini şimdi çalıştırmak ister misiniz?"; then
             echo ""
-            gum_print --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
+            gum style --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
             sleep 1
             bash "${INSTALL_DIR}/1453-setup" </dev/tty
         else
             echo ""
-            gum_print --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
+            gum style --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
         fi
     else
         # Fallback: Traditional prompt with padding
