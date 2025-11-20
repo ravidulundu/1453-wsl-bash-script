@@ -57,7 +57,7 @@ One-command installation of complete AI/ML development environment on WSL:
 
 ### Method 1: One-Line Installer (Recommended)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 **What it does**:
@@ -68,7 +68,7 @@ curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master
 
 ### Method 2: Direct Execution
 ```bash
-git clone https://github.com/altudev/1453-wsl-bash-script.git
+git clone https://github.com/ravidulundu/1453-wsl-bash-script.git
 cd 1453-wsl-bash-script
 ./src/linux-ai-setup-script.sh
 ```
@@ -583,9 +583,9 @@ install_python
 
 ## 🔗 Quick Reference Links
 
-- **Repository**: https://github.com/altudev/1453-wsl-bash-script
+- **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
 - **Issues**: Report at repository issues page
-- **Installation**: `curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash`
+- **Installation**: `curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash`
 - **License**: MIT
 
 ---

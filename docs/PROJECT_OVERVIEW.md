@@ -52,7 +52,7 @@ The project has been refactored from a **2,331-line monolithic script** into a c
 
 ### Quick Installation (Recommended)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 This single command:
@@ -64,7 +64,7 @@ This single command:
 
 ### Manual Installation
 ```bash
-git clone https://github.com/altudev/1453-wsl-bash-script.git
+git clone https://github.com/ravidulundu/1453-wsl-bash-script.git
 cd 1453-wsl-bash-script
 chmod +x src/linux-ai-setup-script.sh
 ./src/linux-ai-setup-script.sh
@@ -292,10 +292,10 @@ shellcheck src/linux-ai-setup-script.sh src/{lib,config,modules}/*.sh
 ### Full Installation
 ```bash
 # Option 1: One-liner installer
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 
 # Option 2: Manual
-git clone https://github.com/altudev/1453-wsl-bash-script.git
+git clone https://github.com/ravidulundu/1453-wsl-bash-script.git
 cd 1453-wsl-bash-script
 ./src/linux-ai-setup-script.sh
 
@@ -326,6 +326,6 @@ cd 1453-wsl-bash-script
 
 ## 🔗 Links
 
-- **Repository**: https://github.com/altudev/1453-wsl-bash-script
+- **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
 - **Documentation**: See README.md for user guide
 - **Development**: See CLAUDE.md for development guide

@@ -117,7 +117,7 @@ Welcome to the comprehensive documentation for the 1453 WSL Bash Script project.
 
 **Installing the script:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/altudev/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
 ```
 
 **Running after installation:**
@@ -269,8 +269,8 @@ When documenting a module, include:
 
 ## 🔗 External Links
 
-- **Repository**: https://github.com/altudev/1453-wsl-bash-script
-- **Issues**: https://github.com/altudev/1453-wsl-bash-script/issues
+- **Repository**: https://github.com/ravidulundu/1453-wsl-bash-script
+- **Issues**: https://github.com/ravidulundu/1453-wsl-bash-script/issues
 - **License**: MIT (see LICENSE.md)
 
 ## 📊 Documentation Statistics
@@ -324,7 +324,7 @@ When contributing to this project:
 If you need help with this project:
 
 1. **Check the documentation** in this directory
-2. **Search existing issues** at https://github.com/altudev/1453-wsl-bash-script/issues
+2. **Search existing issues** at https://github.com/ravidulundu/1453-wsl-bash-script/issues
 3. **Create a new issue** if problem persists
 4. **Review code** in relevant module files
 

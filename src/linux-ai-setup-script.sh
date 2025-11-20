@@ -2,7 +2,7 @@
 
 # 1453.AI WSL Vibe Coder'lar İçin Otomatik Kurulum Scripti
 # Version: 2.0 - Modular Architecture
-# GitHub: https://github.com/altudev/1453-wsl-bash-script
+# GitHub: https://github.com/ravidulundu/1453-wsl-bash-script
 
 # FIX BUG-002: Add safety flags for robust error handling
 # Note: set -e may affect sourced modules, but this is an entry point script
