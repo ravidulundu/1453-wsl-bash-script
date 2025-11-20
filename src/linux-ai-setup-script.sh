@@ -107,6 +107,7 @@ echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
 
 if sudo -v; then
     echo -e "${GREEN}[✓]${NC} Sudo yetkisi alındı"
+    echo -e "${YELLOW}[DEBUG]${NC} Trap kurulumu yapılıyor..."
 
     # FIX BUG-012: Set trap BEFORE starting background process to prevent race condition
     # Cleanup function to kill background process on exit
@@ -117,6 +118,7 @@ if sudo -v; then
     }
     trap cleanup_sudo EXIT INT TERM
 
+    echo -e "${YELLOW}[DEBUG]${NC} Background sudo keep-alive başlatılıyor..."
     # Keep-alive: update sudo timestamp in background every 60 seconds
     # This prevents repeated password prompts during long installations
     # CRITICAL: Close stdin/stdout/stderr to prevent blocking
@@ -127,13 +129,17 @@ if sudo -v; then
         done
     ) </dev/null >/dev/null 2>&1 &
     SUDO_KEEPALIVE_PID=$!
+    echo -e "${YELLOW}[DEBUG]${NC} Background process PID: $SUDO_KEEPALIVE_PID"
 else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
 fi
 
 echo ""
+echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..."
 
 # Phase 7: Initialize TUI and run main program
 init_tui
+echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı, show_banner çağrılıyor..."
 show_banner
+echo -e "${YELLOW}[DEBUG]${NC} show_banner tamamlandı, main çağrılıyor..."
 main "$@"
