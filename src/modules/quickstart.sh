@@ -188,15 +188,33 @@ execute_installation_plan() {
     # Initialize TUI
     init_tui
 
-    # Show installation start
+    # Show installation start with banner
     clear
-    draw_box_top "🚀 1453.AI KURULUM BAŞLIYOR" 70
+
+    # Display the 1453 ASCII Art Banner
+    echo -e "${CYAN}"
+    cat << 'BANNER'
+   /$$ /$$   /$$ /$$$$$$$   /$$$$$$
+ /$$$$| $$  | $$| $$____/  /$$__  $$
+|_  $$| $$  | $$| $$      |__/  \ $$
+  | $$| $$$$$$$$| $$$$$$$    /$$$$$/
+  | $$|_____  $$|_____  $$  |___  $$
+  | $$      | $$ /$$  \ $$ /$$  \ $$
+ /$$$$$$    | $$|  $$$$$$/|  $$$$$$/
+|______/    |__/ \______/  \______/
+BANNER
+    echo -e "${NC}"
+    echo ""
+
+    draw_box_top "🚀 QUICK START MODE - KURULUM BAŞLIYOR" 70
     draw_box_middle "" 70
-    draw_box_middle "  Kurulum planınız hazırlanıyor..." 70
-    draw_box_middle "  ${GREEN}${#tools[@]}${NC} araç kurulacak" 70
+    draw_box_middle "  ${YELLOW}Kurulum planınız hazırlanıyor...${NC}" 70
+    draw_box_middle "  ${GREEN}${#tools[@]}${NC} araç otomatik kurulacak" 70
+    draw_box_middle "" 70
+    draw_box_middle "  ${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')" 70
     draw_box_middle "" 70
     draw_box_bottom 70
-    sleep 2
+    sleep 3
 
     # Reset tracking for fresh start
     reset_tracking
