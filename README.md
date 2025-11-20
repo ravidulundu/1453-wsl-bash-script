@@ -860,53 +860,53 @@ MIT Lisansı - Detaylar için [LICENSE.md](LICENSE.md) dosyasına bakın.
 
 ## 🔐 Güvenlik Güncellemeleri
 
-### v2.3.2 - Modern TUI with Responsive Padding (2025-11-20)
+### v2.3.2 - Modern TUI ve Responsive Padding (2025-11-20)
 
-**🎨 Complete Gum TUI integration + responsive layout system!**
+**🎨 Tam Gum TUI entegrasyonu + responsive layout sistemi!**
 
-#### ✨ UI/UX Improvements
+#### ✨ UI/UX İyileştirmeleri
 
-**Full Gum TUI Integration (2 commits)**
-- ✅ **Styled Boxes Removed** (Commit: d07b1c3)
-  - 15+ modules: Removed ALL styled boxes (╔═══╗, ╚═══╝, ║)
-  - Replaced with unified show_banner() + simple gum_style titles
-  - Pattern: show_banner() → gum_style --bold "Title"
-  - Files: quickstart.sh (15+ instances), python.sh, javascript.sh, php.sh, go.sh, ai-cli.sh, ai-frameworks.sh, docker.sh, modern-tools.sh, shell-setup.sh, cleanup.sh, common.sh, tui.sh, installation-tracker.sh
+**Tam Gum TUI Entegrasyonu (2 commit)**
+- ✅ **Styled Box'lar Kaldırıldı** (Commit: d07b1c3)
+  - 15+ modül: TÜM styled box'lar (╔═══╗, ╚═══╝, ║) kaldırıldı
+  - Unified show_banner() + basit gum_style başlıklar ile değiştirildi
+  - Pattern: show_banner() → gum_style --bold "Başlık"
+  - Dosyalar: quickstart.sh (15+ instance), python.sh, javascript.sh, php.sh, go.sh, ai-cli.sh, ai-frameworks.sh, docker.sh, modern-tools.sh, shell-setup.sh, cleanup.sh, common.sh, tui.sh, installation-tracker.sh
 
-- ✅ **Responsive Padding System** (Commit: d07b1c3)
-  - Updated gum_style wrapper with automatic default padding
-  - Responsive margin calculation:
-    • Terminal ≤ 100 cols → margin: 2 (normal padding)
-    • Terminal > 100 cols → margin: (width - 80) / 2 (centered)
-    • Min: 2, Max: 10 (prevents overflow)
-  - Banner elements responsive:
-    • ASCII art: dynamic width (80 to terminal width)
-    • Title box: responsive width (TUI_WIDTH - 4)
-    • Info lines: centered + responsive width
-  - 2-space padding for fallback mode (no Gum)
+- ✅ **Responsive Padding Sistemi** (Commit: d07b1c3)
+  - gum_style wrapper otomatik default padding ile güncellendi
+  - Responsive margin hesaplaması:
+    • Terminal ≤ 100 sütun → margin: 2 (normal padding)
+    • Terminal > 100 sütun → margin: (genişlik - 80) / 2 (ortalanmış)
+    • Min: 2, Max: 10 (taşma önlenir)
+  - Banner elementleri responsive:
+    • ASCII art: dinamik genişlik (80'den terminal genişliğine)
+    • Title box: responsive genişlik (TUI_WIDTH - 4)
+    • Info satırları: ortalanmış + responsive genişlik
+  - Fallback mod için 2-boşluk padding (Gum yoksa)
 
 - ✅ **Install.sh Padding** (Commit: 8ec3fb8)
-  - Removed styled boxes from installer
-  - Added 2-space padding to 20+ messages
-  - Consistent with main script styling
+  - Installer'dan styled box'lar kaldırıldı
+  - 20+ mesaja 2-boşluk padding eklendi
+  - Ana script ile tutarlı stil
 
 #### 📊 İstatistikler
 
 | Kategori | Değişiklik |
 |----------|-----------|
-| Files Modified | 17 files (16 modules + install.sh) |
-| Styled Boxes Removed | 40+ instances |
-| Auto-padding Applied | 40+ gum_style calls |
-| Lines Changed | +491, -403 |
-| Commits | 2 commits |
+| Değiştirilen Dosyalar | 17 dosya (16 modül + install.sh) |
+| Kaldırılan Styled Box | 40+ instance |
+| Otomatik Padding Uygulanan | 40+ gum_style çağrısı |
+| Satır Değişikliği | +491, -403 |
+| Commit Sayısı | 2 commit |
 
-#### 🎯 Impact
+#### 🎯 Etki
 
-- ✅ Professional UI - no more "sola yapışık" (left-aligned)
-- ✅ Responsive - terminal resize → automatic layout adjustment
-- ✅ Consistent spacing across all modules
-- ✅ Banner centers on wide terminals
-- ✅ Modern UX with Gum framework
+- ✅ Profesyonel UI - artık "sola yapışık" yok
+- ✅ Responsive - terminal resize → otomatik layout ayarı
+- ✅ Tüm modüllerde tutarlı boşluklandırma
+- ✅ Banner geniş terminallerde ortada
+- ✅ Gum framework ile modern UX
 
 ---
 
