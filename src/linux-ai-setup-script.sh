@@ -144,8 +144,7 @@ echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..." >&2
 # Phase 7: Initialize TUI and run main program
 init_tui
 echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı" >&2
-echo -e "${YELLOW}[DEBUG]${NC} show_banner çağrılıyor..." >&2
-show_banner
-echo -e "${YELLOW}[DEBUG]${NC} show_banner tamamlandı" >&2
 echo -e "${YELLOW}[DEBUG]${NC} main çağrılıyor..." >&2
+# NOTE: show_banner() will be called by show_mode_selection() inside main()
+# Don't call it here to prevent double banner display
 main "$@"
