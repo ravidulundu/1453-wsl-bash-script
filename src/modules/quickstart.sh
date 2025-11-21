@@ -9,44 +9,22 @@ show_quickstart_welcome() {
     show_banner
     echo ""
 
-    if has_gum; then
-        gum_style --foreground 82 --bold "🚀 QUICK START MODE - VIBE CODERS İÇİN"
-        echo ""
-        echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
-        echo ""
-        echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
-        echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
-        echo ""
-        gum_style --foreground 226 "💡 Nasıl çalışır?"
-        echo "  1. Deneyim seviyenizi belirtirsiniz"
-        echo "  2. Ne yapmak istediğinizi seçersiniz"
-        echo "  3. Size önerilen araçları otomatik kurarım"
-        echo ""
-        gum_style --foreground 82 "🎯 Sonunda şunları elde edersiniz:"
-        echo "  ✓ İhtiyacınız olan tüm geliştirici araçları"
-        echo "  ✓ Hazır ortam"
-        echo "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
-    else
-        echo -e "${GREEN}🚀 QUICK START MODE - VIBE CODERS İÇİN${NC}"
-        echo ""
-        echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
-        echo ""
-        echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
-        echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
-        echo ""
-        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-        echo -e "${YELLOW}💡 Nasıl çalışır?${NC}"
-        echo -e "  1. Deneyim seviyenizi belirtirsiniz"
-        echo -e "  2. Ne yapmak istediğinizi seçersiniz"
-        echo -e "  3. Size önerilen araçları otomatik kurarım"
-        echo ""
-        echo -e "${YELLOW}🎯 Sonunda şunları elde edersiniz:${NC}"
-        echo -e "  ✓ İhtiyacınız olan tüm geliştirici araçları"
-        echo -e "  ✓ Hazır ortam"
-        echo -e "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
-        echo ""
-        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-    fi
+    gum_style --foreground 82 --bold "🚀 QUICK START MODE - VIBE CODERS İÇİN"
+    echo ""
+    echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
+    echo ""
+    echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
+    echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
+    echo ""
+    gum_style --foreground 226 "💡 Nasıl çalışır?"
+    echo "  1. Deneyim seviyenizi belirtirsiniz"
+    echo "  2. Ne yapmak istediğinizi seçersiniz"
+    echo "  3. Size önerilen araçları otomatik kurarım"
+    echo ""
+    gum_style --foreground 82 "🎯 Sonunda şunları elde edersiniz:"
+    echo "  ✓ İhtiyacınız olan tüm geliştirici araçları"
+    echo "  ✓ Hazır ortam"
+    echo "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
@@ -68,77 +46,31 @@ show_quickstart_welcome() {
 show_presets() {
     echo ""
 
-    if has_gum; then
-        gum_style --foreground 212 --bold "📦 KURULUM PAKETLERİ"
-        echo ""
-        echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun:${NC}"
-        echo ""
+    gum_style --foreground 212 --bold "📦 KURULUM PAKETLERİ"
+    echo ""
+    echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun:${NC}"
+    echo ""
 
-        local selection
-        selection=$(gum_choose \
-            "🌐 WEB DEVELOPMENT - Python + Node.js + PHP + Composer" \
-            "🤖 AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
-            "⚙️  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
-            "🚀 EVERYTHING - Full-stack + AI + Backend (hepsi)" \
-            "📱 MOBILE + WEB - Python + Node.js + PHP + Flutter")
+    local selection
+    selection=$(gum_choose \
+        "🌐 WEB DEVELOPMENT - Python + Node.js + PHP + Composer" \
+        "🤖 AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
+        "⚙️  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
+        "🚀 EVERYTHING - Full-stack + AI + Backend (hepsi)" \
+        "📱 MOBILE + WEB - Python + Node.js + PHP + Flutter")
 
-        case "$selection" in
-            *"WEB DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="web" ;;
-            *"AI DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="ai" ;;
-            *"BACKEND DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="backend" ;;
-            *"EVERYTHING"*) QUICKSTART_PRESET_CHOICE="everything" ;;
-            *"MOBILE + WEB"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
-            *)
-                echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
-                sleep 1
-                show_presets
-                ;;
-        esac
-    else
-        # Traditional fallback
-        echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun: ${NC}"
-        echo ""
-        echo -e "  ${GREEN}1${NC}) 🌐 ${YELLOW}WEB DEVELOPMENT${NC}"
-        echo -e "     ${CYAN}Python + Node.js + PHP + Composer${NC}"
-        echo -e "     ${CYAN}Web siteleri, API'ler, full-stack uygulamalar için${NC}"
-        echo ""
-        echo -e "  ${GREEN}2${NC}) 🤖 ${YELLOW}AI DEVELOPMENT${NC}"
-        echo -e "     ${CYAN}Python + AI CLI Tools + AI Frameworks${NC}"
-        echo -e "     ${CYAN}Makine öğrenmesi, AI modelleri, veri analizi${NC}"
-        echo ""
-        echo -e "  ${GREEN}3${NC}) ⚙️  ${YELLOW}BACKEND DEVELOPMENT${NC}"
-        echo -e "     ${CYAN}Python + Go + PHP + Composer${NC}"
-        echo -e "     ${CYAN}API'ler, mikroservisler, sunucu tarafı${NC}"
-        echo ""
-        echo -e "  ${GREEN}4${NC}) 🚀 ${YELLOW}EVERYTHING${NC}"
-        echo -e "     ${CYAN}Her şeyi kur, full-stack + AI + Backend${NC}"
-        echo -e "     ${CYAN}Her türlü geliştirme için komple ortam${NC}"
-        echo ""
-        echo -e "  ${GREEN}5${NC}) 📱 ${YELLOW}MOBILE + WEB${NC}"
-        echo -e "     ${CYAN}Python + Node.js + PHP + Flutter araçları${NC}"
-        echo -e "     ${CYAN}Mobil + web uygulamaları${NC}"
-        echo ""
-        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
-        echo ""
-
-        # CRITICAL FIX: Flush stdin buffer before reading
-        while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
-
-        preset=$(gum_input --placeholder "Seç (1-5) → Enter'a bas, kurulsun")
-
-        case $preset in
-            1) QUICKSTART_PRESET_CHOICE="web" ;;
-            2) QUICKSTART_PRESET_CHOICE="ai" ;;
-            3) QUICKSTART_PRESET_CHOICE="backend" ;;
-            4) QUICKSTART_PRESET_CHOICE="everything" ;;
-            5) QUICKSTART_PRESET_CHOICE="mobile" ;;
-            *)
-                echo -e "\n${RED}[HATA]${NC} 1-5 arası seç, toy! 😄"
-                sleep 1
-                show_presets
-                ;;
-        esac
-    fi
+    case "$selection" in
+        *"WEB DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="web" ;;
+        *"AI DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="ai" ;;
+        *"BACKEND DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="backend" ;;
+        *"EVERYTHING"*) QUICKSTART_PRESET_CHOICE="everything" ;;
+        *"MOBILE + WEB"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
+        *)
+            echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
+            sleep 1
+            show_presets
+            ;;
+    esac
 }
 
 # Generate installation plan based on preset

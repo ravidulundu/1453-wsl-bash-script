@@ -199,69 +199,28 @@ install_lazydocker_tool() {
 
 # Docker installation menu
 install_docker_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 39 --bold "🐳 Docker Kurulum Menüsü"
-        echo ""
+    echo ""
+    gum_style --foreground 39 --bold "🐳 Docker Kurulum Menüsü"
+    echo ""
 
-        local selection
-        selection=$(gum_choose \
-            "🐳 Docker Engine Kurulumu (Önerilen)" \
-            "📊 lazydocker Kurulumu (Terminal UI)" \
-            "━━━━━━━━━━━━━━━━━━━━━" \
-            "📦 Tümünü Kur (Engine + lazydocker)" \
-            "◀ Ana menüye dön")
+    local selection
+    selection=$(gum_choose \
+        "🐳 Docker Engine Kurulumu (Önerilen)" \
+        "📊 lazydocker Kurulumu (Terminal UI)" \
+        "━━━━━━━━━━━━━━━━━━━━━" \
+        "📦 Tümünü Kur (Engine + lazydocker)" \
+        "◀ Ana menüye dön")
 
-        case "$selection" in
-            *"Docker Engine"*) install_docker_engine ;;
-            *"lazydocker"*) install_lazydocker_tool ;;
-            *"Tümünü Kur"*)
-                install_docker_engine
-                install_lazydocker_tool
-                ;;
-            *"Ana menüye dön"*|"") return ;;
-            "━"*) return ;; # Separator
-        esac
-    else
-        # Fallback: Traditional menu
-        while true; do
-            clear
-            echo ""
-            echo -e "${CYAN}🐳 Docker Kurulum Menüsü${NC}"
-            echo ""
-            echo -e "  ${GREEN}1${NC}) Docker Engine Kurulumu (Önerilen)"
-            echo -e "  ${GREEN}2${NC}) lazydocker Kurulumu (Terminal UI)"
-            echo -e "  ${GREEN}3${NC}) Tümünü Kur (Docker Engine + lazydocker)"
-            echo -e "  ${GREEN}0${NC}) Ana menüye dön"
-            echo ""
-
-            choice=$(gum_input --placeholder "Seçiminizi yapın (0-3)")
-
-            case $choice in
-                1)
-                    install_docker_engine
-                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    ;;
-                2)
-                    install_lazydocker_tool
-                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    ;;
-                3)
-                    install_docker_engine
-                    install_lazydocker_tool
-                    gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    ;;
-                0)
-                    break
-                    ;;
-                *)
-                    echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
-                    sleep 1
-                    ;;
-            esac
-        done
-    fi
+    case "$selection" in
+        *"Docker Engine"*) install_docker_engine ;;
+        *"lazydocker"*) install_lazydocker_tool ;;
+        *"Tümünü Kur"*)
+            install_docker_engine
+            install_lazydocker_tool
+            ;;
+        *"Ana menüye dön"*|"") return ;;
+        "━"*) return ;; # Separator
+    esac
 }
 
 # Export functions

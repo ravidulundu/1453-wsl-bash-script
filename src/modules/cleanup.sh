@@ -813,280 +813,123 @@ cleanup_full_reset() {
 
 # Individual cleanup menu
 show_individual_cleanup_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 226 --bold "📦 Tek Tek Temizleme Menüsü"
-        echo ""
-
-        local selection
-        selection=$(gum_choose \
-            "🔧 Sistem Paketleri (jq, zip, build-essential)" \
-            "🐍 Python (python3, pip, pipx, uv)" \
-            "📦 Node.js (nvm, node, npm, bun)" \
-            "🐘 PHP (php, composer)" \
-            "🐹 Go" \
-            "🐳 Docker (docker-ce, lazydocker)" \
-            "✨ Modern CLI Tools (bat, eza, starship)" \
-            "🎨 Shell Config (.bashrc, aliases)" \
-            "🤖 AI CLI Tools" \
-            "🧠 AI Frameworks" \
-            "◀ Geri")
-
-        case "$selection" in
-            *"Sistem Paketleri"*)
-                if confirm_cleanup "Sistem paketleri"; then
-                    cleanup_system_packages
-                fi
-                ;;
-            *"Python"*)
-                if confirm_cleanup "Python ekosistemi"; then
-                    cleanup_python
-                fi
-                ;;
-            *"Node.js"*)
-                if confirm_cleanup "Node.js ekosistemi"; then
-                    cleanup_nodejs
-                fi
-                ;;
-            *"PHP"*)
-                if confirm_cleanup "PHP ekosistemi"; then
-                    cleanup_php
-                fi
-                ;;
-            *"Go"*)
-                if confirm_cleanup "Go"; then
-                    cleanup_go
-                fi
-                ;;
-            *"Docker"*)
-                if confirm_cleanup "Docker"; then
-                    cleanup_docker
-                fi
-                ;;
-            *"Modern CLI Tools"*)
-                if confirm_cleanup "Modern CLI Tools"; then
-                    cleanup_modern_tools
-                fi
-                ;;
-            *"Shell Config"*)
-                if confirm_cleanup "Shell Config"; then
-                    cleanup_shell_configs
-                fi
-                ;;
-            *"AI CLI Tools"*)
-                if confirm_cleanup "AI CLI Tools"; then
-                    cleanup_ai_tools
-                fi
-                ;;
-            *"AI Frameworks"*)
-                if confirm_cleanup "AI Frameworks"; then
-                    cleanup_ai_frameworks
-                fi
-                ;;
-            *"Geri"*|"") return ;;
-        esac
-    else
-        # Fallback: Traditional menu
-        while true; do
-            clear
     echo ""
-            echo -e "  ${GREEN}1${NC}) Sistem Paketleri (jq, zip, unzip, build-essential)"
-            echo -e "  ${GREEN}2${NC}) Python (python3, pip, pipx, uv)"
-            echo -e "  ${GREEN}3${NC}) Node.js (nvm, node, npm, bun)"
-            echo -e "  ${GREEN}4${NC}) PHP (php, composer)"
-            echo -e "  ${GREEN}5${NC}) Go"
-            echo -e "  ${GREEN}6${NC}) Docker (docker-ce, lazydocker)"
-            echo -e "  ${GREEN}7${NC}) Modern CLI Tools (bat, eza, starship, etc.)"
-            echo -e "  ${GREEN}8${NC}) Shell Config (.bashrc, .bash_aliases, starship)"
-            echo -e "  ${GREEN}9${NC}) AI CLI Tools"
-            echo -e "  ${GREEN}10${NC}) AI Frameworks"
-            echo -e "  ${GREEN}0${NC}) ← Geri"
-            echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
+    gum_style --foreground 226 --bold "📦 Tek Tek Temizleme Menüsü"
+    echo ""
 
-            choice=$(gum_input --placeholder "Seçiminiz (0-10)")
+    local selection
+    selection=$(gum_choose \
+        "🔧 Sistem Paketleri (jq, zip, build-essential)" \
+        "🐍 Python (python3, pip, pipx, uv)" \
+        "📦 Node.js (nvm, node, npm, bun)" \
+        "🐘 PHP (php, composer)" \
+        "🐹 Go" \
+        "🐳 Docker (docker-ce, lazydocker)" \
+        "✨ Modern CLI Tools (bat, eza, starship)" \
+        "🎨 Shell Config (.bashrc, aliases)" \
+        "🤖 AI CLI Tools" \
+        "🧠 AI Frameworks" \
+        "◀ Geri")
 
-            case $choice in
-                1)
-                    if confirm_cleanup "Sistem paketleri"; then
-                        cleanup_system_packages
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                2)
-                    if confirm_cleanup "Python ekosistemi"; then
-                        cleanup_python
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                3)
-                    if confirm_cleanup "Node.js ekosistemi"; then
-                        cleanup_nodejs
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                4)
-                    if confirm_cleanup "PHP ekosistemi"; then
-                        cleanup_php
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                5)
-                    if confirm_cleanup "Go"; then
-                        cleanup_go
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                6)
-                    if confirm_cleanup "Docker"; then
-                        cleanup_docker
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                7)
-                    if confirm_cleanup "Modern CLI Tools"; then
-                        cleanup_modern_tools
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                8)
-                    if confirm_cleanup "Shell Config"; then
-                        cleanup_shell_configs
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                9)
-                    if confirm_cleanup "AI CLI Tools"; then
-                        cleanup_ai_tools
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                10)
-                    if confirm_cleanup "AI Frameworks"; then
-                        cleanup_ai_frameworks
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                0)
-                    break
-                    ;;
-                *)
-                    echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
-                    sleep 1
-                    ;;
-            esac
-        done
-    fi
+    case "$selection" in
+        *"Sistem Paketleri"*)
+            if confirm_cleanup "Sistem paketleri"; then
+                cleanup_system_packages
+            fi
+            ;;
+        *"Python"*)
+            if confirm_cleanup "Python ekosistemi"; then
+                cleanup_python
+            fi
+            ;;
+        *"Node.js"*)
+            if confirm_cleanup "Node.js ekosistemi"; then
+                cleanup_nodejs
+            fi
+            ;;
+        *"PHP"*)
+            if confirm_cleanup "PHP ekosistemi"; then
+                cleanup_php
+            fi
+            ;;
+        *"Go"*)
+            if confirm_cleanup "Go"; then
+                cleanup_go
+            fi
+            ;;
+        *"Docker"*)
+            if confirm_cleanup "Docker"; then
+                cleanup_docker
+            fi
+            ;;
+        *"Modern CLI Tools"*)
+            if confirm_cleanup "Modern CLI Tools"; then
+                cleanup_modern_tools
+            fi
+            ;;
+        *"Shell Config"*)
+            if confirm_cleanup "Shell Config"; then
+                cleanup_shell_configs
+            fi
+            ;;
+        *"AI CLI Tools"*)
+            if confirm_cleanup "AI CLI Tools"; then
+                cleanup_ai_tools
+            fi
+            ;;
+        *"AI Frameworks"*)
+            if confirm_cleanup "AI Frameworks"; then
+                cleanup_ai_frameworks
+            fi
+            ;;
+        *"Geri"*|"") return ;;
+    esac
 }
 
 # Main cleanup menu
 show_cleanup_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 196 --bold "🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
-        echo ""
-
-        local selection
-        selection=$(gum_choose \
-            "🔴 TAM SIFIRLAMA (Beyaz Bayrak) - ⚠️  TEHLİKELİ" \
-            "🧹 Kurulumları Temizle (Config korunur)" \
-            "📦 Tek Tek Temizle" \
-            "⚙️  Sadece Config Temizle (Kurulumlar korunur)" \
-            "━━━━━━━━━━━━━━━━━━━━━" \
-            "📊 Kurulu Olanları Göster" \
-            "◀ Ana Menüye Dön")
-
-        case "$selection" in
-            *"TAM SIFIRLAMA"*)
-                echo ""
-                gum_style --foreground 196 --border rounded --padding "1 2" \
-                    "⚠️  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
-                    "Bu işlem geri alınamaz!"
-                echo ""
-                if gum_confirm "Devam etmek istediğinizden emin misiniz?"; then
-                    cleanup_full_reset
-                fi
-                ;;
-            *"Kurulumları Temizle"*)
-                cleanup_installations
-                ;;
-            *"Tek Tek Temizle"*)
-                show_individual_cleanup_menu
-                ;;
-            *"Config Temizle"*)
-                if confirm_cleanup "Shell Config dosyaları"; then
-                    cleanup_shell_configs
-                fi
-                ;;
-            *"Kurulu Olanları"*)
-                show_installed_items
-                ;;
-            *"Ana Menüye Dön"*|"") return ;;
-            "━"*) return ;; # Separator
-        esac
-    else
-        # Fallback: Traditional menu
-        while true; do
-            clear
     echo ""
-            echo ""
-            echo -e "  ${RED}1${NC}) ${RED}🔴 TAM SIFIRLAMA (Beyaz Bayrak)${NC}"
-            echo -e "     ${YELLOW}Her şeyi sil, temiz kurulum için hazırla${NC}"
-            echo -e "     ${RED}⚠️  UYARI: Tüm kurulumlar ve ayarlar silinecek!${NC}"
-            echo ""
-            echo -e "  ${GREEN}2${NC}) ${YELLOW}🧹 KURULUMARI TEMİZLE${NC}"
-            echo -e "     ${CYAN}Python, Node, PHP, Go, AI tools'ları kaldır${NC}"
-            echo -e "     ${CYAN}Config dosyaları korunur${NC}"
-            echo ""
-            echo -e "  ${GREEN}3${NC}) ${YELLOW}📦 TEK TEK TEMİZLE${NC}"
-            echo -e "     ${CYAN}İstediğin bileşeni seç ve temizle${NC}"
-            echo ""
-            echo -e "  ${GREEN}4${NC}) ${YELLOW}⚙️  SADECE CONFIG TEMİZLE${NC}"
-            echo -e "     ${CYAN}.bashrc, .bash_aliases, starship config temizle${NC}"
-            echo -e "     ${CYAN}Kurulumlar korunur${NC}"
-            echo ""
-            echo -e "  ${GREEN}5${NC}) ${CYAN}📊 KURULU OLANLAR${NC}"
-            echo -e "     ${CYAN}Şu anda nelerin kurulu olduğunu göster${NC}"
-            echo ""
-            echo -e "  ${GREEN}0${NC}) ← Ana Menüye Dön"
-            echo ""
-            echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
+    gum_style --foreground 196 --bold "🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
+    echo ""
 
-            choice=$(gum_input --placeholder "Seçiminiz (0-5)")
+    local selection
+    selection=$(gum_choose \
+        "🔴 TAM SIFIRLAMA (Beyaz Bayrak) - ⚠️  TEHLİKELİ" \
+        "🧹 Kurulumları Temizle (Config korunur)" \
+        "📦 Tek Tek Temizle" \
+        "⚙️  Sadece Config Temizle (Kurulumlar korunur)" \
+        "━━━━━━━━━━━━━━━━━━━━━" \
+        "📊 Kurulu Olanları Göster" \
+        "◀ Ana Menüye Dön")
 
-            case $choice in
-                1)
-                    cleanup_full_reset
-                    read -p "Devam etmek için Enter'a basın..."
-                    ;;
-                2)
-                    cleanup_installations
-                    read -p "Devam etmek için Enter'a basın..."
-                    ;;
-                3)
-                    show_individual_cleanup_menu
-                    ;;
-                4)
-                    if confirm_cleanup "Shell Config dosyaları"; then
-                        cleanup_shell_configs
-                        gum_input --placeholder "Devam etmek için Enter'a basın" >/dev/null
-                    fi
-                    ;;
-                5)
-                    show_installed_items
-                    read -p "Devam etmek için Enter'a basın..."
-                    ;;
-                0)
-                    break
-                    ;;
-                *)
-                    echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
-                    sleep 1
-                    ;;
-            esac
-        done
-    fi
+    case "$selection" in
+        *"TAM SIFIRLAMA"*)
+            echo ""
+            gum_style --foreground 196 --border rounded --padding "1 2" \
+                "⚠️  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
+                "Bu işlem geri alınamaz!"
+            echo ""
+            if gum_confirm "Devam etmek istediğinizden emin misiniz?"; then
+                cleanup_full_reset
+            fi
+            ;;
+        *"Kurulumları Temizle"*)
+            cleanup_installations
+            ;;
+        *"Tek Tek Temizle"*)
+            show_individual_cleanup_menu
+            ;;
+        *"Config Temizle"*)
+            if confirm_cleanup "Shell Config dosyaları"; then
+                cleanup_shell_configs
+            fi
+            ;;
+        *"Kurulu Olanları"*)
+            show_installed_items
+            ;;
+        *"Ana Menüye Dön"*|"") return ;;
+        "━"*) return ;; # Separator
+    esac
 }
 
 # Export functions

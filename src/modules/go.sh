@@ -256,48 +256,23 @@ install_go() {
 
 # Interactive Go installation menu
 install_go_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 81 --bold "🐹 Go Language Kurulumu"
-        echo ""
+    echo ""
+    gum_style --foreground 81 --bold "🐹 Go Language Kurulumu"
+    echo ""
 
-        local selection
-        selection=$(gum_choose \
-            "✨ Otomatik Kurulum (Önerilen)" \
-            "📦 Resmi Binary Kurulumu" \
-            "🔧 Paket Yöneticisi Kurulumu" \
-            "◀ Ana menüye dön")
+    local selection
+    selection=$(gum_choose \
+        "✨ Otomatik Kurulum (Önerilen)" \
+        "📦 Resmi Binary Kurulumu" \
+        "🔧 Paket Yöneticisi Kurulumu" \
+        "◀ Ana menüye dön")
 
-        case "$selection" in
-            *"Otomatik"*) install_go ;;
-            *"Binary"*) install_go_official ;;
-            *"Paket"*) install_go_package ;;
-            *"Ana menüye dön"*|"") return ;;
-        esac
-    else
-        # Fallback: Traditional menu
-        echo ""
-        echo -e "${CYAN}🐹 Go Language Kurulumu${NC}"
-        echo ""
-        echo -e "  ${GREEN}1${NC}) Otomatik Kurulum (Önerilen)"
-        echo -e "  ${GREEN}2${NC}) Resmi Binary Kurulumu"
-        echo -e "  ${GREEN}3${NC}) Paket Yöneticisi Kurulumu"
-        echo -e "  ${GREEN}0${NC}) Ana menüye dön"
-
-        choice=$(gum_input --placeholder "Seçiminizi yapın (0-3)")
-
-        case $choice in
-            1) install_go ;;
-            2) install_go_official ;;
-            3) install_go_package ;;
-            0) return ;;
-            *)
-                echo -e "${RED}[HATA]${NC} Geçersiz seçim!"
-                install_go_menu
-                ;;
-        esac
-    fi
+    case "$selection" in
+        *"Otomatik"*) install_go ;;
+        *"Binary"*) install_go_official ;;
+        *"Paket"*) install_go_package ;;
+        *"Ana menüye dön"*|"") return ;;
+    esac
 }
 
 # Uninstall Go

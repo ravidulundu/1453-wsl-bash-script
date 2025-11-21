@@ -293,89 +293,46 @@ install_github_cli() {
 
 # AI CLI Tools installation menu
 install_ai_cli_tools_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 212 --bold "🤖 AI CLI Araçları Kurulumu"
-        echo ""
+    echo ""
+    gum_style --foreground 212 --bold "🤖 AI CLI Araçları Kurulumu"
+    echo ""
 
-        local selection
-        selection=$(gum_choose \
-            "🧠 Claude Code CLI" \
-            "✨ Gemini CLI" \
-            "💻 OpenCode CLI" \
-            "🌟 Qwen CLI" \
-            "🤖 GitHub Copilot CLI" \
-            "📦 GitHub CLI" \
-            "⚡ Qoder CLI" \
-            "🚀 Kiro CLI" \
-            "━━━━━━━━━━━━━━━━━━━━━" \
-            "📦 Tümünü Kur" \
-            "◀ Ana menüye dön")
+    local selection
+    selection=$(gum_choose \
+        "🧠 Claude Code CLI" \
+        "✨ Gemini CLI" \
+        "💻 OpenCode CLI" \
+        "🌟 Qwen CLI" \
+        "🤖 GitHub Copilot CLI" \
+        "📦 GitHub CLI" \
+        "⚡ Qoder CLI" \
+        "🚀 Kiro CLI" \
+        "━━━━━━━━━━━━━━━━━━━━━" \
+        "📦 Tümünü Kur" \
+        "◀ Ana menüye dön")
 
-        case "$selection" in
-            *"Claude Code"*) install_claude_code ;;
-            *"Gemini"*) install_gemini_cli ;;
-            *"OpenCode"*) install_opencode_cli ;;
-            *"Qwen"*) install_qwen_cli ;;
-            *"Copilot"*) install_copilot_cli ;;
-            *"GitHub CLI"*) install_github_cli ;;
-            *"Qoder"*) install_qoder_cli ;;
-            *"Kiro"*) install_kiro_cli ;;
-            *"Tümünü Kur"*)
-                install_claude_code
-                install_gemini_cli
-                install_opencode_cli
-                install_qwen_cli
-                install_copilot_cli
-                install_github_cli
-                install_qoder_cli
-                install_kiro_cli
-                ;;
-            *"Ana menüye dön"*|"") return ;;
-            "━"*) return ;; # Separator
-        esac
-    else
-        # Fallback: Traditional menu
-        echo ""
-        echo -e "${YELLOW}🤖 AI CLI Araçları Kurulumu${NC}"
-        echo ""
-        echo -e "  ${CYAN}1${NC}) Claude Code CLI"
-        echo -e "  ${CYAN}2${NC}) Gemini CLI"
-        echo -e "  ${CYAN}3${NC}) OpenCode CLI"
-        echo -e "  ${CYAN}4${NC}) Qwen CLI"
-        echo -e "  ${CYAN}5${NC}) GitHub Copilot CLI"
-        echo -e "  ${CYAN}6${NC}) GitHub CLI"
-        echo -e "  ${CYAN}7${NC}) Qoder CLI"
-        echo -e "  ${CYAN}8${NC}) Kiro CLI"
-        echo -e "  ${CYAN}9${NC}) Tümünü Kur"
-        echo -e "  ${CYAN}10${NC}) Ana menüye dön"
-
-        choice=$(gum_input --placeholder "Seçiminizi yapın (1-10)")
-
-        case $choice in
-            1) install_claude_code ;;
-            2) install_gemini_cli ;;
-            3) install_opencode_cli ;;
-            4) install_qwen_cli ;;
-            5) install_copilot_cli ;;
-            6) install_github_cli ;;
-            7) install_qoder_cli ;;
-            8) install_kiro_cli ;;
-            9)
-                install_claude_code
-                install_gemini_cli
-                install_opencode_cli
-                install_qwen_cli
-                install_copilot_cli
-                install_github_cli
-                install_qoder_cli
-                install_kiro_cli
-                ;;
-            10) return ;;
-            *) echo -e "${RED}[HATA]${NC} Geçersiz seçim!" ;;
-        esac
-    fi
+    case "$selection" in
+        *"Claude Code"*) install_claude_code ;;
+        *"Gemini"*) install_gemini_cli ;;
+        *"OpenCode"*) install_opencode_cli ;;
+        *"Qwen"*) install_qwen_cli ;;
+        *"Copilot"*) install_copilot_cli ;;
+        *"GitHub CLI"*) install_github_cli ;;
+        *"Qoder"*) install_qoder_cli ;;
+        *"Kiro"*) install_kiro_cli ;;
+        *"Tümünü Kur"*)
+            install_claude_code
+            install_gemini_cli
+            install_opencode_cli
+            install_qwen_cli
+            install_copilot_cli
+            install_github_cli
+            install_qoder_cli
+            install_kiro_cli
+            ;;
+        *"Ana menüye dön"*|"") return ;;
+        "━"*) return ;; # Separator
+    esac
 }
 
 # Install Qoder CLI

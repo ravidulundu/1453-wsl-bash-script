@@ -221,83 +221,40 @@ install_php_version() {
 
 # Menu for PHP version selection
 install_php_version_menu() {
-    if has_gum; then
-        # Modern Gum menu
-        echo ""
-        gum_style --foreground 212 --bold "🐘 PHP Sürüm Seçimi"
-        echo ""
+    echo ""
+    gum_style --foreground 212 --bold "🐘 PHP Sürüm Seçimi"
+    echo ""
 
-        # Build menu options
-        local -a options=()
-        for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
-            options+=("PHP ${ver}")
-        done
-        options+=("━━━━━━━━━━━━━━━━━━━━━")
-        options+=("📦 Tüm sürümleri kur")
-        options+=("◀ Ana menüye dön")
+    # Build menu options
+    local -a options=()
+    for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
+        options+=("PHP ${ver}")
+    done
+    options+=("━━━━━━━━━━━━━━━━━━━━━")
+    options+=("📦 Tüm sürümleri kur")
+    options+=("◀ Ana menüye dön")
 
-        local selection
-        selection=$(gum_choose "${options[@]}")
+    local selection
+    selection=$(gum_choose "${options[@]}")
 
-        case "$selection" in
-            "◀ Ana menüye dön"|"")
-                return
-                ;;
-            "📦 Tüm sürümleri kur")
-                for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
-                    install_php_version "$ver"
-                done
-                ;;
-            "━"*)
-                # Separator, ignore
-                return
-                ;;
-            "PHP "*)
-                local version="${selection#PHP }"
-                install_php_version "$version"
-                ;;
-        esac
-    else
-        # Fallback: Traditional menu
-        echo ""
-        echo -e "${YELLOW}🐘 PHP Sürüm Seçimi${NC}"
-        echo ""
-
-        local index=1
-        for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
-            echo -e "  ${CYAN}${index}${NC}) PHP ${ver}"
-            ((index++))
-        done
-        echo -e "  ${CYAN}${index}${NC}) Tüm sürümleri kur"
-        echo -e "  ${CYAN}$((index+1))${NC}) Ana menüye dön"
-
-        choice=$(gum_input --placeholder "Seçiminizi yapın (1-$((index+1)))")
-
-        # FIX BUG-018: Validate numeric input before comparison
-        if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-            echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen bir sayı girin."
+    case "$selection" in
+        "◀ Ana menüye dön"|"")
             return
-        fi
-
-        # FIX BUG-007: Explicit array bounds checking for safety
-        local array_length="${#PHP_SUPPORTED_VERSIONS[@]}"
-
-        if [ "$choice" = "$((index+1))" ]; then
-            # Ana menüye dön
-            return
-        elif [ "$choice" = "$index" ]; then
-            # Tüm sürümleri kur
+            ;;
+        "📦 Tüm sürümleri kur")
             for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
                 install_php_version "$ver"
             done
-        elif [ "$choice" -ge 1 ] && [ "$choice" -le "$array_length" ]; then
-            # Individual version - validate bounds explicitly
-            local selected_version="${PHP_SUPPORTED_VERSIONS[$((choice-1))]}"
-            install_php_version "$selected_version"
-        else
-            echo -e "${RED}[HATA]${NC} Geçersiz seçim! Lütfen 1-$((index+1)) arası bir sayı girin."
-        fi
-    fi
+            ;;
+        "━"*)
+            # Separator, ignore
+            return
+            ;;
+        "PHP "*)
+            local version="${selection#PHP }"
+            install_php_version "$version"
+            ;;
+    esac
 }
 
 # Export functions for use in other modules
