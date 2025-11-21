@@ -191,11 +191,12 @@ setup_custom_functions() {
 
     local BASHRC="$HOME/.bashrc"
 
-    # FIX BUG-017: Use constant instead of hardcoded magic string
-    # Check if functions already exist
+    # FIX: Idempotent install - Remove old block if exists, then add fresh one
+    # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_FUNCTIONS_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[BİLGİ]${NC} Özel fonksiyonlar zaten mevcut."
-        return 0
+        echo -e "${CYAN}[!]${NC} Mevcut özel fonksiyonlar bulundu, güncelleniyor..."
+        # Remove old block completely (from START marker to END marker)
+        sed -i "/$BASHRC_MARKER_FUNCTIONS_START/,/$BASHRC_MARKER_FUNCTIONS_END/d" "$BASHRC"
     fi
 
     # Add custom functions to .bashrc
@@ -228,11 +229,12 @@ setup_bashrc_enhancements() {
 
     local BASHRC="$HOME/.bashrc"
 
-    # FIX BUG-017: Use constant instead of hardcoded magic string
-    # Check if enhancements already exist
+    # FIX: Idempotent install - Remove old block if exists, then add fresh one
+    # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_CONFIG_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[BİLGİ]${NC} Bash geliştirmeleri zaten mevcut."
-        return 0
+        echo -e "${CYAN}[!]${NC} Mevcut Bash yapılandırması bulundu, güncelleniyor..."
+        # Remove old block completely (from START marker to END marker)
+        sed -i "/$BASHRC_MARKER_CONFIG_START/,/$BASHRC_MARKER_CONFIG_END/d" "$BASHRC"
     fi
 
     # Add enhanced configuration
