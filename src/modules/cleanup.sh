@@ -82,7 +82,6 @@ confirm_cleanup() {
 
 # Show installed items
 show_installed_items() {
-    clear
     echo ""
     echo ""
 
@@ -730,7 +729,6 @@ cleanup_installations() {
 
 # Full reset (white flag)
 cleanup_full_reset() {
-    clear
     echo ""
     echo -e "${RED}🔴 TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
     echo ""

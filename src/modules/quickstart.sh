@@ -5,7 +5,6 @@
 
 # Show welcome screen for Quick Start mode
 show_quickstart_welcome() {
-    clear
     show_banner
     echo ""
 
@@ -151,7 +150,6 @@ generate_installation_plan() {
 _quickstart_show_welcome() {
     local -a tools=("$@")
 
-    clear
     show_banner
     echo ""
 
@@ -171,7 +169,6 @@ _quickstart_show_welcome() {
 
 # Run system preflight checks
 _quickstart_preflight_checks() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -191,7 +188,6 @@ _quickstart_preflight_checks() {
 
 # Update system packages
 _quickstart_update_system() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -209,7 +205,6 @@ _quickstart_update_system() {
 
 # Configure Git
 _quickstart_configure_git() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -227,7 +222,6 @@ _quickstart_configure_git() {
 
 # Install Python ecosystem (Python, pip, pipx, UV)
 _quickstart_install_python() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -254,7 +248,6 @@ _quickstart_install_python() {
 
 # Install modern CLI tools
 _quickstart_install_modern_tools() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -270,7 +263,6 @@ _quickstart_install_modern_tools() {
 
 # Setup shell environment
 _quickstart_setup_shell() {
-    clear
     show_banner
     echo ""
     if has_gum; then
@@ -320,7 +312,6 @@ execute_installation_plan() {
                 # Already installed above
                 ;;
             "nvm")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -343,7 +334,6 @@ execute_installation_plan() {
                 # Already installed with nvm
                 ;;
             "bun")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -363,7 +353,6 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "php")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -385,7 +374,6 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "composer")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -405,7 +393,6 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "go")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -425,7 +412,6 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "ai_cli")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -453,7 +439,6 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "ai_frameworks")
-                clear
                 show_banner
                 echo ""
                 if has_gum; then
@@ -479,7 +464,6 @@ execute_installation_plan() {
     done
 
     # Installation complete
-    clear
     show_banner
     echo ""
     if has_gum; then

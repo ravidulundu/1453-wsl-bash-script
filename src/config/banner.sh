@@ -2,9 +2,16 @@
 # Banner and ASCII Art Configuration
 # This file contains the script banner and header display functions
 
+# Track if banner has been shown (prevents flicker)
+BANNER_SHOWN=0
+
 # Function to display the banner
 show_banner() {
-    clear
+    # ONLY clear screen on first call (prevents flicker)
+    if [ "$BANNER_SHOWN" -eq 0 ]; then
+        clear
+        BANNER_SHOWN=1
+    fi
 
     # Check if Gum is available for modern display
     if command -v gum &>/dev/null; then
@@ -94,5 +101,6 @@ show_banner() {
     fi
 }
 
-# Export the function so it's available to other modules
+# Export the function and variable so they're available to other modules
+export BANNER_SHOWN
 export -f show_banner

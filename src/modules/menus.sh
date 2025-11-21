@@ -89,7 +89,6 @@ show_menu() {
 # Show mode selection menu
 show_mode_selection() {
     while true; do
-        clear
         show_banner
         echo ""
 
@@ -127,7 +126,6 @@ show_mode_selection() {
 
 # Advanced mode menu (current menu system)
 show_advanced_menu() {
-    clear
     show_banner
     show_menu
 }
@@ -144,7 +142,7 @@ _advanced_mode_init() {
     fi
 
     # Run pre-flight checks with TUI
-    clear
+    echo ""
     gum_style --foreground 212 --border double --align center --width 60 --margin "1 2" --padding "1 4" \
         "🔍 ADVANCED MODE - SİSTEM KONTROLÜ"
     echo ""
@@ -176,7 +174,6 @@ run_advanced_mode() {
     local PYTHON_INSTALLED=false
 
     while true; do
-        clear
         show_banner
         echo ""
 
