@@ -12,7 +12,8 @@ safe_install_packages() {
     fi
 
     # Auto-detect package manager if not already set
-    if [ -z "$PKG_MANAGER" ]; then
+    # FIX BUG-027: Use ${PKG_MANAGER:-} to prevent 'unbound variable' error with set -u
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
@@ -40,7 +41,8 @@ safe_install_packages() {
 # This prevents command injection for complex update commands (e.g., apt update && apt upgrade)
 safe_update_system() {
     # Auto-detect package manager if not already set
-    if [ -z "$PKG_MANAGER" ]; then
+    # FIX BUG-027: Use ${PKG_MANAGER:-} to prevent 'unbound variable' error with set -u
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
@@ -153,7 +155,8 @@ install_package_with_retry() {
 # Update system packages and install essential tools with retry
 update_system() {
     # Auto-detect package manager if not already set
-    if [ -z "$PKG_MANAGER" ]; then
+    # FIX BUG-027: Use ${PKG_MANAGER:-} to prevent 'unbound variable' error with set -u
+    if [ -z "${PKG_MANAGER:-}" ]; then
         echo -e "${YELLOW}[!]${NC} Paket yöneticisi tespit ediliyor..."
         detect_package_manager
     fi
