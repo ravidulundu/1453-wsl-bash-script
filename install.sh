@@ -563,18 +563,9 @@ END_OF_LAUNCHER_SCRIPT
         # Ensure box never exceeds terminal width - 10
         [ "$box_width" -gt $((TUI_WIDTH - 10)) ] && box_width=$((TUI_WIDTH - 10))
 
-        # Calculate margin to center the box
-        local box_margin=$(( (TUI_WIDTH - box_width) / 2 ))
-        [ $box_margin -lt 0 ] && box_margin=0
-
-        # Modern Gum success message (CENTERED with margin)
-        gum style \
-            --foreground 82 --border double --align center \
-            --width "$box_width" --margin "1 $box_margin" --padding "1 2" \
-            "✅ Kurulum Tamamlandı!" \
-            "" \
-            "1453.AI WSL Setup yüklendi"
-
+        # Compact success message (spinner style - doesn't push terminal down)
+        echo ""
+        gum style --foreground 82 "✅ Kurulum Tamamlandı! 1453.AI WSL Setup yüklendi"
         echo ""
 
         # Calculate margin for other messages
