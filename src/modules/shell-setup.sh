@@ -241,10 +241,6 @@ setup_bashrc_enhancements() {
 
 # $BASHRC_MARKER_CONFIG_START
 
-# FIX BUG-034: Initialize PROMPT_COMMAND early to prevent unbound variable errors
-# This ensures PROMPT_COMMAND exists before any tool (starship, etc.) tries to append to it
-: "\${PROMPT_COMMAND:=}"
-
 # History settings
 export HISTCONTROL=ignoreboth:erasedups
 export HISTSIZE=100000
