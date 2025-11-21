@@ -290,17 +290,21 @@ _apt_install_vivid() {
     if ! command -v vivid &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
 
-        local vivid_deb="vivid_${VIVID_VERSION}_amd64.deb"
+        # FIX BUG-032: Vivid doesn't provide checksums, use musl variant with direct HTTPS
+        local vivid_deb="vivid-musl_${VIVID_VERSION}_amd64.deb"
         local vivid_url="https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/${vivid_deb}"
-        local vivid_checksum_url="${vivid_url}.sha256"
 
-        # Download with checksum verification
-        if download_with_checksum "$vivid_url" "$vivid_deb" "$vivid_checksum_url"; then
-            sudo dpkg -i "$vivid_deb"
-            rm "$vivid_deb"
+        # Direct download without checksum (vivid project doesn't provide .sha256 files)
+        if curl -fsSL "$vivid_url" -o "$vivid_deb"; then
+            if sudo dpkg -i "$vivid_deb"; then
+                echo -e "${GREEN}[✓]${NC} Vivid başarıyla kuruldu"
+                rm "$vivid_deb"
+            else
+                echo -e "${RED}[✗]${NC} Vivid paketi kurulamadı (dpkg hatası)"
+                rm -f "$vivid_deb"
+            fi
         else
-            echo -e "${RED}[✗]${NC} Vivid kurulumu başarısız! (checksum doğrulanamadı)"
-            rm -f "$vivid_deb"
+            echo -e "${RED}[✗]${NC} Vivid indirilemedi (404 veya ağ hatası)"
         fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
