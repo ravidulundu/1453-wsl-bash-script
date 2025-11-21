@@ -326,7 +326,12 @@ Script'i başlattığınızda mod seçimi gelir. **"Hızlı Başlangıç"** modu
 
 **Örnek Kullanım:**
 ```
-Seçiminiz: 2
+┌─────────────────────────────────────┐
+│ Hangi paketi kurmak istersiniz?     │
+└─────────────────────────────────────┘
+  > 🤖 AI Geliştirme (Claude, Gemini, SuperFrameworks)
+    🌐 Full-Stack (Python, Node.js, PHP, Docker)
+    🐍 Python Developer (Python + Modern Tools)
 
 ✅ AI Geliştirme paketi seçildi
 
@@ -357,28 +362,26 @@ Script'i başlattığınızda **"Gelişmiş Mod"** seçin veya Quick Start'ı at
 │           1453 WSL Setup - Ana Menü                 │
 └─────────────────────────────────────────────────────┘
 
- 1) 🚀 Tam Kurulum (Her şey)
- 2) 🔧 Sistem Hazırlık (güncelleme + Git)
- 3) 🐍 Python Ekosistemi
- 4) 📦 Pip Güncelleme
- 5) 🔌 Pipx Kurulumu
- 6) ⚡ UV Kurulumu (ultra-fast pip)
- 7) 🟨 NVM (Node.js Version Manager)
- 8) 🥟 Bun.js
- 9) 🐘 PHP Versiyonları
-10) 🎼 Composer
-11) 🤖 AI CLI Araçları
-12) 🧠 AI Frameworkleri
-13) 🗑️ AI Framework Kaldırma
-14) 🐹 Go Language
-15) ⚡ Modern CLI Araçları
-16) 🎨 Shell Ortamı
-17) 🗑️ Temizleme ve Sıfırlama
-18) 🐋 Docker
-
- 0) Çıkış
-
-Seçiminiz:
+  🚀 Tam Kurulum (Her şey)
+  🔧 Sistem Hazırlık (güncelleme + Git)
+  🐍 Python Ekosistemi
+  📦 Pip Güncelleme
+  🔌 Pipx Kurulumu
+  ⚡ UV Kurulumu (ultra-fast pip)
+  🟨 NVM (Node.js Version Manager)
+  🥟 Bun.js
+> 🐘 PHP Versiyonları
+  🎼 Composer
+  🤖 AI CLI Araçları
+  🧠 AI Frameworkleri
+  🗑️ AI Framework Kaldırma
+  🐹 Go Language
+  ⚡ Modern CLI Araçları
+  🎨 Shell Ortamı
+  🗑️ Temizleme ve Sıfırlama
+  🐋 Docker
+  ━━━━━━━━━━━━━━━━━━━━━
+  ◀ Çıkış
 ```
 
 **Tam Kurulum Seçeneği:**
