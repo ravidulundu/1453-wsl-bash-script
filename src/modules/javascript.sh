@@ -24,8 +24,11 @@ install_nvm() {
             track_skip "NVM + Node.js" "Zaten kurulu (NVM: v$nvm_version, Node: $node_version)"
         else
             echo -e "${CYAN}[!]${NC} NVM kurulu (v$nvm_version) ama Node.js yok, LTS kuruluyor..."
+            # FIX BUG-030: Disable -u flag for NVM commands
+            set +u
             nvm install --lts
             nvm use --lts
+            set -u
             local node_version
             node_version=$(node -v 2>/dev/null || echo "unknown")
             track_success "NVM + Node.js" "NVM mevcut, Node.js eklendi ($node_version)"
@@ -76,7 +79,12 @@ END_NVM_CONFIG
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
     echo -e "${YELLOW}[BİLGİ]${NC} Node.js LTS sürümü kuruluyor..."
+
+    # FIX BUG-030: NVM script is incompatible with 'set -u' flag
+    # Temporarily disable undefined variable check for NVM operations
+    set +u
     if nvm install --lts && nvm use --lts; then
+        set -u  # Re-enable undefined variable check
         if command -v node &> /dev/null; then
             local node_version npm_version nvm_version
             node_version=$(node -v 2>/dev/null || echo "unknown")
@@ -93,6 +101,7 @@ END_NVM_CONFIG
             return 1
         fi
     else
+        set -u  # Re-enable undefined variable check on error path too
         echo -e "${RED}[HATA]${NC} NVM veya Node.js kurulumu başarısız!"
         track_failure "NVM + Node.js" "Kurulum başarısız"
         return 1

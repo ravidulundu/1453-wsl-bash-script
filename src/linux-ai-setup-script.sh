@@ -103,7 +103,12 @@ fi
 #     exec 0</dev/tty 2>/dev/null || true
 # fi
 
-# Phase 6: Sudo authentication and keep-alive
+# Phase 6: Initialize tool versions (must be called before any installations)
+echo -e "${YELLOW}[BİLGİ]${NC} Araç versiyonları hazırlanıyor..."
+init_tool_versions
+echo -e "${GREEN}[✓]${NC} Araç versiyonları hazır"
+
+# Phase 7: Sudo authentication and keep-alive
 # Request sudo password once at the start
 echo -e "${YELLOW}[BİLGİ]${NC} Script bazı işlemler için sudo yetkisi gerektirir."
 echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
