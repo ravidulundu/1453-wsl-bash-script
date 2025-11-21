@@ -5,7 +5,7 @@
 
 # Show welcome screen for Quick Start mode
 show_quickstart_welcome() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
 
     gum_style --foreground 82 --bold "🚀 QUICK START MODE - VIBE CODERS İÇİN"
@@ -150,7 +150,7 @@ generate_installation_plan() {
 _quickstart_show_welcome() {
     local -a tools=("$@")
 
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
 
     if has_gum; then
@@ -169,7 +169,7 @@ _quickstart_show_welcome() {
 
 # Run system preflight checks
 _quickstart_preflight_checks() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 51 --bold "🔍 SİSTEM KONTROL EDİLİYOR"
@@ -188,7 +188,7 @@ _quickstart_preflight_checks() {
 
 # Update system packages
 _quickstart_update_system() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 212 --bold "📦 SİSTEM GÜNCELLENİYOR"
@@ -205,7 +205,7 @@ _quickstart_update_system() {
 
 # Configure Git
 _quickstart_configure_git() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 226 --bold "🔧 GIT YAPILANDIRMASI"
@@ -222,7 +222,7 @@ _quickstart_configure_git() {
 
 # Install Python ecosystem (Python, pip, pipx, UV)
 _quickstart_install_python() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 81 --bold "🐍 PYTHON EKOSİSTEMİ KURULUYOR"
@@ -248,7 +248,7 @@ _quickstart_install_python() {
 
 # Install modern CLI tools
 _quickstart_install_modern_tools() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 212 --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
@@ -263,7 +263,7 @@ _quickstart_install_modern_tools() {
 
 # Setup shell environment
 _quickstart_setup_shell() {
-    show_banner
+    # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
         gum_style --foreground 51 --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
@@ -312,7 +312,7 @@ execute_installation_plan() {
                 # Already installed above
                 ;;
             "nvm")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 82 --bold "🟢 NODE.JS KURULUYOR (NVM)"
@@ -334,7 +334,7 @@ execute_installation_plan() {
                 # Already installed with nvm
                 ;;
             "bun")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 212 --bold "⚡ BUN.JS KURULUYOR"
@@ -353,7 +353,7 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "php")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 141 --bold "🐘 PHP 8.3 KURULUYOR"
@@ -374,7 +374,7 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "composer")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 226 --bold "🎼 COMPOSER KURULUYOR"
@@ -393,7 +393,7 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "go")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 51 --bold "🔷 GO LANGUAGE KURULUYOR"
@@ -412,7 +412,7 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "ai_cli")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 212 --bold "🤖 AI CLI ARAÇLARI KURULUYOR"
@@ -439,7 +439,7 @@ execute_installation_plan() {
                 sleep 1
                 ;;
             "ai_frameworks")
-                show_banner
+                # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
                     gum_style --foreground 141 --bold "🧠 AI FRAMEWORK KURULUYOR"
@@ -463,8 +463,7 @@ execute_installation_plan() {
         esac
     done
 
-    # Installation complete
-    show_banner
+    # Installation complete (banner shown at script start, don't redraw)
     echo ""
     if has_gum; then
         gum_style --foreground 82 --bold "✅ KURULUM TAMAMLANDI!"

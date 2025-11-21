@@ -89,10 +89,10 @@ show_menu() {
 # Show mode selection menu
 show_mode_selection() {
     while true; do
-        show_banner
+        # Banner shown at script start, don't redraw
         echo ""
 
-        # Banner shown above, now show mode selection question
+        # Show mode selection question
         gum_style --foreground 212 --bold "🎯 Hangi kurulum modunu tercih edersiniz?"
         echo ""
 
@@ -126,7 +126,7 @@ show_mode_selection() {
 
 # Advanced mode menu (current menu system)
 show_advanced_menu() {
-    show_banner
+    # Banner shown at script start, don't redraw
     show_menu
 }
 
@@ -174,10 +174,10 @@ run_advanced_mode() {
     local PYTHON_INSTALLED=false
 
     while true; do
-        show_banner
+        # Banner shown at script start, don't redraw
         echo ""
 
-        # Modern Gum menu (banner already shown)
+        # Modern Gum menu
         local selection
         selection=$(gum_choose \
             "✨ Tam Kurulum (Tüm Araçlar)" \
@@ -301,6 +301,10 @@ run_advanced_mode() {
 
 # Main program loop - entry point
 main() {
+    # Show banner ONCE at script start (BANNER_SHOWN flag prevents redraw)
+    show_banner
+
+    # Enter main menu (no banner redraw in loops)
     show_mode_selection
 }
 
