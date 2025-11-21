@@ -250,7 +250,8 @@ export HISTIGNORE="ls:ll:la:pwd:exit:history:clear:cd"
 shopt -s histappend
 
 # Update history after each command
-PROMPT_COMMAND="history -a; history -c; history -r; \${PROMPT_COMMAND:-}"
+# FIX BUG-034: Double escape to preserve :- default value operator with set -u
+PROMPT_COMMAND="history -a; history -c; history -r; \\${PROMPT_COMMAND:-}"
 
 # Terminal settings
 export TERM=xterm-256color
