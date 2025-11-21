@@ -61,29 +61,55 @@ esac
 # Detect terminal width
 TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
+# Track if banner has been shown (prevents flicker)
+BANNER_SHOWN=0
+
 # ASCII Art Banner
 show_banner() {
-    clear
+    # ONLY clear screen on first call (prevents flicker)
+    if [ "$BANNER_SHOWN" -eq 0 ]; then
+        clear
+        BANNER_SHOWN=1
+    fi
 
     # Re-detect terminal width (in case terminal was resized)
     TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
     if has_gum; then
+        # Calculate responsive widths and margins for centering
+        local content_width=80
+        if [ "$TUI_WIDTH" -lt 100 ]; then
+            content_width=60  # Narrow terminals
+        fi
+
+        # Calculate left margin to center content
+        local left_margin=$(( (TUI_WIDTH - content_width) / 2 ))
+        [ $left_margin -lt 0 ] && left_margin=0
+
         # Check terminal width for responsiveness (100 chars threshold)
         if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 100 ]; then
-            # Terminal too narrow - show compact banner
+            # Terminal too narrow - show compact banner (CENTERED with margin)
             gum style \
                 --foreground 212 --bold --align center \
+                --width "$content_width" --margin "0 $left_margin" \
                 "1453.AI WSL Setup"
             echo ""
-            gum style --foreground 51 --align center "🚀 Hızlı Yükleyici"
+            gum style \
+                --foreground 51 --align center \
+                --width "$content_width" --margin "0 $left_margin" \
+                "🚀 Hızlı Yükleyici"
             echo ""
         else
-            # Wide terminal - use center alignment (not left + margin!)
-            # ASCII art width is 45 chars, use --width to constrain and center
+            # Wide terminal - ASCII art (CENTERED with margin)
+            # ASCII art width is 45 chars
+            local ascii_width=50
+            local ascii_margin=$(( (TUI_WIDTH - ascii_width) / 2 ))
+            [ $ascii_margin -lt 0 ] && ascii_margin=0
+
             gum style \
                 --foreground 51 --bold \
                 --align center \
+                --width "$ascii_width" --margin "0 $ascii_margin" \
                 '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
                 ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
                 '|_  $$| $$  | $$| $$      |__/  \ $$' \
@@ -95,13 +121,17 @@ show_banner() {
 
             echo ""
 
-            # Title (truly centered, responsive width)
-            local title_width=$((TUI_WIDTH > 80 ? 70 : TUI_WIDTH - 10))
-            [ "$title_width" -lt 40 ] && title_width=40
+            # Title (CENTERED with margin)
+            local title_width=70
+            if [ "$TUI_WIDTH" -lt 90 ]; then
+                title_width=60
+            fi
+            local title_margin=$(( (TUI_WIDTH - title_width) / 2 ))
+            [ $title_margin -lt 0 ] && title_margin=0
 
             gum style \
                 --foreground 212 --border rounded --align center \
-                --width "$title_width" --padding "1 2" \
+                --width "$title_width" --margin "0 $title_margin" --padding "1 2" \
                 "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
 
             echo ""
@@ -213,8 +243,22 @@ main() {
     show_banner
 
     if has_gum; then
-        gum style --foreground 51 "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-        gum style --foreground 51 "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
+        # Calculate margin for centering
+        local content_width=70
+        if [ "$TUI_WIDTH" -lt 90 ]; then
+            content_width=60
+        fi
+        local left_margin=$(( (TUI_WIDTH - content_width) / 2 ))
+        [ $left_margin -lt 0 ] && left_margin=0
+
+        gum style \
+            --foreground 51 \
+            --width "$content_width" --margin "0 $left_margin" \
+            "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
+        gum style \
+            --foreground 51 \
+            --width "$content_width" --margin "0 $left_margin" \
+            "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
         echo ""
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
@@ -225,8 +269,19 @@ main() {
     # curl kontrolü
     if ! command -v curl &> /dev/null; then
         if has_gum; then
-            gum style --foreground 196 "[HATA] curl gerekli ama kurulu değil."
-            gum style --foreground 226 "[İPUCU] curl'ü kurmak için: sudo apt install curl"
+            # Calculate margin for centering
+            local msg_width=60
+            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+            [ $msg_margin -lt 0 ] && msg_margin=0
+
+            gum style \
+                --foreground 196 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "[HATA] curl gerekli ama kurulu değil."
+            gum style \
+                --foreground 226 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "[İPUCU] curl'ü kurmak için: sudo apt install curl"
         else
             echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
             echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
@@ -236,9 +291,20 @@ main() {
 
     # Kurulum dizin yapısını oluştur
     if has_gum; then
-        gum style --foreground 226 "[KURULUM] Dizin yapısı oluşturuluyor..."
+        # Calculate margin for centering
+        local msg_width=60
+        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+        [ $msg_margin -lt 0 ] && msg_margin=0
+
+        gum style \
+            --foreground 226 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "[KURULUM] Dizin yapısı oluşturuluyor..."
         mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
-        gum style --foreground 82 "[✓] Dizin yapısı oluşturuldu"
+        gum style \
+            --foreground 82 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "[✓] Dizin yapısı oluşturuldu"
         echo ""
     else
         echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
@@ -284,7 +350,18 @@ main() {
     local count=0
 
     if has_gum; then
-        gum style --foreground 51 "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
+        # Calculate margin for centering
+        local msg_width=70
+        if [ "$TUI_WIDTH" -lt 90 ]; then
+            msg_width=60
+        fi
+        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+        [ $msg_margin -lt 0 ] && msg_margin=0
+
+        gum style \
+            --foreground 51 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
     else
         echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
     fi
@@ -294,6 +371,14 @@ main() {
 
     # Re-detect terminal width for responsive progress
     TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
+
+    # Calculate margin for centering progress (if using gum)
+    local progress_width=70
+    if [ "$TUI_WIDTH" -lt 90 ]; then
+        progress_width=60
+    fi
+    local progress_margin=$(( (TUI_WIDTH - progress_width) / 2 ))
+    [ $progress_margin -lt 0 ] && progress_margin=0
 
     for file_info in "${files[@]}"; do
         IFS=':' read -r file_path description <<< "$file_info"
@@ -321,8 +406,13 @@ main() {
             short_desc="${description:0:$((desc_width-3))}..."
         fi
 
-        # Show progress on same line (overwrite)
-        printf "\r  [%d/%d - %%%d] %-${desc_width}s" "$count" "$total_files" "$percent" "$short_desc"
+        # Show progress on same line (overwrite with \r - NO CLEAR!)
+        # Add left margin for centering
+        local spaces=""
+        for ((i=0; i<progress_margin; i++)); do
+            spaces="$spaces "
+        done
+        printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
 
         # Download file silently
         if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
@@ -341,7 +431,18 @@ main() {
     # Show summary
     if [ $failed -eq 0 ]; then
         if has_gum; then
-            gum style --foreground 82 "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
+            # Calculate margin for centering
+            local msg_width=70
+            if [ "$TUI_WIDTH" -lt 90 ]; then
+                msg_width=60
+            fi
+            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+            [ $msg_margin -lt 0 ] && msg_margin=0
+
+            gum style \
+                --foreground 82 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
         else
             echo -e "  ${GREEN}[✓]${NC} Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
         fi
@@ -350,15 +451,38 @@ main() {
 
     if [ $failed -gt 0 ]; then
         if has_gum; then
-            gum style --foreground 196 "❌ $failed/$total_files dosya indirilemedi"
+            # Calculate margin for centering
+            local msg_width=70
+            if [ "$TUI_WIDTH" -lt 90 ]; then
+                msg_width=60
+            fi
+            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+            [ $msg_margin -lt 0 ] && msg_margin=0
+
+            gum style \
+                --foreground 196 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "❌ $failed/$total_files dosya indirilemedi"
             echo ""
-            gum style --foreground 226 "Başarısız dosyalar:"
+            gum style \
+                --foreground 226 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "Başarısız dosyalar:"
             for failed_file in "${failed_files[@]}"; do
-                gum style --foreground 196 "  • $failed_file"
+                gum style \
+                    --foreground 196 \
+                    --width "$msg_width" --margin "0 $msg_margin" \
+                    "  • $failed_file"
             done
             echo ""
-            gum style --foreground 226 "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-            gum style --foreground 51 "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+            gum style \
+                --foreground 226 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
+            gum style \
+                --foreground 51 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         else
             echo -e "  ${RED}[HATA]${NC} $failed/$total_files dosya indirilemedi"
             echo ""
@@ -378,7 +502,15 @@ main() {
 
     # Kullanışlı bir başlatıcı betiği oluştur
     if has_gum; then
-        gum style --foreground 226 "[KURULUM] Başlatıcı betiği oluşturuluyor..."
+        # Calculate margin for centering
+        local msg_width=60
+        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+        [ $msg_margin -lt 0 ] && msg_margin=0
+
+        gum style \
+            --foreground 226 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "[KURULUM] Başlatıcı betiği oluşturuluyor..."
     else
         echo -e "  ${YELLOW}[KURULUM]${NC} Başlatıcı betiği oluşturuluyor..."
     fi
@@ -399,7 +531,15 @@ END_OF_LAUNCHER_SCRIPT
 
     chmod +x "${INSTALL_DIR}/1453-setup"
     if has_gum; then
-        gum style --foreground 82 "[✓] Başlatıcı betiği oluşturuldu"
+        # Calculate margin for centering
+        local msg_width=60
+        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+        [ $msg_margin -lt 0 ] && msg_margin=0
+
+        gum style \
+            --foreground 82 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "[✓] Başlatıcı betiği oluşturuldu"
         echo ""
     else
         echo -e "  ${GREEN}[✓]${NC} Başlatıcı betiği oluşturuldu"
@@ -415,30 +555,46 @@ END_OF_LAUNCHER_SCRIPT
         # Re-detect terminal width (in case terminal was resized)
         TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
-        # Calculate responsive width - aggressive limiting for narrow terminals
+        # Calculate responsive width and margin for centering
         local box_width=60
-        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-            box_width=$((TUI_WIDTH - 20))
+        if [ "$TUI_WIDTH" -gt 90 ]; then
+            box_width=70
         fi
-        # Ensure box never exceeds 70 chars (fits in most terminals)
-        [ "$box_width" -gt 70 ] && box_width=70
-        # Ensure box never exceeds terminal width
+        # Ensure box never exceeds terminal width - 10
         [ "$box_width" -gt $((TUI_WIDTH - 10)) ] && box_width=$((TUI_WIDTH - 10))
 
-        # Modern Gum success message (responsive)
+        # Calculate margin to center the box
+        local box_margin=$(( (TUI_WIDTH - box_width) / 2 ))
+        [ $box_margin -lt 0 ] && box_margin=0
+
+        # Modern Gum success message (CENTERED with margin)
         gum style \
             --foreground 82 --border double --align center \
-            --width "$box_width" --margin "1 2" --padding "1 2" \
+            --width "$box_width" --margin "1 $box_margin" --padding "1 2" \
             "✅ Kurulum Tamamlandı!" \
             "" \
             "1453.AI WSL Setup yüklendi"
 
         echo ""
-        gum style --foreground 226 "📌 Çalıştırma:"
+
+        # Calculate margin for other messages
+        local msg_width=60
+        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+        [ $msg_margin -lt 0 ] && msg_margin=0
+
+        gum style \
+            --foreground 226 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "📌 Çalıştırma:"
         echo ""
-         gum style "  ${INSTALL_DIR}/1453-setup"
+        gum style \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "  ${INSTALL_DIR}/1453-setup"
         echo ""
-        gum style --foreground 51 "💡 Güncellemek için installer'ı tekrar çalıştırın"
+        gum style \
+            --foreground 51 \
+            --width "$msg_width" --margin "0 $msg_margin" \
+            "💡 Güncellemek için installer'ı tekrar çalıştırın"
     else
         # Fallback: Traditional message with padding
         echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum başarıyla tamamlandı!"
@@ -481,12 +637,30 @@ END_OF_LAUNCHER_SCRIPT
         # Modern Gum confirm
         if gum confirm "Kurulum betiğini şimdi çalıştırmak ister misiniz?"; then
             echo ""
-            gum style --foreground 82 "🚀 Kurulum betiği başlatılıyor..."
+
+            # Calculate margin for centering
+            local msg_width=60
+            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+            [ $msg_margin -lt 0 ] && msg_margin=0
+
+            gum style \
+                --foreground 82 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "🚀 Kurulum betiği başlatılıyor..."
             sleep 1
             bash "${INSTALL_DIR}/1453-setup" </dev/tty
         else
             echo ""
-            gum style --foreground 51 "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
+
+            # Calculate margin for centering
+            local msg_width=60
+            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
+            [ $msg_margin -lt 0 ] && msg_margin=0
+
+            gum style \
+                --foreground 51 \
+                --width "$msg_width" --margin "0 $msg_margin" \
+                "👉 Daha sonra çalıştırmak için: ${INSTALL_DIR}/1453-setup"
         fi
     else
         # Fallback: Traditional prompt with padding
