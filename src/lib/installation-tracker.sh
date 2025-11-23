@@ -38,17 +38,8 @@ track_skip() {
     SKIPPED_INSTALLATIONS+=("$tool_name - $reason")
 }
 
-# Show installation summary (AI CLI Style)
+# Show installation summary (PRD FR-4.1: Markdown Report)
 show_installation_summary() {
-    local width=70
-    local separator=$(printf '%*s' "$width" '' | tr ' ' '-')
-    
-    echo ""
-    echo "$separator"
-    echo "  Installation Summary"
-    echo "$separator"
-    echo ""
-
     # Count totals
     local success_count=${#SUCCESSFUL_INSTALLATIONS[@]}
     local failed_count=${#FAILED_INSTALLATIONS[@]}
@@ -56,68 +47,130 @@ show_installation_summary() {
     local total_count=$((success_count + failed_count + skipped_count))
 
     if [ $total_count -eq 0 ]; then
-        echo "  [INFO] No installations performed."
+        gum_info "Rapor" "Hiçbir kurulum işlemi yapılmadı"
         return 0
     fi
 
-    # Show successful installations
+    # Create Markdown report
+    local report_file=$(mktemp)
+    cat > "$report_file" << EOF
+# 🎯 1453 WSL Architect - Kurulum Raporu
+
+**Tarih:** $(date '+%d/%m/%Y %H:%M:%S')  
+**Toplam İşlem:** $total_count
+
+---
+
+## 📊 Özet
+
+| Kategori | Sayı |
+|----------|------|
+| ✅ Başarılı | **$success_count** |
+| ⏭️  Atlandı | $skipped_count |
+| ❌ Başarısız | $failed_count |
+
+---
+
+EOF
+
+    # Add successful installations
     if [ $success_count -gt 0 ]; then
-        echo -e "  ${GREEN}Successful Installations ($success_count):${NC}"
+        cat >> "$report_file" << EOF
+## ✅ Başarılı Kurulumlar ($success_count)
+
+EOF
         for item in "${SUCCESSFUL_INSTALLATIONS[@]}"; do
-            echo -e "    [+] $item"
+            echo "- **$item**" >> "$report_file"
         done
-        echo ""
+        echo "" >> "$report_file"
+        echo "---" >> "$report_file"
+        echo "" >> "$report_file"
     fi
 
-    # Show skipped installations
+    # Add skipped installations
     if [ $skipped_count -gt 0 ]; then
-        echo -e "  ${CYAN}Skipped Installations ($skipped_count):${NC}"
+        cat >> "$report_file" << EOF
+## ⏭️  Atlanan Kurulumlar ($skipped_count)
+
+EOF
         for item in "${SKIPPED_INSTALLATIONS[@]}"; do
-            echo -e "    [ ] $item"
+            echo "- $item" >> "$report_file"
         done
-        echo ""
+        echo "" >> "$report_file"
+        echo "---" >> "$report_file"
+        echo "" >> "$report_file"
     fi
 
-    # Show failed installations
+    # Add failed installations
     if [ $failed_count -gt 0 ]; then
-        echo -e "  ${RED}Failed Installations ($failed_count):${NC}"
+        cat >> "$report_file" << EOF
+## ❌ Başarısız Kurulumlar ($failed_count)
+
+EOF
         for item in "${FAILED_INSTALLATIONS[@]}"; do
-            echo -e "    [-] $item"
+            echo "- **$item**" >> "$report_file"
         done
-        echo ""
-        echo "  [!] Manual installation may be required for failed items."
-        echo "  [!] Check error messages above for details."
-        echo ""
+        echo "" >> "$report_file"
+        cat >> "$report_file" << EOF
+> ⚠️ **Manuel kurulum gerekebilir!**  
+> Hata mesajlarını yukarıda kontrol edin.
+
+---
+
+EOF
     fi
 
-    # Status line
-    echo "$separator"
-    echo -e "  Total: $total_count | ${GREEN}Success: $success_count${NC} | ${CYAN}Skipped: $skipped_count${NC} | ${RED}Failed: $failed_count${NC}"
-    echo "$separator"
-    echo ""
-    
-    # Show post-installation instructions if there were successful installations
+    # Add post-installation instructions
     if [ $success_count -gt 0 ]; then
-        echo "  Post-Installation Steps:"
-        echo ""
-        echo "  1. Reload your shell environment:"
-        echo "     > source ~/.bashrc              (fastest method)"
-        echo "     > exec bash                     (if using bash)"
-        echo "     > Close and reopen terminal     (most reliable)"
-        echo ""
-        echo "  2. Verify installations:"
-        echo "     > python3 --version"
-        echo "     > node --version"
-        echo "     > which nvm"
-        echo ""
-        echo "  3. Explore new tools:"
-        echo "     > bat --help                    (modern cat)"
-        echo "     > eza --help                    (modern ls)"
-        echo "     > lazygit                       (Git TUI)"
-        echo ""
-        echo "  [!] IMPORTANT: Run 'source ~/.bashrc' or restart terminal for changes to take effect."
-        echo ""
+        cat >> "$report_file" << EOF
+## 🚀 Sonraki Adımlar
+
+### 1️⃣ Shell Ortamını Yenile
+
+\`\`\`bash
+source ~/.bashrc
+\`\`\`
+
+veya terminali yeniden başlat.
+
+### 2️⃣ Kurulumları Doğrula
+
+\`\`\`bash
+python3 --version
+node --version
+docker --version
+\`\`\`
+
+### 3️⃣ Yeni Araçları Keşfet
+
+- \`bat --help\` - Modern \`cat\` alternatifi
+- \`eza --help\` - Modern \`ls\` alternatifi  
+- \`lazygit\` - Git Terminal UI
+- \`lazydocker\` - Docker Terminal UI
+
+---
+
+## 💡 İpuçları
+
+- **Starship Prompt:** Terminalde modern bir görünüm için zaten aktif
+- **Gum UI:** Gelişmiş terminal UI bileşenleri kullanılabilir
+- **GitHub CLI:** \`gh\` komutu ile GitHub işlemleri
+
+EOF
     fi
+
+    # Render Markdown with gum format
+    echo ""
+    if command -v gum &> /dev/null; then
+        gum format < "$report_file"
+    else
+        # Fallback: plain cat if gum not available
+        cat "$report_file"
+    fi
+    echo ""
+
+    # Clean up
+    rm -f "$report_file"
 
     # Return non-zero if there are failures
     if [ $failed_count -gt 0 ]; then
