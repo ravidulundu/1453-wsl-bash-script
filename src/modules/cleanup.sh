@@ -841,8 +841,26 @@ cleanup_full_reset() {
 
     # Force reload shell to default state
     echo -e "\n${YELLOW}[BİLGİ]${NC} Shell sıfırlanıyor..."
+    
+    # Factory Reset .bashrc from /etc/skel (User Suggestion)
+    if [ -f /etc/skel/.bashrc ]; then
+        echo ""
+        echo -e "${YELLOW}[ÖNERİ]${NC} .bashrc dosyasını Ubuntu varsayılan ayarlarına döndürmek ister misiniz?"
+        echo -e "${CYAN}[BİLGİ]${NC} Bu işlem, .bashrc dosyasını tamamen silip /etc/skel/.bashrc ile değiştirir."
+        echo -e "${RED}[UYARI]${NC} Script dışındaki özel ayarlarınız da silinecektir!"
+        
+        if gum_confirm "Ubuntu varsayılan .bashrc dosyasına dön?"; then
+            # Backup current one last time
+            cp ~/.bashrc ~/.bashrc.factory_reset_backup.$(date +%Y%m%d_%H%M%S)
+            
+            # Restore from skeleton
+            cp /etc/skel/.bashrc ~/.bashrc
+            echo -e "${GREEN}[BAŞARILI]${NC} .bashrc, Ubuntu varsayılan ayarlarına döndürüldü (/etc/skel)."
+        fi
+    fi
+
     if [ -f ~/.bashrc ]; then
-        # Source the cleaned bashrc
+        # Source the cleaned/restored bashrc
         source ~/.bashrc 2>/dev/null || true
     fi
 
