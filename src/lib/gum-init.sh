@@ -152,3 +152,25 @@ gum_choose_enhanced() {
         --selected.foreground "$COLOR_GOLD_FG" \
         "$@"
 }
+
+# Spinner with Log Hiding (Executes command, hides output, shows logs on error)
+gum_spin_run() {
+    local title="$1"
+    local command="$2"
+    local log_file="/tmp/1453-install-$(date +%s).log"
+    
+    # Run command with spinner
+    if gum spin --spinner dot --title "$title" --show-output -- bash -c "$command > $log_file 2>&1"; then
+        # Success
+        rm -f "$log_file"
+        return 0
+    else
+        # Failure
+        gum_alert "Hata Oluştu" "İşlem başarısız oldu. Loglar aşağıdadır:"
+        echo ""
+        cat "$log_file"
+        echo ""
+        rm -f "$log_file"
+        return 1
+    fi
+}
