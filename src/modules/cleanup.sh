@@ -369,22 +369,45 @@ cleanup_modern_tools() {
         echo -e "${YELLOW}[BİLGİ]${NC} APT paketleri kaldırılıyor (bat, ripgrep, fd-find, fzf)..."
         sudo apt remove -y bat ripgrep fd-find fzf 2>/dev/null && \
             echo -e "${GREEN}[BAŞARILI]${NC} APT paketleri kaldırıldı"
+        
+        # Starship from APT (Ubuntu 25.04+)
+        if command -v starship &>/dev/null; then
+            if dpkg -l | grep -q "^ii.*starship"; then
+                echo -e "${YELLOW}[BİLGİ]${NC} Starship (APT) kaldırılıyor..."
+                sudo apt remove -y starship 2>/dev/null
+                echo -e "${GREEN}[BAŞARILI]${NC} Starship (APT) kaldırıldı"
+            fi
+        fi
+        
+        # Zoxide from APT (Ubuntu 22.04+)
+        if command -v zoxide &>/dev/null; then
+            if dpkg -l | grep -q "^ii.*zoxide"; then
+                echo -e "${YELLOW}[BİLGİ]${NC} Zoxide (APT) kaldırılıyor..."
+                sudo apt remove -y zoxide 2>/dev/null
+                echo -e "${GREEN}[BAŞARILI]${NC} Zoxide (APT) kaldırıldı"
+            fi
+        fi
     fi
 
-    # Starship (manual install via curl)
+    # Starship (manual install via curl to /usr/local/bin)
     if command -v starship &>/dev/null && [ -f /usr/local/bin/starship ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Starship kaldırılıyor..."
+        echo -e "${YELLOW}[BİLGİ]${NC} Starship (script) kaldırılıyor..."
         sudo rm -f /usr/local/bin/starship
+        echo -e "${GREEN}[BAŞARILI]${NC} Starship (script) kaldırıldı"
+    fi
+    
+    # Starship config (remove regardless of installation method)
+    if [ -f ~/.config/starship.toml ]; then
         rm -f ~/.config/starship.toml
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship kaldırıldı"
+        echo -e "${GREEN}[BAŞARILI]${NC} Starship config kaldırıldı"
     fi
 
     # Zoxide (manual install via curl)
     if [ -f ~/.local/bin/zoxide ] || [ -f /usr/local/bin/zoxide ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kaldırılıyor..."
+        echo -e "${YELLOW}[BİLGİ]${NC} Zoxide (script) kaldırılıyor..."
         rm -f ~/.local/bin/zoxide
         sudo rm -f /usr/local/bin/zoxide
-        echo -e "${GREEN}[BAŞARILI]${NC} Zoxide kaldırıldı"
+        echo -e "${GREEN}[BAŞARILI]${NC} Zoxide (script) kaldırıldı"
     fi
 
     # Eza repository cleanup (remove gierens repo even if eza isn't installed)
