@@ -122,6 +122,7 @@ install_modern_cli_tools() {
     command -v fastfetch &>/dev/null && already_installed+=("fastfetch") || missing_tools+=("fastfetch")
     command -v lazygit &>/dev/null && already_installed+=("lazygit") || missing_tools+=("lazygit")
     command -v lazydocker &>/dev/null && already_installed+=("lazydocker") || missing_tools+=("lazydocker")
+    command -v tree &>/dev/null && already_installed+=("tree") || missing_tools+=("tree")
 
     # If all tools are installed, skip
     if [ ${#missing_tools[@]} -eq 0 ]; then
@@ -176,18 +177,19 @@ install_modern_cli_tools() {
     command -v fastfetch &>/dev/null && final_installed+=("fastfetch") || final_failed+=("fastfetch")
     command -v lazygit &>/dev/null && final_installed+=("lazygit") || final_failed+=("lazygit")
     command -v lazydocker &>/dev/null && final_installed+=("lazydocker") || final_failed+=("lazydocker")
+    command -v tree &>/dev/null && final_installed+=("tree") || final_failed+=("tree")
 
     # Clear hash to ensure we find newly installed tools
     hash -r 2>/dev/null
 
     installed_count=${#final_installed[@]}
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı! ($installed_count/11)"
+    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı! ($installed_count/12)"
 
-    if [ $installed_count -eq 11 ]; then
-        track_success "Modern CLI Tools" "Tüm araçlar kuruldu (11/11)"
+    if [ $installed_count -eq 12 ]; then
+        track_success "Modern CLI Tools" "Tüm araçlar kuruldu (12/12)"
     elif [ $installed_count -gt 0 ]; then
-        track_success "Modern CLI Tools" "$installed_count/11 kuruldu: ${final_installed[*]}"
+        track_success "Modern CLI Tools" "$installed_count/12 kuruldu: ${final_installed[*]}"
         if [ ${#final_failed[@]} -gt 0 ]; then
             track_failure "Modern CLI Tools (eksik)" "Kurulamadı: ${final_failed[*]}"
         fi
@@ -543,8 +545,8 @@ install_modern_tools_apt() {
     echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
 
     # Install core tools from APT repositories
-    echo -e "${YELLOW}[BİLGİ]${NC} Temel araçlar kuruluyor (bat, ripgrep, fd-find, fzf)..."
-    safe_install_packages bat ripgrep fd-find fzf
+    echo -e "${YELLOW}[BİLGİ]${NC} Temel araçlar kuruluyor (bat, ripgrep, fd-find, fzf, tree)..."
+    safe_install_packages bat ripgrep fd-find fzf tree
 
     # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
     fix_bat_fd_symlinks
@@ -566,7 +568,7 @@ install_modern_tools_dnf() {
     echo -e "${YELLOW}[BİLGİ]${NC} DNF/YUM paket yöneticisi kullanılıyor..."
 
     # Core tools
-    sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf
+    sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf tree
 
     # Fix bat/fd symlinks
     fix_bat_fd_symlinks
@@ -585,7 +587,7 @@ install_modern_tools_pacman() {
     echo -e "${YELLOW}[BİLGİ]${NC} Pacman paket yöneticisi kullanılıyor..."
 
     # Most tools available in Arch repos
-    sudo pacman -S --noconfirm bat ripgrep fd fzf eza starship zoxide
+    sudo pacman -S --noconfirm bat ripgrep fd fzf eza starship zoxide tree
 
     # Install remaining tools
     install_lazygit_generic
