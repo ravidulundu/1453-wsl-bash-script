@@ -133,6 +133,16 @@ install_composer() {
 install_php_version() {
     local version="$1"
     echo ""
+    
+    # Check if this PHP version is already installed
+    if command -v "php$version" &> /dev/null; then
+        local installed_version
+        installed_version=$("php$version" --version 2>&1 | head -n1)
+        echo -e "${CYAN}[!]${NC} PHP $version zaten kurulu: $installed_version"
+        track_skip "PHP $version" "Zaten kurulu"
+        return 0
+    fi
+    
     echo -e "${YELLOW}[BİLGİ]${NC} PHP ${version} ve Laravel eklentileri kuruluyor..."
 
     ensure_php_repository || return 1

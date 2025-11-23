@@ -6,6 +6,18 @@
 # Main shell setup function
 setup_custom_shell() {
     echo ""
+    
+    # Check if shell is already configured
+    if [ -f ~/.bash_aliases ] && grep -q "1453 WSL Setup" ~/.bash_aliases 2>/dev/null; then
+        if grep -q "BASHRC_MARKER_CONFIG_START" ~/.bashrc 2>/dev/null; then
+            echo -e "${CYAN}[!]${NC} Shell ortamı zaten yapılandırılmış"
+            echo -e "${YELLOW}[BİLGİ]${NC} Yeniden yapılandırmak ister misiniz?"
+            if ! gum_confirm "Shell yapılandırmasını yenile?"; then
+                track_skip "Shell Configuration" "Zaten yapılandırılmış"
+                return 0
+            fi
+        fi
+    fi
 
     # Run setup functions with error checking
     if ! setup_bash_aliases; then
@@ -28,7 +40,7 @@ setup_custom_shell() {
         return 1
     fi
 
-    track_success "Shell Configuration" "(62 aliases, starship, enhancements)"
+    track_success "Shell Configuration" "(75+ aliases, GitHub automation, starship)"
     echo -e "\n${GREEN}[BAŞARILI]${NC} Shell ortamı yapılandırması tamamlandı!"
     echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için: ${GREEN}source ~/.bashrc${NC}"
     return 0
