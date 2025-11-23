@@ -177,6 +177,9 @@ install_modern_cli_tools() {
     command -v lazygit &>/dev/null && final_installed+=("lazygit") || final_failed+=("lazygit")
     command -v lazydocker &>/dev/null && final_installed+=("lazydocker") || final_failed+=("lazydocker")
 
+    # Clear hash to ensure we find newly installed tools
+    hash -r 2>/dev/null
+
     installed_count=${#final_installed[@]}
 
     echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı! ($installed_count/11)"

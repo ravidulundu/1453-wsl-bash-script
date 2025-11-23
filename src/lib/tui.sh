@@ -284,7 +284,16 @@ tui_menu() {
     shift 2
     local options=("$@")
 
-    if [ "$TUI_MODE" = "dialog" ]; then
+    if has_gum; then
+        # Gum menu
+        echo ""
+        gum style --foreground 212 --bold "$title"
+        echo ""
+        gum style --foreground 99 "$prompt"
+        echo ""
+        
+        gum choose "${options[@]}"
+    elif [ "$TUI_MODE" = "dialog" ]; then
         # Dialog menu
         local menu_items=()
         local i=1
@@ -326,7 +335,12 @@ tui_yesno() {
     local title="$1"
     local message="$2"
 
-    if [ "$TUI_MODE" = "dialog" ]; then
+    if has_gum; then
+        echo ""
+        gum style --foreground 212 --bold "$title"
+        gum confirm "$message"
+        return $?
+    elif [ "$TUI_MODE" = "dialog" ]; then
         dialog --title "$title" --yesno "$message" 10 60
         return $?
     else
@@ -348,7 +362,18 @@ tui_infobox() {
     local message="$2"
     local duration="${3:-2}"
 
-    if [ "$TUI_MODE" = "dialog" ]; then
+    if has_gum; then
+        gum style \
+            --border rounded \
+            --padding "1 2" \
+            --border-foreground 212 \
+            --foreground 212 \
+            --align center \
+            "$title" \
+            "" \
+            "$message"
+        sleep "$duration"
+    elif [ "$TUI_MODE" = "dialog" ]; then
         dialog --title "$title" --infobox "$message" 10 60
         sleep "$duration"
     else

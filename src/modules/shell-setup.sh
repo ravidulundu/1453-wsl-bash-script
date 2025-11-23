@@ -263,6 +263,9 @@ export TERM=xterm-256color
 # - Different from package installation eval (which had command injection risk)
 # - Official recommended method: https://starship.rs/guide/
 if command -v starship &>/dev/null; then
+    # Clear command hash to ensure we use the correct binary location
+    # This prevents errors if starship was moved/reinstalled (e.g. /usr/local/bin -> /usr/bin)
+    hash -r 2>/dev/null
     eval "\$(starship init bash)"
 fi
 

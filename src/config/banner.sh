@@ -13,21 +13,35 @@ show_banner() {
         BANNER_SHOWN=1
     fi
 
-    # Modern minimalist banner (AI CLI inspired)
-    local width=70
-    local separator=$(printf '%*s' "$width" '' | tr ' ' '=')
-    
-    echo ""
-    echo "$separator"
-    echo "  1453.AI WSL Setup - Automated Development Environment"
-    echo "$separator"
-    echo ""
-    echo "  Version: v2.0 Modular"
-    echo "  GitHub:  github.com/ravidulundu/1453-wsl-bash-script"
-    echo "  Date:    $(date '+%Y-%m-%d %H:%M:%S')"
-    echo ""
-    echo "$separator"
-    echo ""
+    if command -v gum &>/dev/null; then
+        gum style \
+            --border double \
+            --margin "1 2" \
+            --padding "1 4" \
+            --border-foreground 212 \
+            --foreground 212 \
+            --align center \
+            "1453.AI WSL Setup" \
+            "Automated Development Environment" \
+            "" \
+            "v2.0 Modular"
+    else
+        # Fallback for when gum is not yet installed
+        local width=70
+        local separator=$(printf '%*s' "$width" '' | tr ' ' '=')
+        
+        echo ""
+        echo "$separator"
+        echo "  1453.AI WSL Setup - Automated Development Environment"
+        echo "$separator"
+        echo ""
+        echo "  Version: v2.0 Modular"
+        echo "  GitHub:  github.com/ravidulundu/1453-wsl-bash-script"
+        echo "  Date:    $(date '+%Y-%m-%d %H:%M:%S')"
+        echo ""
+        echo "$separator"
+        echo ""
+    fi
 }
 
 # Export the function and variable so they're available to other modules

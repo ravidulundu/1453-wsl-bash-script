@@ -98,22 +98,22 @@ show_mode_selection() {
 
         local selection
         selection=$(gum_choose \
-            "=== QUICK START MODE (Önerilen)" \
-            "[SETUP]  ADVANCED MODE" \
-            "❌ Çıkış")
+            "🚀 Hızlı Başlangıç (Önerilen)" \
+            "🛠️  Gelişmiş Mod" \
+            "🚪 Çıkış")
 
         case "$selection" in
-            "=== QUICK START MODE (Önerilen)")
+            "🚀 Hızlı Başlangıç (Önerilen)")
                 echo ""
                 run_quickstart_mode
                 continue
                 ;;
-            "[SETUP]  ADVANCED MODE")
+            "🛠️  Gelişmiş Mod")
                 echo ""
                 run_advanced_mode
                 break
                 ;;
-            "❌ Çıkış")
+            "🚪 Çıkış")
                 echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
@@ -177,35 +177,47 @@ run_advanced_mode() {
         # Banner shown at script start, don't redraw
         echo ""
 
+        # Modern Gum menu header
+        gum style \
+            --border double \
+            --margin "0 0" \
+            --padding "0 2" \
+            --border-foreground 212 \
+            --foreground 212 \
+            "ADVANCED SETUP MODE" \
+            "Select a category or tool to install"
+
+        echo ""
+
         # Modern Gum menu
         local selection
         selection=$(gum_choose \
-            " Tam Kurulum (Tüm Araçlar)" \
-            "🔧 Hazırlık (Sistem + Git)" \
+            "📦 Tam Kurulum (Tüm Araçlar)" \
+            "🔧 Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
-            "  [PYTHON] Python Ekosistemi (Python, pip, pipx, UV)" \
-            "  [PACKAGE] NVM (Node Version Manager)" \
-            "  ⚡ Bun.js" \
+            "🐍 Python Ekosistemi (pip, pipx, uv)" \
+            "🟢 Node.js (NVM)" \
+            "⚡ Bun.js Runtime" \
             "━━━ Backend & Languages ━━━" \
-            "  [PHP] PHP Kurulum" \
-            "  🎼 Composer" \
-            "  [GO] Go Language" \
+            "🐘 PHP Kurulumu" \
+            "🎼 Composer" \
+            "🐹 Go Dili" \
             "━━━ AI & Modern Tools ━━━" \
-            "  [AI] AI CLI Araçları" \
-            "  [AI] AI Frameworks" \
-            "   Modern CLI Tools" \
-            "  🎨 Shell Ortamı Yapılandırma" \
+            "🤖 AI CLI Araçları" \
+            "🧠 AI Frameworks" \
+            "🚀 Modern CLI Araçları" \
+            "🐚 Shell Yapılandırması" \
             "━━━ Docker & Utilities ━━━" \
-            "  🐳 Docker (Engine + lazydocker)" \
-            "━━━ Maintenance ━━━" \
-            "  ❌ AI Frameworks Kaldır" \
-            "  [DELETE]  Temizleme & Sıfırlama" \
+            "🐳 Docker Ortamı" \
+            "━━━ Bakım & Onarım ━━━" \
+            "🗑️  AI Frameworks Kaldır" \
+            "⚠️  Temizleme ve Sıfırlama" \
             "━━━━━━━━━━━━━━━━━━━━━" \
-            "< Ana Menüye Dön" \
+            "🔙 Ana Menüye Dön" \
             "🚪 Çıkış")
 
         case "$selection" in
-            " Tam Kurulum (Tüm Araçlar)")
+            "📦 Tam Kurulum"*)
                 echo ""
                 gum_style --foreground 226 "=== Tam kurulum başlatılıyor..."
                 sleep 1
@@ -225,7 +237,7 @@ run_advanced_mode() {
                 gum_style --foreground 82 --border rounded --padding "1 3" "✅ Tam kurulum tamamlandı!"
                 sleep 2
                 ;;
-            "🔧 Hazırlık (Sistem + Git)")
+            "🔧 Sistem Hazırlığı"*)
                 prepare_and_configure_git
                 ;;
             *"Python Ekosistemi"*)
@@ -240,13 +252,13 @@ run_advanced_mode() {
             *"Bun.js"*)
                 install_bun
                 ;;
-            *"PHP Kurulum"*)
+            *"PHP Kurulumu"*)
                 install_php_version_menu
                 ;;
             *"Composer"*)
                 install_composer
                 ;;
-            *"Go Language"*)
+            *"Go Dili"*)
                 install_go_menu
                 ;;
             *"AI CLI Araçları"*)
@@ -255,10 +267,10 @@ run_advanced_mode() {
             *"AI Frameworks"*)
                 install_ai_frameworks_menu
                 ;;
-            *"Modern CLI Tools"*)
+            *"Modern CLI Araçları"*)
                 install_modern_cli_tools
                 ;;
-            *"Shell Ortamı"*)
+            *"Shell Yapılandırması"*)
                 setup_custom_shell
                 ;;
             *"Docker"*)

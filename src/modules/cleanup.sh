@@ -59,19 +59,35 @@ cleanup_old_backups() {
 confirm_cleanup() {
     local item="$1"
 
-    echo ""
-    echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}"
-    echo -e "${YELLOW}Şunlar silinecek: $item${NC}"
-    echo ""
+    if has_gum; then
+        gum style --foreground 196 --border double --align center "⚠️  UYARI: Bu işlem GERİ ALINAMAZ!"
+        gum style --foreground 226 "Şunlar silinecek: $item"
+        echo ""
+        
+        if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
+            backup_configs
+        fi
+        
+        echo ""
+        gum style --foreground 196 "Silme işlemini onaylamak için 'evet' yazın:"
+        confirm=$(gum input --placeholder "evet")
+    else
+        echo ""
+        echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}"
+        echo -e "${YELLOW}Şunlar silinecek: $item${NC}"
+        echo ""
 
-    # Backup option
-    backup=$(gum_input --placeholder "Devam etmeden önce yedek oluşturulsun mu? (e/h)")
-    if [[ "$backup" =~ ^[Ee]$ ]]; then
-        backup_configs
+        # Backup option
+        echo -ne "${YELLOW}Devam etmeden önce yedek oluşturulsun mu? (e/h): ${NC}"
+        read -r backup
+        if [[ "$backup" =~ ^[Ee]$ ]]; then
+            backup_configs
+        fi
+
+        echo ""
+        echo -ne "${RED}Silme işlemine devam edilsin mi? (evet yazın): ${NC}"
+        read -r confirm
     fi
-
-    echo ""
-    confirm=$(gum_input --placeholder "Silme işlemine devam edilsin mi? (evet yazın)")
 
     if [[ "$confirm" != "evet" ]]; then
         echo -e "${CYAN}[BİLGİ]${NC} İptal edildi."

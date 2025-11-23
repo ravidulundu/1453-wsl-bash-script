@@ -52,18 +52,18 @@ show_presets() {
 
     local selection
     selection=$(gum_choose \
-        "🌐 WEB DEVELOPMENT - Python + Node.js + PHP + Composer" \
-        "[AI] AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
-        "[SETUP]  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
-        "=== EVERYTHING - Full-stack + AI + Backend (hepsi)" \
-        "📱 MOBILE + WEB - Python + Node.js + PHP + Flutter")
+        "🌐 Web Geliştirme (Python + Node + PHP)" \
+        "🤖 AI Geliştirme (Python + AI Tools)" \
+        "⚙️  Backend Geliştirme (Python + Go + PHP)" \
+        "🚀 Her Şey (Full Stack + AI)" \
+        "📱 Mobil + Web (Flutter + Node + PHP)")
 
     case "$selection" in
-        *"WEB DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="web" ;;
-        *"AI DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="ai" ;;
-        *"BACKEND DEVELOPMENT"*) QUICKSTART_PRESET_CHOICE="backend" ;;
-        *"EVERYTHING"*) QUICKSTART_PRESET_CHOICE="everything" ;;
-        *"MOBILE + WEB"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
+        *"Web Geliştirme"*) QUICKSTART_PRESET_CHOICE="web" ;;
+        *"AI Geliştirme"*) QUICKSTART_PRESET_CHOICE="ai" ;;
+        *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICE="backend" ;;
+        *"Her Şey"*) QUICKSTART_PRESET_CHOICE="everything" ;;
+        *"Mobil + Web"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
         *)
             echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
             sleep 1
