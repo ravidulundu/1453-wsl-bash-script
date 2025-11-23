@@ -13,33 +13,22 @@ show_banner() {
         BANNER_SHOWN=1
     fi
 
-    if command -v gum &>/dev/null; then
-        gum style \
-            --border double \
-            --margin "1 2" \
-            --padding "1 4" \
-            --border-foreground 212 \
-            --foreground 212 \
-            --align center \
-            "1453.AI WSL Setup" \
-            "Automated Development Environment" \
-            "" \
-            "v2.0 Modular"
+    if command -v gum &> /dev/null; then
+        echo ""
+        gum style --foreground 212 --bold "🚀 1453 WSL Setup v2.4"
+        gum style --foreground 99 "Automated Development Environment for AI Coders"
+        echo ""
     else
         # Fallback for when gum is not yet installed
-        local width=70
-        local separator=$(printf '%*s' "$width" '' | tr ' ' '=')
-        
         echo ""
-        echo "$separator"
-        echo "  1453.AI WSL Setup - Automated Development Environment"
-        echo "$separator"
+        echo "========================================================================"
+        echo "  🚀 1453 WSL Setup v2.4 - Automated Development Environment"
+        echo "========================================================================"
         echo ""
-        echo "  Version: v2.0 Modular"
         echo "  GitHub:  github.com/ravidulundu/1453-wsl-bash-script"
         echo "  Date:    $(date '+%Y-%m-%d %H:%M:%S')"
         echo ""
-        echo "$separator"
+        echo "========================================================================"
         echo ""
     fi
 }

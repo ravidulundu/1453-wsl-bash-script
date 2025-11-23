@@ -60,8 +60,9 @@ confirm_cleanup() {
     local item="$1"
 
     if has_gum; then
-        gum style --foreground 196 --border double --align center "⚠️  UYARI: Bu işlem GERİ ALINAMAZ!"
-        gum style --foreground 226 "Şunlar silinecek: $item"
+        echo ""
+        gum_style --foreground 196 --bold "⚠️  UYARI: Bu işlem GERİ ALINAMAZ!"
+        gum_style --foreground 226 "Şunlar silinecek: $item"
         echo ""
         
         if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
@@ -69,7 +70,7 @@ confirm_cleanup() {
         fi
         
         echo ""
-        gum style --foreground 196 "Silme işlemini onaylamak için 'evet' yazın:"
+        gum_style --foreground 196 "Silme işlemini onaylamak için 'evet' yazın:"
         confirm=$(gum input --placeholder "evet")
     else
         echo ""
