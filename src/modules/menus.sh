@@ -93,11 +93,10 @@ show_mode_selection() {
         echo ""
 
         # Show mode selection question
-        gum_style --foreground 212 --bold "[TARGET] Hangi kurulum modunu tercih edersiniz?"
-        echo ""
+        gum_header "KURULUM MODU SEÇİMİ" "Nasıl devam etmek istersiniz?"
 
         local selection
-        selection=$(gum_choose \
+        selection=$(gum_choose_enhanced "Bir mod seçin:" \
             "🚀 Hızlı Başlangıç (Önerilen)" \
             "🛠️  Gelişmiş Mod" \
             "🚪 Çıkış")
@@ -143,24 +142,20 @@ _advanced_mode_init() {
 
     # Run pre-flight checks with TUI
     echo ""
-    gum_style --foreground 212 --bold "🔍 ADVANCED MODE - Sistem Kontrolü"
-    echo ""
+    gum_header "SİSTEM KONTROLÜ" "Advanced Mode Başlatılıyor"
 
     if ! run_preflight_checks; then
-        echo ""
-        gum_style --foreground 196 --bold "❌ Sistem gereksinimleri karşılanamadı!"
-        gum_style --foreground 226 "Bazı kurulumlar başarısız olabilir."
+        gum_alert "Hata" "Sistem gereksinimleri karşılanamadı! Bazı kurulumlar başarısız olabilir."
         sleep 2
     else
-        echo ""
-        gum_style --foreground 82 "✅ Sistem kontrolleri başarılı!"
+        gum_success "Başarılı" "Sistem kontrolleri tamamlandı."
         sleep 1
     fi
 
     # Detect package manager
     echo ""
     detect_package_manager
-    gum_style --foreground 82 "📦 Paket yöneticisi: $PKG_MANAGER"
+    gum_info "Paket Yöneticisi" "$PKG_MANAGER tespit edildi."
     sleep 1
 }
 
@@ -178,12 +173,11 @@ run_advanced_mode() {
         echo ""
 
         # Menu header
-        gum_style --foreground 212 --bold "⚙️  ADVANCED SETUP MODE"
-        echo ""
+        gum_header "GELİŞMİŞ KURULUM MENÜSÜ" "Yapmak istediğiniz işlemi seçin"
 
         # Modern Gum menu
         local selection
-        selection=$(gum_choose \
+        selection=$(gum_choose_enhanced "Kategoriler:" \
             "📦 Tam Kurulum (Tüm Araçlar)" \
             "🔧 Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
@@ -211,7 +205,7 @@ run_advanced_mode() {
         case "$selection" in
             "📦 Tam Kurulum"*)
                 echo ""
-                gum_style --foreground 226 "=== Tam kurulum başlatılıyor..."
+                gum_info "Bilgi" "Tam kurulum başlatılıyor..."
                 sleep 1
                 update_system
                 configure_git
@@ -226,7 +220,7 @@ run_advanced_mode() {
                 install_github_cli
                 install_go
                 echo ""
-                gum_style --foreground 82 --border rounded --padding "1 3" "✅ Tam kurulum tamamlandı!"
+                gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
                 sleep 2
                 ;;
             "🔧 Sistem Hazırlığı"*)
@@ -279,7 +273,7 @@ run_advanced_mode() {
                 ;;
             *"Çıkış"*)
                 echo ""
-                gum_style --foreground 82 " Görüşürüz!"
+                gum_success "Hoşçakalın" "Görüşmek üzere!"
                 exit 0
                 ;;
             "━"*)
@@ -290,16 +284,11 @@ run_advanced_mode() {
 
         # Check if critical tools were installed
         if [ "$NVM_INSTALLED" = true ] || [ "$PYTHON_INSTALLED" = true ]; then
-            echo ""
-            gum_style --foreground 226 --border rounded --padding "1 2" \
-                "[WARNING]  Yeni kurulumlar tespit edildi!" \
-                "Değişikliklerin aktif olması için:" \
-                "  • source ~/.bashrc (veya ~/.zshrc)" \
-                "  • Ya da terminali yeniden başlatın"
+            gum_alert "Dikkat" "Yeni kurulumlar tespit edildi! Değişikliklerin aktif olması için terminali yeniden başlatın."
         fi
 
         echo ""
-        gum_confirm "Menüye dön?" || exit 0
+        gum_confirm_enhanced "Menüye dönmek istiyor musunuz?" || exit 0
     done
 }
 
