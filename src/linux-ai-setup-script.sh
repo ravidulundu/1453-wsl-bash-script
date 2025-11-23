@@ -143,10 +143,19 @@ else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
 fi
 
+
 echo ""
 echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..." >&2
 
-# Phase 7: Initialize TUI and run main program
+# Phase 7: Ensure Gum is installed for modern TUI (critical dependency)
+if ! command -v gum &>/dev/null; then
+    echo -e "${YELLOW}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
+    if command -v install_gum &>/dev/null; then
+        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+    fi
+fi
+
+# Phase 8: Initialize TUI and run main program
 init_tui
 echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı" >&2
 echo -e "${YELLOW}[DEBUG]${NC} main çağrılıyor..." >&2
