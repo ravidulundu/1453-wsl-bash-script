@@ -496,50 +496,25 @@ gum_spin() {
     fi
 }
 
-# Gum-powered styled output
-# Usage: gum_style --foreground 212 --border double "text"
-# Outputs styled text with automatic responsive padding
+# Gum-powered styled output (Classic CLI Style)
+# Usage: gum_style --foreground 212 "text"
+# Outputs plain styled text without borders or fancy formatting
 gum_style() {
     if has_gum; then
-        # Check if padding/margin already specified
-        local has_spacing=false
-        for arg in "$@"; do
-            if [[ "$arg" == "--padding" ]] || [[ "$arg" == "--margin" ]]; then
-                has_spacing=true
-                break
-            fi
-        done
-
-        # Add default responsive margin if not specified
-        if [ "$has_spacing" = false ]; then
-            # Calculate responsive margin based on terminal width
-            local margin_left=2
-            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 100 ]; then
-                margin_left=$((($TUI_WIDTH - 80) / 2))
-                [ "$margin_left" -lt 2 ] && margin_left=2
-                [ "$margin_left" -gt 10 ] && margin_left=10
-            fi
-
-            # Unset conflicting environment variables to prevent Gum errors
-            # Gum reads BOLD, ITALIC, UNDERLINE, etc. as flag values
-            (
-                unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
-                unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
-                unset ALIGN HEIGHT WIDTH MARGIN PADDING
-                gum style --margin "0 $margin_left" "$@"
-            )
-        else
-            # User specified spacing, use as-is
-            (
-                unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
-                unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
-                unset ALIGN HEIGHT WIDTH MARGIN PADDING
-                gum style "$@"
-            )
-        fi
+        # Unset conflicting environment variables to prevent Gum errors
+        # Gum reads BOLD, ITALIC, UNDERLINE, etc. as flag values
+        (
+            unset BOLD ITALIC UNDERLINE STRIKETHROUGH FAINT
+            unset FOREGROUND BACKGROUND BORDER BORDER_BACKGROUND BORDER_FOREGROUND
+            unset ALIGN HEIGHT WIDTH MARGIN PADDING
+            
+            # Plain output - no borders, no extra margins/padding
+            # Only pass through foreground color and text
+            gum style "$@"
+        )
     else
-        # Fallback: add 2-space padding
-        echo -e "  ${CYAN}${!#}${NC}"
+        # Fallback: simple colored output
+        echo -e "${CYAN}${!#}${NC}"
     fi
 }
 
