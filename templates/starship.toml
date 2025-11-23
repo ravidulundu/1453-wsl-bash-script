@@ -1,59 +1,53 @@
 # Starship Configuration - 1453 WSL Setup
+# Architect Theme - PRD Compliant
 # Official Nerd Font Symbols Preset
-# Source: https://starship.rs/presets/nerd-font
 
-# Catppuccin Mocha Color Palette
-palette = "catppuccin_mocha"
+# Architect 1453 Color Palette (PRD Specification)
+palette = "architect_1453"
 
-[palettes.catppuccin_mocha]
-rosewater = "#f5e0dc"
-flamingo = "#f2cdcd"
-pink = "#f5c2e7"
-mauve = "#cba6f7"
-red = "#f38ba8"
-maroon = "#eba0ac"
-peach = "#fab387"
-yellow = "#f9e2af"
-green = "#a6e3a1"
-teal = "#94e2d5"
-sky = "#89dceb"
-sapphire = "#74c7ec"
-blue = "#89b4fa"
-lavender = "#b4befe"
-text = "#cdd6f4"
-subtext1 = "#bac2de"
-subtext0 = "#a6adc8"
-overlay2 = "#9399b2"
-overlay1 = "#7f849c"
-overlay0 = "#6c7086"
-surface2 = "#585b70"
-surface1 = "#45475a"
-surface0 = "#313244"
-base = "#1e1e2e"
-mantle = "#181825"
-crust = "#11111b"
+[palettes.architect_1453]
+# Primary Colors (from PRD)
+crimson = "#DC143C"      # Marka vurgusu ve başlıklar
+gold = "#FFD700"         # Sınırlar ve ikonlar
+off_white = "#F5F5F5"    # Okunabilirlik
+error_red = "#FF0000"    # Kritik uyarılar
+success_teal = "#008080" # Tamamlanan işlemler
+
+# Extended Palette (Harmony)
+orange = "#FF8C00"
+cyan = "#00CED1"
+purple = "#9370DB"
+yellow = "#FFD700"       # Alias for gold
+green = "#2E8B57"        # Sea green
+blue = "#4169E1"         # Royal blue
+text = "#F5F5F5"         # Alias for off_white
+
+# Dark Theme Support
+bg_dark = "#1e1e2e"
+surface_dark = "#313244"
+overlay_dark = "#6c7086"
 
 # Format
 format = """
-[┌───────────────────────────────────>](bold green)
-[│](bold green)$username$hostname$shlvl$directory$git_branch$git_status$git_commit$git_state
-[│](bold green)$nodejs$bun$deno$python$golang$rust$php$java$ruby$lua
-[│](bold green)$docker_context$kubernetes$terraform$cmake$conda
-[└─>](bold green)$character"""
+[┌───────────────────────────────────>](bold gold)
+[│](bold gold)$username$hostname$shlvl$directory$git_branch$git_status$git_commit$git_state
+[│](bold gold)$nodejs$bun$deno$python$golang$rust$php$java$ruby$lua
+[│](bold gold)$docker_context$kubernetes$terraform$cmake$conda
+[└─>](bold gold)$character"""
 
 # Right format
 right_format = """$jobs $cmd_duration $time"""
 
 # Character (Prompt symbol)
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+success_symbol = "[❯](bold success_teal)"
+error_symbol = "[❯](bold error_red)"
+vimcmd_symbol = "[❮](bold success_teal)"
 
 # Username
 [username]
-style_user = "bold yellow"
-style_root = "bold red"
+style_user = "bold gold"
+style_root = "bold error_red"
 format = "[$user]($style) "
 disabled = false
 show_always = false
@@ -62,7 +56,7 @@ show_always = false
 [hostname]
 ssh_only = true
 ssh_symbol = " "
-style = "bold green"
+style = "bold success_teal"
 format = "[$ssh_symbol$hostname]($style) "
 disabled = false
 
@@ -84,7 +78,7 @@ format = "[$symbol$number]($style) "
 
 # Directory
 [directory]
-style = "bold blue"
+style = "bold cyan"
 read_only = " 󰌾"
 truncation_length = 3
 truncate_to_repo = true
@@ -93,12 +87,12 @@ format = "[$path]($style)[$read_only]($read_only_style) "
 # Git Branch
 [git_branch]
 symbol = " "
-style = "bold mauve"
+style = "bold crimson"
 format = "[$symbol$branch]($style) "
 
 # Git Status
 [git_status]
-style = "bold red"
+style = "bold error_red"
 format = "[$all_status$ahead_behind]($style)"
 conflicted = "✖"
 ahead = "⇡${count}"
@@ -116,7 +110,7 @@ deleted = "✘${count}"
 [git_commit]
 commit_hash_length = 7
 tag_symbol = "  "
-style = "bold green"
+style = "bold success_teal"
 format = '[\\($hash$tag\\)]($style) '
 
 # Git State
@@ -147,22 +141,22 @@ format = "[took $duration]($style)"
 # Programming Languages
 [nodejs]
 symbol = " "
-style = "bold green"
+style = "bold success_teal"
 format = "[$symbol($version )]($style)"
 
 [bun]
 symbol = " "
-style = "bold peach"
+style = "bold orange"
 format = "[$symbol($version )]($style)"
 
 [deno]
 symbol = " "
-style = "bold green"
+style = "bold success_teal"
 format = "[$symbol($version )]($style)"
 
 [python]
 symbol = " "
-style = "bold yellow"
+style = "bold gold"
 format = '[${symbol}${pyenv_prefix}(${version} )(\\($virtualenv\\) )]($style)'
 
 [golang]
@@ -172,12 +166,12 @@ format = "[$symbol($version )]($style)"
 
 [rust]
 symbol = "󱘗 "
-style = "bold red"
+style = "bold error_red"
 format = "[$symbol($version )]($style)"
 
 [php]
 symbol = " "
-style = "bold mauve"
+style = "bold purple"
 format = "[$symbol($version )]($style)"
 
 [java]

@@ -506,7 +506,7 @@ if command -v zoxide &>/dev/null; then
 fi
 
 if command -v vivid &>/dev/null; then
-    export LS_COLORS="\$(vivid generate catppuccin-mocha)"
+    export LS_COLORS="$(vivid generate snazzy)"
 fi
 
 # FZF configuration
@@ -518,9 +518,9 @@ if [ -f /usr/share/doc/fzf/examples/completion.bash ]; then
     source /usr/share/doc/fzf/examples/completion.bash
 fi
 
-# FZF default options (modern theme)
+# FZF default options (Architect 1453 theme)
 if command -v fzf &> /dev/null; then
-    export FZF_DEFAULT_OPTS='--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 --border=rounded --height=80% --layout=reverse'
+    export FZF_DEFAULT_OPTS='--color=bg+:#313244,bg:#1e1e2e,spinner:#FFD700,hl:#DC143C --color=fg:#F5F5F5,header:#DC143C,info:#9370DB,pointer:#FFD700 --color=marker:#008080,fg+:#F5F5F5,prompt:#FFD700,hl+:#DC143C --border=rounded --height=80% --layout=reverse'
 fi
 
 # Add ~/.local/bin to PATH
