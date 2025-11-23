@@ -87,9 +87,33 @@ show_installation_summary() {
 
     # Show summary
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  Toplam: $total_count  |  ${GREEN}Başarılı: $success_count${NC}  |  ${CYAN}Atlanan: $skipped_count${NC}  |  ${RED}Başarısız: $failed_count${NC}"
+    echo -e "  Toplam: $total_count  |  ${GREEN}Başarılı: $success_count${NC}  |  ${CYAN}Atlanan: $skipped_count${NC}  |  ${RED}Başarısiz: $failed_count${NC}"
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
+    
+    # Show post-installation instructions if there were successful installations
+    if [ $success_count -gt 0 ]; then
+        echo -e "${YELLOW}📋 KURULUM SONRASI YAPMALISINIZ:${NC}"
+        echo ""
+        echo -e "${GREEN}1.${NC} Terminal ortamınızı yenileyin (aşağıdakilerden birini seçin):"
+        echo -e "   ${CYAN}•${NC} ${GREEN}source ~/.bashrc${NC}  ${YELLOW}(en hızlı yöntem)${NC}"
+        echo -e "   ${CYAN}•${NC} ${GREEN}exec bash${NC}  ${YELLOW}(bash kullanıyorsanız)${NC}"
+        echo -e "   ${CYAN}•${NC} Terminali kapatıp yeniden açın  ${YELLOW}(en garantili)${NC}"
+        echo ""
+        echo -e "${GREEN}2.${NC} Kurulumları test edin:"
+        echo -e "   ${CYAN}•${NC} ${GREEN}python3 --version${NC}  ${YELLOW}(Python kuruldu mu?)${NC}"
+        echo -e "   ${CYAN}•${NC} ${GREEN}node --version${NC}  ${YELLOW}(Node.js kuruldu mu?)${NC}"
+        echo -e "   ${CYAN}•${NC} ${GREEN}which nvm${NC}  ${YELLOW}(NVM yolu)${NC}"
+        echo ""
+        echo -e "${GREEN}3.${NC} Yeni araçları keşfedin:"
+        echo -e "   ${CYAN}•${NC} ${GREEN}bat --help${NC}  ${YELLOW}(modern cat komutu)${NC}"
+        echo -e "   ${CYAN}•${NC} ${GREEN}eza --help${NC}  ${YELLOW}(modern ls komutu)${NC}"
+        echo -e "   ${CYAN}•${NC} ${GREEN}lazygit${NC}  ${YELLOW}(Git TUI)${NC}"
+        echo ""
+        echo -e "${YELLOW}💡 İPUCU:${NC} Shell değişiklikleri aktif olana kadar yeni kurulumlar çalışmayabilir!"
+        echo -e "${YELLOW}⚠️  ÖNEMLİ:${NC} Mutlaka ${GREEN}source ~/.bashrc${NC} komutunu çalıştırın veya terminali yeniden başlatın."
+        echo ""
+    fi
 
     # Return non-zero if there are failures
     if [ $failed_count -gt 0 ]; then
