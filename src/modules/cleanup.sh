@@ -13,7 +13,7 @@ backup_configs() {
     mkdir -p "$backup_root"
     mkdir -p "$backup_dir"
 
-    echo -e "${CYAN}[BİLGİ]${NC} Yedek oluşturuluyor: $backup_dir"
+    gum_info "Yedekleme" "Konfigürasyon dosyaları yedekleniyor..."
 
     # Backup config files
     [ -f ~/.bashrc ] && cp ~/.bashrc "$backup_dir/"
@@ -24,7 +24,7 @@ backup_configs() {
     # Backup installation directory
     [ -d ~/.1453-wsl-setup ] && cp -r ~/.1453-wsl-setup "$backup_dir/"
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Yedek oluşturuldu: $backup_dir"
+    gum_success "Yedek" "Konfigürasyonlar yedeklendi: $(basename $backup_dir)"
 
     # Cleanup old backups (keep only last 3)
     cleanup_old_backups "$backup_root"
@@ -38,7 +38,7 @@ cleanup_old_backups() {
     local backup_count=$(find "$backup_root" -maxdepth 1 -type d -name "backup-*" 2>/dev/null | wc -l)
 
     if [ "$backup_count" -gt 3 ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Eski yedekler temizleniyor (son 3 korunuyor)..."
+        gum_info "Temizlik" "Eski yedekler temizleniyor (son 3 korunacak)..."
 
         # List backups sorted by date (oldest first), skip last 3, delete rest
         find "$backup_root" -maxdepth 1 -type d -name "backup-*" -printf "%T@ %p\n" 2>/dev/null | \
@@ -46,12 +46,11 @@ cleanup_old_backups() {
             head -n -3 | \
             cut -d' ' -f2- | \
             while IFS= read -r old_backup; do
-                echo -e "${CYAN}[SİLİNİYOR]${NC} $(basename "$old_backup")"
-
+                gum_info "Siliniyor" "$(basename "$old_backup")"
                 safe_rm "$old_backup"
             done
 
-        echo -e "${GREEN}[BAŞARILI]${NC} Eski yedekler temizlendi (son 3 korundu)"
+        gum_success "Temizlendi" "Eski yedekler kaldırıldı (son 3 korundu)"
     fi
 }
 

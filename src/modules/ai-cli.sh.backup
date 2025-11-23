@@ -56,27 +56,33 @@ install_claude_code() {
 # Install Gemini CLI
 install_gemini_cli() {
     echo ""
-    gum_header "GEMINI CLI" "Google AI SDK"
+    echo -e "${YELLOW}[BİLGİ]${NC} Gemini CLI kurulumu başlatılıyor..."
 
+    # Check if already installed
     if python3 -c "import google.generativeai" 2>/dev/null; then
-        gum_success "Atlandı" "Gemini CLI zaten kurulu"
+        echo -e "${CYAN}[!]${NC} Gemini CLI (Google AI SDK) zaten kurulu"
         track_skip "Gemini CLI" "Zaten kurulu"
         return 0
     fi
 
     if ! command -v python3 &> /dev/null; then
-        gum_alert "Gereksinim" "Python kurulu değil"
-        install_python || return 1
+        echo -e "${YELLOW}[UYARI]${NC} Python kurulu değil. Önce Python kuruluyor..."
+        if ! install_python; then
+            track_failure "Gemini CLI" "Python gereksinimi karşılanamadı"
+            return 1
+        fi
     fi
 
-    if gum_spin_run "Google AI SDK kuruluyor..." "python3 -m pip install google-generativeai --break-system-packages 2>/dev/null || python3 -m pip install google-generativeai"; then
+    echo -e "${YELLOW}[BİLGİ]${NC} Google AI Python SDK kuruluyor..."
+    if python3 -m pip install google-generativeai --break-system-packages 2>/dev/null || \
+       python3 -m pip install google-generativeai; then
         local version
         version=$(python3 -c "import google.generativeai; print(google.generativeai.__version__)" 2>/dev/null || echo "unknown")
-        gum_success "Başarılı" "Gemini CLI kuruldu: $version"
+        echo -e "${GREEN}[BAŞARILI]${NC} Gemini CLI için Google AI SDK kuruldu!"
         track_success "Gemini CLI" "$version"
         return 0
     else
-        gum_alert "Hata" "Gemini CLI kurulumu başarısız!"
+        echo -e "${RED}[HATA]${NC} Gemini CLI kurulumu başarısız!"
         track_failure "Gemini CLI" "pip install başarısız"
         return 1
     fi
