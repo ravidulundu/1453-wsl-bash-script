@@ -341,7 +341,8 @@ _apt_install_starship() {
         fi
         
         # Fallback to official install script
-        echo -e "${YELLOW}[BİLGİ]${NC} APT başarısız, resmi script deneniyor..."
+        echo -e "${YELLOW}[BİLGİ]${NC} APT deposunda bulunamadı (Ubuntu 25.04+ gerekli)"
+        echo -e "${YELLOW}[BİLGİ]${NC} Resmi script ile kuruluyor..."
         local temp_starship_script
         temp_starship_script=$(mktemp)
 
