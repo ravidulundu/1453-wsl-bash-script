@@ -251,8 +251,23 @@ install_github_cli() {
     # FIX BUG-004: Use safe_install_packages() to prevent command injection
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} GitHub GPG key ekleniyor..."
-        if ! curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg; then
-            track_failure "GitHub CLI" "GPG key eklenemedi"
+        
+        # Download to temp file first to avoid pipe+sudo issues
+        local temp_keyring
+        temp_keyring=$(mktemp)
+        
+        if curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o "$temp_keyring"; then
+            # Move with sudo
+            if ! sudo mv "$temp_keyring" /usr/share/keyrings/githubcli-archive-keyring.gpg; then
+                rm -f "$temp_keyring"
+                track_failure "GitHub CLI" "GPG key taşınamadı (sudo hatası)"
+                return 1
+            fi
+            # Ensure correct permissions
+            sudo chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg
+        else
+            rm -f "$temp_keyring"
+            track_failure "GitHub CLI" "GPG key indirilemedi"
             return 1
         fi
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null

@@ -210,7 +210,17 @@ install_gum_minimal() {
     case $pkg_mgr in
         apt)
             sudo mkdir -p /etc/apt/keyrings 2>/dev/null
-            curl -fsSL https://repo.charm.sh/apt/gpg.key 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg 2>/dev/null
+            # FIX BUG-033: Download key to temp file first to avoid pipe+sudo issues
+            local temp_keyring
+            temp_keyring=$(mktemp)
+            if curl -fsSL https://repo.charm.sh/apt/gpg.key -o "$temp_keyring" 2>/dev/null; then
+                sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg < "$temp_keyring" 2>/dev/null
+                rm -f "$temp_keyring"
+            else
+                rm -f "$temp_keyring"
+                # Fallback to pipe if temp file fails (unlikely but safe fallback)
+                curl -fsSL https://repo.charm.sh/apt/gpg.key 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg 2>/dev/null
+            fi
             echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list >/dev/null
             sudo apt update -qq 2>/dev/null
             sudo apt install -y gum >/dev/null 2>&1

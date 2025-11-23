@@ -180,7 +180,7 @@ install_pipx() {
             "$TEMP_VENV/bin/pip" install --quiet --user pipx
 
             # Cleanup temp venv (user installation is in ~/.local)
-            rm -rf "$TEMP_VENV"
+            safe_rm "$TEMP_VENV"
         else
             # No PEP 668 restriction, safe to install directly
             python3 -m pip install --user pipx 2>/dev/null || \

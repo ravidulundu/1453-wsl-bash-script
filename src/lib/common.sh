@@ -13,6 +13,27 @@ safe_read() {
     fi
 }
 
+# Safe remove function to prevent accidents
+# Usage: safe_rm "/path/to/remove"
+safe_rm() {
+    local target="$1"
+    
+    if [ -z "$target" ]; then
+        echo -e "${RED}[HATA]${NC} safe_rm: Hedef belirtilmedi!"
+        return 1
+    fi
+
+    # Block dangerous paths
+    if [[ "$target" == "/" ]] || [[ "$target" == "$HOME" ]] || [[ "$target" == "/usr" ]] || [[ "$target" == "/bin" ]] || [[ "$target" == "/etc" ]]; then
+        echo -e "${RED}[HATA]${NC} safe_rm: Kritik dizin silinemez: $target"
+        return 1
+    fi
+
+    if [ -e "$target" ]; then
+        rm -rf "$target"
+    fi
+}
+
 # Reload shell configuration files
 # Usage: reload_shell_configs [mode]
 # mode: "verbose" (default) or "silent"

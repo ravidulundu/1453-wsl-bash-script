@@ -27,7 +27,19 @@ install_gum() {
 
             # Add Charm repository
             sudo mkdir -p /etc/apt/keyrings
-            curl -fsSL --retry 3 --retry-delay 5 https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+            
+            # FIX BUG-033: Download key to temp file first to avoid pipe+sudo issues
+            local temp_keyring
+            temp_keyring=$(mktemp)
+            if curl -fsSL --retry 3 --retry-delay 5 https://repo.charm.sh/apt/gpg.key -o "$temp_keyring"; then
+                sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg < "$temp_keyring"
+                rm -f "$temp_keyring"
+            else
+                rm -f "$temp_keyring"
+                echo -e "${RED}[HATA]${NC} Charm GPG key indirilemedi"
+                return 1
+            fi
+            
             echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
 
             echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
@@ -252,6 +264,10 @@ _apt_install_eza() {
         )
         
         local gpg_success=false
+        # Create temp file for GPG key download
+        local temp_script
+        temp_script=$(mktemp)
+        
         for gpg_url in "${gpg_sources[@]}"; do
             echo -e "${YELLOW}[BİLGİ]${NC} GPG anahtarı indiriliyor: $gpg_url"
             
@@ -259,19 +275,26 @@ _apt_install_eza() {
             sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
             
             # Try wget first (more reliable for piping to gpg)
+            # Try wget first
             if command -v wget &>/dev/null; then
-                if wget --timeout=15 --tries=2 -qO- "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
-                    gpg_success=true
-                    echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
-                    break
+                if wget --timeout=15 --tries=2 -qO "$temp_script" "$gpg_url" 2>/dev/null; then
+                    if sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg < "$temp_script" 2>/dev/null; then
+                        gpg_success=true
+                        echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
+                        rm -f "$temp_script"
+                        break
+                    fi
                 fi
             fi
             
             # Fallback to curl
-            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
-                gpg_success=true
-                echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
-                break
+            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" -o "$temp_script" 2>/dev/null; then
+                if sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg < "$temp_script" 2>/dev/null; then
+                    gpg_success=true
+                    echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
+                    rm -f "$temp_script"
+                    break
+                fi
             fi
             
             echo -e "${YELLOW}[!]${NC} $gpg_url başarısız, alternatif deneniyor..."

@@ -84,13 +84,13 @@ install_composer() {
     expected_checksum=$(curl -sS "$installer_sig_url") || true
     if [ -z "$expected_checksum" ]; then
         echo -e "${RED}[HATA]${NC} Installer imza bilgisi alınamadı."
-        rm -rf "$temp_dir"
+        safe_rm "$temp_dir"
         return 1
     fi
 
     if ! php -r "copy('$installer_url', '$installer_path');"; then
         echo -e "${RED}[HATA]${NC} Composer installer indirilemedi."
-        rm -rf "$temp_dir"
+        safe_rm "$temp_dir"
         return 1
     fi
 
@@ -98,18 +98,18 @@ install_composer() {
     actual_checksum=$(php -r "echo hash_file('sha384', '$installer_path');")
     if [ "$expected_checksum" != "$actual_checksum" ]; then
         echo -e "${RED}[HATA]${NC} İmza doğrulaması başarısız! Kurulum iptal edildi."
-        rm -rf "$temp_dir"
+        safe_rm "$temp_dir"
         return 1
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Installer doğrulandı, Composer yükleniyor..."
     if ! sudo php "$installer_path" --quiet --install-dir=/usr/local/bin --filename=composer; then
         echo -e "${RED}[HATA]${NC} Composer kurulumu başarısız oldu."
-        rm -rf "$temp_dir"
+        safe_rm "$temp_dir"
         return 1
     fi
 
-    rm -rf "$temp_dir"
+    safe_rm "$temp_dir"
 
     if command -v composer &> /dev/null; then
         local version

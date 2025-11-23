@@ -47,7 +47,8 @@ cleanup_old_backups() {
             cut -d' ' -f2- | \
             while IFS= read -r old_backup; do
                 echo -e "${CYAN}[SİLİNİYOR]${NC} $(basename "$old_backup")"
-                rm -rf "$old_backup"
+
+                safe_rm "$old_backup"
             done
 
         echo -e "${GREEN}[BAŞARILI]${NC} Eski yedekler temizlendi (son 3 korundu)"
@@ -236,7 +237,8 @@ cleanup_python() {
     if command -v pipx &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} pipx paketleri kaldırılıyor..."
         pipx uninstall-all 2>/dev/null
-        rm -rf ~/.local/pipx
+
+        safe_rm ~/.local/pipx
 
         # Remove pipx itself if installed via APT
         if [ "$PKG_MANAGER" = "apt" ]; then
@@ -249,7 +251,8 @@ cleanup_python() {
     if command -v uv &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} UV kaldırılıyor..."
         rm -f ~/.local/bin/uv
-        rm -rf ~/.local/share/uv
+
+        safe_rm ~/.local/share/uv
         echo -e "${GREEN}[BAŞARILI]${NC} UV kaldırıldı"
     fi
 
@@ -278,7 +281,8 @@ cleanup_nodejs() {
     # NVM
     if [ -d "$HOME/.nvm" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} NVM kaldırılıyor..."
-        rm -rf ~/.nvm
+
+        safe_rm ~/.nvm
 
         # FIX BUG-014: Use portable temp file approach instead of sed -i
         # Remove NVM from shell configs
@@ -291,7 +295,8 @@ cleanup_nodejs() {
     # Bun
     if command -v bun &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Bun kaldırılıyor..."
-        rm -rf ~/.bun
+
+        safe_rm ~/.bun
         # FIX BUG-014: Use portable temp file approach instead of sed -i
         sed '/BUN_INSTALL/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
         echo -e "${GREEN}[BAŞARILI]${NC} Bun kaldırıldı"
@@ -308,7 +313,8 @@ cleanup_php() {
     if command -v composer &>/dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Composer kaldırılıyor..."
         sudo rm -f /usr/local/bin/composer
-        rm -rf ~/.composer
+
+        safe_rm ~/.composer
         echo -e "${GREEN}[BAŞARILI]${NC} Composer kaldırıldı"
     fi
 
@@ -560,7 +566,7 @@ cleanup_shell_configs() {
 
     # Remove fzf
     if [ -d ~/.fzf ]; then
-        rm -rf ~/.fzf
+        safe_rm ~/.fzf
         echo -e "${GREEN}[BAŞARILI]${NC} FZF dizini silindi"
     fi
 
@@ -791,7 +797,7 @@ cleanup_full_reset() {
     # Remove installation directory
     if [ -d ~/.1453-wsl-setup ]; then
         echo -e "\n${YELLOW}[BİLGİ]${NC} Kurulum dizini kaldırılıyor..."
-        rm -rf ~/.1453-wsl-setup
+        safe_rm ~/.1453-wsl-setup
         echo -e "${GREEN}[BAŞARILI]${NC} Kurulum dizini kaldırıldı"
     fi
 
