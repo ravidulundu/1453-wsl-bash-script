@@ -6,12 +6,12 @@
 # Main shell setup function
 setup_custom_shell() {
     echo ""
+    gum_header "SHELL YAPILANDIRMASI" "Özel Alias'lar ve Fonksiyonlar"
     
     # Check if shell is already configured
     if [ -f ~/.bash_aliases ] && grep -q "1453 WSL Setup" ~/.bash_aliases 2>/dev/null; then
         if grep -q "BASHRC_MARKER_CONFIG_START" ~/.bashrc 2>/dev/null; then
-            echo -e "${CYAN}[!]${NC} Shell ortamı zaten yapılandırılmış"
-            echo -e "${YELLOW}[BİLGİ]${NC} Yeniden yapılandırmak ister misiniz?"
+            gum_info "Kurulu" "Shell ortamı zaten yapılandırılmış"
             if ! gum_confirm "Shell yapılandırmasını yenile?"; then
                 track_skip "Shell Configuration" "Zaten yapılandırılmış"
                 return 0
@@ -40,22 +40,20 @@ setup_custom_shell() {
         return 1
     fi
 
-    track_success "Shell Configuration" "(75+ aliases, GitHub automation, starship)"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell ortamı yapılandırması tamamlandı!"
-    echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için: ${GREEN}source ~/.bashrc${NC}"
+    track_success "Shell Configuration" "75+ aliases, GitHub automation, starship"
+    gum_success "Tamamlandı" "Shell ortamı yapılandırıldı!"
+    gum_info "Bilgi" "Değişikliklerin aktif olması için: source ~/.bashrc"
     return 0
 }
 
 # Setup custom aliases
 setup_bash_aliases() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Özel alias'lar yapılandırılıyor..."
-
     local ALIASES_FILE="$HOME/.bash_aliases"
 
     # Create backup if file exists
     if [ -f "$ALIASES_FILE" ]; then
         cp "$ALIASES_FILE" "${ALIASES_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-        echo -e "${CYAN}[BİLGİ]${NC} Mevcut .bash_aliases yedeklendi."
+        gum_info "Yedek" "Mevcut .bash_aliases yedeklendi"
     fi
 
     # Write aliases to file
@@ -213,20 +211,18 @@ EOF
         echo "[ -f ~/.bash_aliases ] && . ~/.bash_aliases" >> "$HOME/.bashrc"
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Alias'lar yapılandırıldı: $ALIASES_FILE"
+    gum_success "Alias'lar" "75+ alias yapılandırıldı"
     return 0
 }
 
 # Setup custom functions
 setup_custom_functions() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Özel fonksiyonlar ekleniyor..."
-
     local BASHRC="$HOME/.bashrc"
 
     # FIX: Idempotent install - Remove old block if exists, then add fresh one
     # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_FUNCTIONS_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[!]${NC} Mevcut özel fonksiyonlar bulundu, güncelleniyor..."
+        gum_info "Güncelleme" "Mevcut fonksiyonlar bulundu, güncelleniyor"
         # Remove old block completely (from START marker to END marker)
         sed -i "/$BASHRC_MARKER_FUNCTIONS_START/,/$BASHRC_MARKER_FUNCTIONS_END/d" "$BASHRC"
     fi
@@ -451,20 +447,18 @@ ghclone() {
 
 EOF
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Özel fonksiyonlar eklendi."
+    gum_success "Fonksiyonlar" "GitHub otomasyonu ve yardımcı fonksiyonlar eklendi"
     return 0
 }
 
 # Setup enhanced bashrc configuration
 setup_bashrc_enhancements() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Bash yapılandırması geliştiriliyor..."
-
     local BASHRC="$HOME/.bashrc"
 
     # FIX: Idempotent install - Remove old block if exists, then add fresh one
     # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_CONFIG_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[!]${NC} Mevcut Bash yapılandırması bulundu, güncelleniyor..."
+        gum_info "Güncelleme" "Mevcut Bash yapılandırması bulundu, güncelleniyor"
         # Remove old block completely (from START marker to END marker)
         sed -i "/$BASHRC_MARKER_CONFIG_START/,/$BASHRC_MARKER_CONFIG_END/d" "$BASHRC"
     fi
@@ -533,37 +527,35 @@ export BROWSER=wslview
 
 EOF
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Bash yapılandırması geliştirildi."
+    gum_success "Bashrc" "History, modern tools ve PATH yapılandırıldı"
     return 0
 }
 
 # Setup Starship configuration
 setup_starship_config() {
     if ! command -v starship &> /dev/null; then
-        echo -e "${CYAN}[BİLGİ]${NC} Starship kurulu değil, config atlanıyor."
+        gum_info "Atlandı" "Starship kurulu değil, config atlanıyor"
         return 0
     fi
-
-    echo -e "${YELLOW}[BİLGİ]${NC} Starship yapılandırması oluşturuluyor..."
 
     local STARSHIP_CONFIG="$HOME/.config/starship.toml"
     local TEMPLATE_FILE="${SCRIPT_DIR}/templates/starship.toml"
 
     # Backup existing config
     if [ -f "$STARSHIP_CONFIG" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Mevcut Starship config yedekleniyor..."
         cp "$STARSHIP_CONFIG" "${STARSHIP_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
+        gum_info "Yedek" "Mevcut Starship config yedeklendi"
     fi
 
     mkdir -p "$HOME/.config"
 
     # REFACTOR O-2: Load from template instead of 412-line heredoc
     if [ -f "$TEMPLATE_FILE" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Template'den yükleniyor: $TEMPLATE_FILE"
         cp "$TEMPLATE_FILE" "$STARSHIP_CONFIG"
+        gum_success "Starship" "Architect 1453 teması uygulandı"
     else
         # Fallback: Use embedded heredoc if template missing
-        echo -e "${YELLOW}[UYARI]${NC} Template bulunamadı, embedded config kullanılıyor"
+        gum_alert "Uyarı" "Template bulunamadı, embedded config kullanılıyor"
         cat > "$STARSHIP_CONFIG" << 'EOF'
 # Starship Configuration - 1453 WSL Setup
 # Theme: Catppuccin Mocha + Nerd Fonts
@@ -978,8 +970,7 @@ format = "[$symbol($version )]($style)"
 EOF
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
-    echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"
+    gum_info "Font" "JetBrainsMono Nerd Font Mono ile kullanın"
     return 0
 }
 
