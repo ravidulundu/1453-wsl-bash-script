@@ -6,42 +6,55 @@
 # Ensure PHP repository is configured
 ensure_php_repository() {
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "\n${YELLOW}[BİLGİ]${NC} PHP için Ondřej Surý deposu kontrol ediliyor..."
-        # FIX BUG-004: Use safe_install_packages() to prevent command injection
-        safe_install_packages software-properties-common ca-certificates apt-transport-https lsb-release gnupg
-        if ! grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA ekleniyor..."
-            sudo add-apt-repository -y ppa:ondrej/php
+        # Check if already added
+        if grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
+            return 0
         fi
-        sudo apt update
+
+        gum_info "Repo" "Ondřej Surý PHP deposu ekleniyor..."
+        
+        local repo_cmd="
+            sudo apt-get install -y software-properties-common ca-certificates apt-transport-https lsb-release gnupg
+            sudo add-apt-repository -y ppa:ondrej/php
+            sudo apt-get update -qq
+        "
+        
+        if gum_spin_run "PPA ekleniyor..." "$repo_cmd"; then
+            gum_success "Başarılı" "PHP deposu eklendi."
+        else
+            gum_alert "Hata" "PHP deposu eklenemedi!"
+            return 1
+        fi
+
     elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
         if ! rpm -qa | grep -qi remi-release; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Remi PHP deposu ekleniyor..."
-            if [ -f /etc/os-release ]; then
-                # shellcheck disable=SC1091
-                . /etc/os-release
-            fi
-            if [ "${ID:-}" = "fedora" ]; then
-                local fedora_ver
-                fedora_ver="${VERSION_ID:-}"
-                if [ -z "$fedora_ver" ]; then
-                    fedora_ver=$(rpm -E %fedora 2>/dev/null || echo "")
-                fi
-                if [ -n "$fedora_ver" ]; then
-                    sudo "$PKG_MANAGER" install -y "https://rpms.remirepo.net/fedora/remi-release-${fedora_ver}.rpm"
+            gum_info "Repo" "Remi PHP deposu ekleniyor..."
+            
+            local repo_cmd="
+                if [ -f /etc/os-release ]; then . /etc/os-release; fi
+                if [ \"\${ID:-}\" = \"fedora\" ]; then
+                    fedora_ver=\"\${VERSION_ID:-}\"
+                    if [ -z \"\$fedora_ver\" ]; then fedora_ver=\$(rpm -E %fedora 2>/dev/null || echo \"\"); fi
+                    if [ -n \"\$fedora_ver\" ]; then
+                        sudo $PKG_MANAGER install -y \"https://rpms.remirepo.net/fedora/remi-release-\${fedora_ver}.rpm\"
+                    else
+                        exit 1
+                    fi
                 else
-                    echo -e "${RED}[HATA]${NC} Fedora sürümü tespit edilemedi."
-                    return 1
+                    rhel_version=\$(rpm -E %rhel 2>/dev/null || echo \"\")
+                    if [ -n \"\$rhel_version\" ]; then
+                        sudo $PKG_MANAGER install -y \"https://rpms.remirepo.net/enterprise/remi-release-\${rhel_version}.rpm\"
+                    else
+                        exit 1
+                    fi
                 fi
+            "
+            
+            if gum_spin_run "Remi deposu ekleniyor..." "$repo_cmd"; then
+                gum_success "Başarılı" "Remi deposu eklendi."
             else
-                local rhel_version
-                rhel_version=$(rpm -E %rhel 2>/dev/null || echo "")
-                if [ -n "$rhel_version" ]; then
-                    sudo "$PKG_MANAGER" install -y "https://rpms.remirepo.net/enterprise/remi-release-${rhel_version}.rpm"
-                else
-                    echo -e "${RED}[HATA]${NC} Remi deposu otomatik eklenemedi. Lütfen manuel olarak yapılandırın."
-                    return 1
-                fi
+                gum_alert "Hata" "Remi deposu eklenemedi!"
+                return 1
             fi
         fi
     fi
@@ -52,78 +65,61 @@ ensure_php_repository() {
 # Install Composer
 install_composer() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Composer kurulumu denetleniyor..."
+    gum_header "COMPOSER KURULUMU" "PHP Paket Yöneticisi"
 
     if command -v composer &> /dev/null; then
         local version
         version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Composer zaten kurulu: $version"
+        gum_success "Atlandı" "Composer zaten kurulu: $version"
         track_skip "Composer" "Zaten kurulu ($version)"
         return 0
     fi
 
     if ! command -v php &> /dev/null; then
-        echo -e "${RED}[HATA]${NC} Composer kurulumu için PHP gereklidir. Lütfen önce PHP kurun."
+        gum_alert "Hata" "Composer kurulumu için PHP gereklidir. Lütfen önce PHP kurun."
         track_failure "Composer" "PHP gereksinimi karşılanamadı"
         return 1
     fi
 
-    local temp_dir
-    temp_dir=$(mktemp -d)
-    if [ ! -d "$temp_dir" ]; then
-        echo -e "${RED}[HATA]${NC} Geçici dizin oluşturulamadı."
-        return 1
-    fi
+    local install_cmd="
+        temp_dir=\$(mktemp -d)
+        installer_path=\"\$temp_dir/composer-setup.php\"
+        installer_sig_url=\"https://composer.github.io/installer.sig\"
+        installer_url=\"https://getcomposer.org/installer\"
 
-    local installer_path="$temp_dir/composer-setup.php"
-    local installer_sig_url="https://composer.github.io/installer.sig"
-    local installer_url="https://getcomposer.org/installer"
+        expected_checksum=\$(curl -sS \"\$installer_sig_url\") || exit 1
+        php -r \"copy('\$installer_url', '\$installer_path');\" || exit 1
+        
+        actual_checksum=\$(php -r \"echo hash_file('sha384', '\$installer_path');\")
+        if [ \"\$expected_checksum\" != \"\$actual_checksum\" ]; then
+            rm -rf \"\$temp_dir\"
+            exit 1
+        fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Composer installer indiriliyor..."
-    local expected_checksum
-    expected_checksum=$(curl -sS "$installer_sig_url") || true
-    if [ -z "$expected_checksum" ]; then
-        echo -e "${RED}[HATA]${NC} Installer imza bilgisi alınamadı."
-        safe_rm "$temp_dir"
-        return 1
-    fi
+        sudo php \"\$installer_path\" --quiet --install-dir=/usr/local/bin --filename=composer
+        rm -rf \"\$temp_dir\"
+    "
 
-    if ! php -r "copy('$installer_url', '$installer_path');"; then
-        echo -e "${RED}[HATA]${NC} Composer installer indirilemedi."
-        safe_rm "$temp_dir"
-        return 1
-    fi
-
-    local actual_checksum
-    actual_checksum=$(php -r "echo hash_file('sha384', '$installer_path');")
-    if [ "$expected_checksum" != "$actual_checksum" ]; then
-        echo -e "${RED}[HATA]${NC} İmza doğrulaması başarısız! Kurulum iptal edildi."
-        safe_rm "$temp_dir"
-        return 1
-    fi
-
-    echo -e "${YELLOW}[BİLGİ]${NC} Installer doğrulandı, Composer yükleniyor..."
-    if ! sudo php "$installer_path" --quiet --install-dir=/usr/local/bin --filename=composer; then
-        echo -e "${RED}[HATA]${NC} Composer kurulumu başarısız oldu."
-        safe_rm "$temp_dir"
-        return 1
-    fi
-
-    safe_rm "$temp_dir"
-
-    if command -v composer &> /dev/null; then
-        local version
-        version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
-        echo -e "${GREEN}[BAŞARILI]${NC} Composer kurulumu tamamlandı: $version"
-        echo -e "\n${CYAN}[BİLGİ]${NC} Composer Kullanım İpuçları:"
-        echo -e "  ${GREEN}•${NC} Proje bağımlılıklarını kurma: ${GREEN}composer install${NC}"
-        echo -e "  ${GREEN}•${NC} Paket ekleme: ${GREEN}composer require paket/adi${NC}"
-        echo -e "  ${GREEN}•${NC} Laravel kurulumu: ${GREEN}composer global require laravel/installer${NC}"
-        echo -e "  ${GREEN}•${NC} Paketleri güncelleme: ${GREEN}composer update${NC}"
-        track_success "Composer" "$version"
-        return 0
+    if gum_spin_run "Composer indiriliyor ve kuruluyor..." "$install_cmd"; then
+        if command -v composer &> /dev/null; then
+            local version
+            version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
+            gum_success "Başarılı" "Composer kurulumu tamamlandı: $version"
+            
+            echo -e "\n${CYAN}[BİLGİ]${NC} Composer Kullanım İpuçları:"
+            echo -e "  ${GREEN}•${NC} Proje bağımlılıklarını kurma: ${GREEN}composer install${NC}"
+            echo -e "  ${GREEN}•${NC} Paket ekleme: ${GREEN}composer require paket/adi${NC}"
+            echo -e "  ${GREEN}•${NC} Laravel kurulumu: ${GREEN}composer global require laravel/installer${NC}"
+            
+            track_success "Composer" "$version"
+            return 0
+        else
+            gum_alert "Hata" "Composer kurulumu başarısız!"
+            track_failure "Composer" "Kurulum başarısız"
+            return 1
+        fi
     else
-        echo -e "${RED}[HATA]${NC} Composer kurulumu başarısız!"
+        gum_alert "Hata" "Composer kurulumu başarısız!"
         track_failure "Composer" "Kurulum başarısız"
         return 1
     fi
@@ -133,132 +129,106 @@ install_composer() {
 install_php_version() {
     local version="$1"
     echo ""
+    gum_header "PHP ${version} KURULUMU" "Web Geliştirme Dili"
     
     # Check if this PHP version is already installed
     if command -v "php$version" &> /dev/null; then
         local installed_version
         installed_version=$("php$version" --version 2>&1 | head -n1)
-        echo -e "${CYAN}[!]${NC} PHP $version zaten kurulu: $installed_version"
+        gum_success "Atlandı" "PHP $version zaten kurulu: $installed_version"
         track_skip "PHP $version" "Zaten kurulu"
         return 0
     fi
     
-    echo -e "${YELLOW}[BİLGİ]${NC} PHP ${version} ve Laravel eklentileri kuruluyor..."
+    # Ensure repo first
+    if ! ensure_php_repository; then
+        return 1
+    fi
 
-    ensure_php_repository || return 1
-
-    declare -A pkg_map=()
+    # Build package list
+    local pkgs_to_install=()
     local skipped_exts=()
 
     case "$PKG_MANAGER" in
         apt)
-            pkg_map["php${version}"]=1
-            pkg_map["php${version}-cli"]=1
-            pkg_map["php${version}-common"]=1
-            pkg_map["php${version}-fpm"]=1
+            pkgs_to_install+=("php${version}" "php${version}-cli" "php${version}-common" "php${version}-fpm")
             for ext in "${PHP_EXTENSION_PACKAGES[@]}"; do
-                local pkg_name=""
                 case "$ext" in
-                    fpm)
-                        continue
-                        ;;
-                    tokenizer)
-                        skipped_exts+=("tokenizer (PHP çekirdeği ile geliyor)")
-                        continue
-                        ;;
-                    *)
-                        pkg_name="php${version}-${ext}"
-                        ;;
+                    fpm) continue ;;
+                    tokenizer) skipped_exts+=("tokenizer"); continue ;;
+                    *) pkgs_to_install+=("php${version}-${ext}") ;;
                 esac
-                pkg_map["$pkg_name"]=1
             done
             ;;
         dnf|yum)
             local rpm_suffix
             rpm_suffix=$(echo "$version" | tr -d '.')
             local base="php${rpm_suffix}-php"
-            pkg_map["${base}"]=1
-            pkg_map["${base}-cli"]=1
-            pkg_map["${base}-common"]=1
-            pkg_map["${base}-fpm"]=1
+            pkgs_to_install+=("${base}" "${base}-cli" "${base}-common" "${base}-fpm")
             for ext in "${PHP_EXTENSION_PACKAGES[@]}"; do
                 local ext_name="$ext"
                 case "$ext" in
-                    fpm)
-                        continue
-                        ;;
-                    tokenizer)
-                        skipped_exts+=("tokenizer (PHP çekirdeği ile geliyor)")
-                        continue
-                        ;;
-                    sqlite3)
-                        ext_name="pdo_sqlite"
-                        ;;
-                    mysql)
-                        ext_name="mysqlnd"
-                        ;;
-                    pgsql)
-                        ext_name="pdo_pgsql"
-                        ;;
+                    fpm) continue ;;
+                    tokenizer) skipped_exts+=("tokenizer"); continue ;;
+                    sqlite3) ext_name="pdo_sqlite" ;;
+                    mysql) ext_name="mysqlnd" ;;
+                    pgsql) ext_name="pdo_pgsql" ;;
                 esac
-                pkg_map["${base}-${ext_name}"]=1
+                pkgs_to_install+=("${base}-${ext_name}")
             done
             ;;
         pacman)
-            echo -e "${YELLOW}[UYARI]${NC} Arch Linux için PHP kurulumu manuel olarak yapılandırılmalıdır."
-            # FIX BUG-004: Use safe_install_packages() to prevent command injection
-            safe_install_packages php php-fpm
+            gum_alert "Uyarı" "Arch Linux için PHP kurulumu manuel olarak yapılandırılmalıdır."
+            pkgs_to_install+=("php" "php-fpm")
             ;;
     esac
 
-    local pkgs_to_install=()
-    for pkg in "${!pkg_map[@]}"; do
-        pkgs_to_install+=("$pkg")
-    done
-
     if [ ${#pkgs_to_install[@]} -gt 0 ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak paketler: ${pkgs_to_install[*]}"
-        # FIX BUG-004: Use safe_install_packages() to prevent command injection
-        safe_install_packages "${pkgs_to_install[@]}"
-    fi
+        local install_cmd=""
+        if [ "$PKG_MANAGER" = "apt" ]; then
+            install_cmd="sudo apt-get install -y ${pkgs_to_install[*]}"
+        elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
+            install_cmd="sudo $PKG_MANAGER install -y ${pkgs_to_install[*]}"
+        elif [ "$PKG_MANAGER" = "pacman" ]; then
+            install_cmd="sudo pacman -S --noconfirm ${pkgs_to_install[*]}"
+        fi
 
-    if [ ${#skipped_exts[@]} -gt 0 ]; then
-        echo -e "${YELLOW}[UYARI]${NC} Atlanılan eklentiler (zaten mevcut): ${skipped_exts[*]}"
+        if gum_spin_run "PHP ${version} ve eklentileri kuruluyor..." "$install_cmd"; then
+            gum_success "Başarılı" "PHP ${version} kurulumu tamamlandı!"
+            if [ ${#skipped_exts[@]} -gt 0 ]; then
+                gum_info "Not" "Bazı eklentiler çekirdeğe dahil olduğu için atlandı: ${skipped_exts[*]}"
+            fi
+        else
+            gum_alert "Hata" "PHP ${version} kurulumu başarısız!"
+            return 1
+        fi
     fi
-
-    echo -e "${GREEN}[BAŞARILI]${NC} PHP ${version} kurulumu tamamlandı!"
 }
 
 # Menu for PHP version selection
 install_php_version_menu() {
     echo ""
-    gum_style --foreground 212 --bold "[PHP] PHP Sürüm Seçimi"
-    echo ""
+    gum_header "PHP MENÜSÜ" "Sürüm Yönetimi"
 
     # Build menu options
     local -a options=()
     for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
         options+=("PHP ${ver}")
     done
-    options+=("━━━━━━━━━━━━━━━━━━━━━")
-    options+=("[PACKAGE] Tüm sürümleri kur")
-    options+=("< Ana menüye dön")
+    options+=("📦 Tüm sürümleri kur")
+    options+=("🔙 Ana menüye dön")
 
     local selection
-    selection=$(gum_choose "${options[@]}")
+    selection=$(gum_choose_enhanced "${options[@]}")
 
     case "$selection" in
-        "< Ana menüye dön"|"")
+        *"Ana menüye dön"*)
             return
             ;;
-        "[PACKAGE] Tüm sürümleri kur")
+        *"Tüm sürümleri kur"*)
             for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
                 install_php_version "$ver"
             done
-            ;;
-        "━"*)
-            # Separator, ignore
-            return
             ;;
         "PHP "*)
             local version="${selection#PHP }"
