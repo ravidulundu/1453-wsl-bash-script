@@ -239,19 +239,19 @@ setup_custom_functions() {
 # Create directory and cd into it
 # FIX BUG-008: Use 'return' instead of 'exit' to avoid killing the shell
 mcd() {
-    mkdir -p "\$1" && cd "\$1" || return 1
+    mkdir -p "$1" && cd "$1" || return 1
 }
 
 # Make file executable
 # FIX BUG-007: Renamed from 'make()' to 'mkexec()' to avoid shadowing system 'make' command
 mkexec() {
-    chmod +x "\$1"
+    chmod +x "$1"
 }
 
 # GitHub: Create new project and push to GitHub
 # Usage: ghnew <project-name> [--private] [--public]
 ghnew() {
-    local project_name="\$1"
+    local project_name="$1"
     local visibility="public"
     
     # Check if gh is installed
@@ -269,39 +269,39 @@ ghnew() {
     fi
     
     # Validate project name
-    if [ -z "\$project_name" ]; then
+    if [ -z "$project_name" ]; then
         echo "❌ Proje adı gerekli!"
         echo "Kullanım: ghnew <proje-adı> [--private|--public]"
         return 1
     fi
     
     # Check for visibility flag
-    if [[ "\$2" == "--private" ]]; then
+    if [[ "$2" == "--private" ]]; then
         visibility="private"
-    elif [[ "\$2" == "--public" ]]; then
+    elif [[ "$2" == "--public" ]]; then
         visibility="public"
     fi
     
     # Check if directory already exists
-    if [ -d "\$project_name" ]; then
-        echo "⚠️  Klasör zaten mevcut: \$project_name"
+    if [ -d "$project_name" ]; then
+        echo "⚠️  Klasör zaten mevcut: $project_name"
         echo "Devam etmek istiyor musunuz? (y/N)"
         read -r response
-        if [[ ! "\$response" =~ ^[yY]\$ ]]; then
+        if [[ ! "$response" =~ ^[yY]$ ]]; then
             echo "İptal edildi."
             return 1
         fi
-        cd "\$project_name" || return 1
+        cd "$project_name" || return 1
     else
         # Create project directory
-        mkdir -p "\$project_name" || {
+        mkdir -p "$project_name" || {
             echo "❌ Klasör oluşturulamadı!"
             return 1
         }
-        cd "\$project_name" || return 1
+        cd "$project_name" || return 1
     fi
     
-    echo "📁 Proje klasörü: \$(pwd)"
+    echo "📁 Proje klasörü: $(pwd)"
     
     # Initialize git if not already initialized
     if [ ! -d .git ]; then
@@ -316,20 +316,20 @@ ghnew() {
     if [ ! -f README.md ]; then
         echo "📝 README.md oluşturuluyor..."
         cat > README.md << READMEEOF
-# \$project_name
+# $project_name
 
 ## Açıklama
 Bu proje otomatik olarak oluşturuldu.
 
 ## Kurulum
-\\\`\\\`\\\`bash
+\`\`\`bash
 # Kurulum adımları buraya
-\\\`\\\`\\\`
+\`\`\`
 
 ## Kullanım
-\\\`\\\`\\\`bash
+\`\`\`bash
 # Kullanım örnekleri buraya
-\\\`\\\`\\\`
+\`\`\`
 
 ## Lisans
 MIT
@@ -373,20 +373,20 @@ GITIGNOREEOF
         return 1
     }
     
-    git commit -m "Initial commit: Setup \$project_name" || {
+    git commit -m "Initial commit: Setup $project_name" || {
         echo "❌ Git commit başarısız!"
         return 1
     }
     
     # Create GitHub repo
-    echo "🌐 GitHub'da repo oluşturuluyor (\$visibility)..."
-    if [ "\$visibility" = "private" ]; then
-        gh repo create "\$project_name" --private --source=. --push || {
+    echo "🌐 GitHub'da repo oluşturuluyor ($visibility)..."
+    if [ "$visibility" = "private" ]; then
+        gh repo create "$project_name" --private --source=. --push || {
             echo "❌ GitHub repo oluşturma başarısız!"
             return 1
         }
     else
-        gh repo create "\$project_name" --public --source=. --push || {
+        gh repo create "$project_name" --public --source=. --push || {
             echo "❌ GitHub repo oluşturma başarısız!"
             return 1
         }
@@ -394,14 +394,14 @@ GITIGNOREEOF
     
     echo ""
     echo "✅ Proje başarıyla oluşturuldu ve GitHub'a gönderildi!"
-    echo "📦 Repo: https://github.com/\$(gh api user --jq '.login')/\$project_name"
-    echo "📁 Yerel: \$(pwd)"
+    echo "📦 Repo: https://github.com/$(gh api user --jq '.login')/$project_name"
+    echo "📁 Yerel: $(pwd)"
 }
 
 # GitHub: Quick commit and push
 # Usage: ghpush "commit message"
 ghpush() {
-    local commit_msg="\${1:-"Quick update"}"
+    local commit_msg="${1:-"Quick update"}"
     
     # Check if we're in a git repo
     if [ ! -d .git ]; then
@@ -411,7 +411,7 @@ ghpush() {
     
     echo "💾 Değişiklikler commit ediliyor..."
     git add .
-    git commit -m "\$commit_msg" || {
+    git commit -m "$commit_msg" || {
         echo "⚠️  Commit başarısız (değişiklik yok olabilir)"
         return 1
     }
@@ -428,23 +428,23 @@ ghpush() {
 # GitHub: Quick clone with cd
 # Usage: ghclone <repo-url-or-username/repo>
 ghclone() {
-    if [ -z "\$1" ]; then
+    if [ -z "$1" ]; then
         echo "❌ Repo adresi gerekli!"
         echo "Kullanım: ghclone <username/repo> veya ghclone <url>"
         return 1
     fi
     
-    gh repo clone "\$1" || {
+    gh repo clone "$1" || {
         echo "❌ Clone başarısız!"
         return 1
     }
     
     # Extract repo name and cd into it
     local repo_name
-    repo_name=\$(basename "\$1" .git)
-    if [ -d "\$repo_name" ]; then
-        cd "\$repo_name" || return 1
-        echo "✅ Clone başarılı! Dizin: \$(pwd)"
+    repo_name=$(basename "$1" .git)
+    if [ -d "$repo_name" ]; then
+        cd "$repo_name" || return 1
+        echo "✅ Clone başarılı! Dizin: $(pwd)"
     fi
 }
 # $BASHRC_MARKER_FUNCTIONS_END
