@@ -117,30 +117,33 @@ DOCKER_AUTOSTART
     if command -v docker &> /dev/null; then
         echo -e "\n${GREEN}[BAŞARILI]${NC} Docker Engine kurulumu tamamlandı!"
         docker --version
+        
+        # CRITICAL: Always show these instructions for WSL/Linux users
+        echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${GREEN}✅ Docker başarıyla kuruldu!${NC}"
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "\n${CYAN}📋 ŞİMDİ NE YAPMANIZ GEREKİYOR:${NC}"
+        echo -e "\n${YELLOW}1️⃣  Docker daemon'ı başlatın (her açılışta gerekli):${NC}"
+        echo -e "   ${GREEN}sudo service docker start${NC}"
+        echo -e "\n${YELLOW}2️⃣  Grup yetkilerini aktifleştirin (iki seçenekten BİRİNİ):${NC}"
+        echo -e "   ${GREEN}A) Terminal'i KAPATIN ve YENİDEN AÇIN${NC} ${CYAN}(önerilen)${NC}"
+        echo -e "   ${GREEN}B) Bu komutu çalıştırın:${NC} ${CYAN}newgrp docker${NC}"
+        echo -e "\n${YELLOW}3️⃣  Test edin:${NC}"
+        echo -e "   ${GREEN}docker ps${NC}"
+        
+        if grep -q "microsoft" /proc/version; then
+            echo -e "\n${CYAN}💡 WSL Kullanıcıları İçin İyi Haber:${NC}"
+            echo -e "   ${GREEN}✓${NC} Bir sonraki terminal açılışlarında Docker ${GREEN}otomatik başlayacak${NC}"
+            echo -e "   ${GREEN}✓${NC} Bu adımları sadece ${YELLOW}ŞİMDİ${NC} yapmanız gerekiyor"
+        fi
+        
+        echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-        # Check daemon status
-        if ! docker info &> /dev/null; then
-            echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-            echo -e "${YELLOW}⚠️  ÖNEMLİ: Docker Permission Ayarı Gerekli!${NC}"
-            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-            echo -e "\n${CYAN}Docker çalışıyor ama yetki ayarı gerekiyor.${NC}"
-            echo -e "\n${GREEN}Şunları yapmanız gerekiyor:${NC}"
-            echo -e "\n${YELLOW}1️⃣  Docker daemon'ı başlatın:${NC}"
-            echo -e "   ${CYAN}sudo service docker start${NC}"
-            echo -e "\n${YELLOW}2️⃣  Yeni grup yetkilerini aktifleştirin (iki yöntemden birini):${NC}"
-            echo -e "   ${GREEN}A)${NC} Terminal'i kapatıp yeniden açın (önerilen)"
-            echo -e "   ${GREEN}B)${NC} Şu komutu çalıştırın: ${CYAN}newgrp docker${NC}"
-            echo -e "\n${YELLOW}3️⃣  Test edin:${NC}"
-            echo -e "   ${CYAN}docker ps${NC}"
-            
-            if grep -q "microsoft" /proc/version; then
-                echo -e "\n${CYAN}💡 WSL İpucu: Docker'ın otomatik başlaması için:${NC}"
-                echo -e "   ${GREEN}echo 'sudo service docker start 2>/dev/null' >> ~/.bashrc${NC}"
-            fi
-            
-            echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        # Check daemon status for additional troubleshooting
+        if ! docker info &> /dev/null 2>&1; then
+            echo -e "\n${CYAN}[BİLGİ]${NC} Docker henüz kullanıma hazır değil (yukarıdaki adımları uygulayın)"
         else
-            echo -e "${GREEN}[+]${NC} Docker Daemon çalışıyor."
+            echo -e "\n${GREEN}[+]${NC} Docker zaten çalışıyor! Hemen kullanabilirsiniz."
         fi
     else
         echo -e "${RED}[HATA]${NC} Docker Engine kurulumu başarısız!"
