@@ -6,7 +6,7 @@
 # Configure Git
 configure_git() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Git yapılandırması başlatılıyor..."
+    gum_info "Bilgi" "Git yapılandırması başlatılıyor..."
 
     # Check existing git configuration
     local current_user
@@ -15,14 +15,14 @@ configure_git() {
     current_email=$(git config --global user.email 2>/dev/null || echo "")
 
     if [ -n "$current_user" ] && [ -n "$current_email" ]; then
-        echo -e "${CYAN}[!]${NC} Mevcut Git yapılandırması:"
+        gum_info "Bilgi" "Mevcut Git yapılandırması:"
         echo -e "  Kullanıcı: ${GREEN}$current_user${NC}"
         echo -e "  E-posta: ${GREEN}$current_email${NC}"
         echo ""
 
         # Use Gum confirm if available
         if ! gum_confirm "Yeni yapılandırma yapmak istiyor musunuz?"; then
-            echo -e "${CYAN}[!]${NC} Git yapılandırması değiştirilmedi"
+            gum_info "Bilgi" "Git yapılandırması değiştirilmedi"
             track_skip "Git Yapılandırması" "Mevcut yapılandırma korundu"
             return 0
         fi
@@ -36,7 +36,7 @@ configure_git() {
     git_email=$(gum_input --placeholder "Git e-posta adresinizi girin" --value "$current_email")
 
     if [ -z "$git_user" ] || [ -z "$git_email" ]; then
-        echo -e "${RED}[HATA]${NC} Kullanıcı adı ve e-posta gereklidir!"
+        gum_alert "Hata" "Kullanıcı adı ve e-posta gereklidir!"
         track_failure "Git Yapılandırması" "Eksik bilgi"
         return 1
     fi
@@ -44,7 +44,7 @@ configure_git() {
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Git yapılandırması tamamlandı!"
+    gum_success "Başarılı" "Git yapılandırması tamamlandı!"
     echo -e "  Kullanıcı: $git_user"
     echo -e "  E-posta: $git_email"
     track_success "Git Yapılandırması" "$git_user <$git_email>"

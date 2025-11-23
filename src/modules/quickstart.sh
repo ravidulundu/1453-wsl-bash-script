@@ -83,7 +83,7 @@ generate_installation_plan() {
     echo ""
 
     # Always install base tools
-    echo -e "${YELLOW}[PACKAGE] İlk önce (tüm paketlerde):${NC}"
+    gum_info "Bilgi" "[PACKAGE] İlk önce (tüm paketlerde):"
     echo -e "  [+] Sistem güncellemeleri"
     echo -e "  [+] Git yapılandırması"
     echo -e "  [+] Python + pip + pipx + UV"
@@ -96,27 +96,27 @@ generate_installation_plan() {
 
     case $preset in
         "web")
-            echo -e "${YELLOW}🌐 Web Development paketi:${NC}"
+            gum_info "Bilgi" "🌐 Web Development paketi:"
             echo -e "  [+] Node.js (NVM)"
             echo -e "  [+] Bun.js runtime"
             echo -e "  [+] PHP + Composer"
             tools+=("nvm" "node" "bun" "php" "composer")
             ;;
         "ai")
-            echo -e "${YELLOW}[AI] AI Development paketi:${NC}"
+            gum_info "Bilgi" "[AI] AI Development paketi:"
             echo -e "  [+] Node.js (AI araçları için)"
             echo -e "  [+] AI CLI Tools (Claude, Gemini, etc.)"
             echo -e "  [+] AI Frameworks (SuperClaude, etc.)"
             tools+=("nvm" "node" "ai_cli" "ai_frameworks")
             ;;
         "backend")
-            echo -e "${YELLOW}[SETUP]  Backend Development paketi:${NC}"
+            gum_info "Bilgi" "[SETUP]  Backend Development paketi:"
             echo -e "  [+] Go language"
             echo -e "  [+] PHP + Composer"
             tools+=("go" "php" "composer")
             ;;
         "everything")
-            echo -e "${YELLOW}=== EVERYTHING paketi:${NC}"
+            gum_info "Bilgi" "=== EVERYTHING paketi:"
             echo -e "  [+] Node.js + Bun.js"
             echo -e "  [+] Go language"
             echo -e "  [+] PHP + Composer"
@@ -125,7 +125,7 @@ generate_installation_plan() {
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
-            echo -e "${YELLOW}📱 Mobile + Web paketi:${NC}"
+            gum_info "Bilgi" "📱 Mobile + Web paketi:"
             echo -e "  [+] Node.js"
             echo -e "  [+] PHP + Composer"
             echo -e "  [+] Flutter araçları"
@@ -157,7 +157,7 @@ _quickstart_show_welcome() {
         echo -e "${GREEN}=== QUICK START MODE - KURULUM BAŞLIYOR${NC}"
     fi
     echo ""
-    echo -e "${YELLOW}Kurulum planınız hazırlanıyor...${NC}"
+    gum_info "Bilgi" "Kurulum planınız hazırlanıyor..."
     echo -e "${GREEN}${#tools[@]}${NC} araç otomatik kurulacak"
     echo ""
     echo -e "${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')"
@@ -191,7 +191,7 @@ _quickstart_update_system() {
     if has_gum; then
         gum_style --foreground 212 --bold "[PACKAGE] SİSTEM GÜNCELLENİYOR"
     else
-        echo -e "${YELLOW}[PACKAGE] SİSTEM GÜNCELLENİYOR${NC}"
+        gum_info "Bilgi" "[PACKAGE] SİSTEM GÜNCELLENİYOR"
     fi
     echo ""
     show_install_status "System Update" "installing"
@@ -208,7 +208,7 @@ _quickstart_configure_git() {
     if has_gum; then
         gum_style --foreground 226 --bold "🔧 GIT YAPILANDIRMASI"
     else
-        echo -e "${YELLOW}🔧 GIT YAPILANDIRMASI${NC}"
+        gum_info "Bilgi" "🔧 GIT YAPILANDIRMASI"
     fi
     echo ""
     show_install_status "Git Configuration" "installing"
@@ -251,7 +251,7 @@ _quickstart_install_modern_tools() {
     if has_gum; then
         gum_style --foreground 212 --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
     else
-        echo -e "${YELLOW}⚡ MODERN CLI ARAÇLARI KURULUYOR${NC}"
+        gum_info "Bilgi" "⚡ MODERN CLI ARAÇLARI KURULUYOR"
     fi
     echo ""
     show_install_status "Modern CLI Tools" "installing"
@@ -337,7 +337,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 212 --bold "⚡ BUN.JS KURULUYOR"
                 else
-                    echo -e "${YELLOW}⚡ BUN.JS KURULUYOR${NC}"
+                    gum_info "Bilgi" "⚡ BUN.JS KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Bun.js" "installing"
@@ -356,7 +356,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 141 --bold "[PHP] PHP 8.3 KURULUYOR"
                 else
-                    echo -e "${YELLOW}[PHP] PHP 8.3 KURULUYOR${NC}"
+                    gum_info "Bilgi" "[PHP] PHP 8.3 KURULUYOR"
                 fi
                 echo ""
                 show_install_status "PHP 8.3" "installing"
@@ -377,7 +377,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 226 --bold "🎼 COMPOSER KURULUYOR"
                 else
-                    echo -e "${YELLOW}🎼 COMPOSER KURULUYOR${NC}"
+                    gum_info "Bilgi" "🎼 COMPOSER KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Composer" "installing"
@@ -415,7 +415,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 212 --bold "[AI] AI CLI ARAÇLARI KURULUYOR"
                 else
-                    echo -e "${YELLOW}[AI] AI CLI ARAÇLARI KURULUYOR${NC}"
+                    gum_info "Bilgi" "[AI] AI CLI ARAÇLARI KURULUYOR"
                 fi
                 echo ""
 
@@ -442,7 +442,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 141 --bold "[AI] AI FRAMEWORK KURULUYOR"
                 else
-                    echo -e "${YELLOW}[AI] AI FRAMEWORK KURULUYOR${NC}"
+                    gum_info "Bilgi" "[AI] AI FRAMEWORK KURULUYOR"
                 fi
                 echo ""
                 show_install_status "SuperClaude" "installing"
@@ -479,7 +479,7 @@ execute_installation_plan() {
     if has_gum; then
         gum_style --foreground 212 --bold "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     else
-        echo -e "${YELLOW}[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!${NC}"
+        gum_info "Bilgi" "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     fi
     echo ""
     echo -e "${CYAN}[INFO] ŞİMDİ NE YAPACAKSINIZ?${NC}"
@@ -501,7 +501,7 @@ execute_installation_plan() {
     echo -e "   ${CYAN}•${NC} Python venv: ${GREEN}python3 -m venv venv${NC}"
     echo -e "   ${CYAN}•${NC} Node proje: ${GREEN}npm init -y${NC}"
     echo ""
-    echo -e "${YELLOW}[SETUP]  İleri düzey araçlar için:${NC}"
+    gum_info "Bilgi" "[SETUP]  İleri düzey araçlar için:"
     echo -e "   Scripti tekrar çalıştırıp ${GREEN}'Advanced Mode'${NC} seçin"
     echo ""
 }
