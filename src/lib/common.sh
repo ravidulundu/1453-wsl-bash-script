@@ -315,7 +315,7 @@ download_with_checksum() {
     echo -e "${YELLOW}[BİLGİ]${NC} İndiriliyor: $(basename "$url")"
 
     # Download file
-    if ! curl -fsSL --retry 3 --retry-delay 5 -o "$output_path" "$url"; then
+    if ! curl -fsSL --retry 3 --retry-delay 30 -o "$output_path" "$url"; then
         echo -e "${RED}[✗]${NC} İndirme başarısız: $url"
         return 1
     fi
