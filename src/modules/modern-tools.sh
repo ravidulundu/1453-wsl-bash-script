@@ -233,28 +233,58 @@ _apt_install_eza() {
         echo -e "${YELLOW}[BİLGİ]${NC} Eza kuruluyor..."
         
         # Remove old repository files to prevent conflicts
-        sudo rm -f /etc/apt/sources.list.d/gierens.list
-        sudo rm -f /etc/apt/keyrings/gierens.gpg
+        sudo rm -f /etc/apt/sources.list.d/gierens.list 2>/dev/null
+        sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
+        
+        # Ensure gpg is installed
+        if ! command -v gpg &>/dev/null; then
+            echo -e "${YELLOW}[BİLGİ]${NC} GPG kuruluyor..."
+            sudo apt update -qq 2>/dev/null
+            sudo apt install -y gpg 2>/dev/null
+        fi
         
         sudo mkdir -p /etc/apt/keyrings
         
-        # Try to download GPG key
+        # Try multiple sources for GPG key (official eza.rocks first, then GitHub)
+        local gpg_sources=(
+            "https://eza.rocks/deb.asc"
+            "https://raw.githubusercontent.com/eza-community/eza/main/deb.asc"
+        )
+        
         local gpg_success=false
-        if command -v wget &>/dev/null; then
-            if wget --timeout=10 --tries=2 -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
-                gpg_success=true
+        for gpg_url in "${gpg_sources[@]}"; do
+            echo -e "${YELLOW}[BİLGİ]${NC} GPG anahtarı indiriliyor: $gpg_url"
+            
+            # Try wget first (more reliable for piping to gpg)
+            if command -v wget &>/dev/null; then
+                if wget --timeout=15 --tries=2 -qO- "$gpg_url" 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
+                    gpg_success=true
+                    echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
+                    break
+                fi
             fi
-        fi
+            
+            # Fallback to curl
+            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
+                gpg_success=true
+                echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
+                break
+            fi
+            
+            echo -e "${YELLOW}[!]${NC} $gpg_url başarısız, alternatif deneniyor..."
+        done
         
         if [ "$gpg_success" = false ]; then
-            if curl -fsSL --connect-timeout 10 --max-time 20 https://raw.githubusercontent.com/eza-community/eza/main/deb.asc 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
-                gpg_success=true
-            fi
+            echo -e "${RED}[HATA]${NC} Eza GPG anahtarı hiçbir kaynaktan indirilemedi"
+            echo -e "${YELLOW}[!]${NC} Muhtemelen ağ sorunu veya GitHub rate limit"
+            echo -e "${YELLOW}[!]${NC} Eza kurulumu atlanıyor..."
+            return 1
         fi
         
-        if [ "$gpg_success" = false ]; then
-            echo -e "${RED}[HATA]${NC} Eza GPG anahtarı indirilemedi (ağ sorunu veya rate limit)"
-            echo -e "${YELLOW}[!]${NC} Eza kurulumu atlanıyor, diğer araçlar kuruluyor..."
+        # Verify GPG key file exists and is not empty
+        if [ ! -s /etc/apt/keyrings/gierens.gpg ]; then
+            echo -e "${RED}[HATA]${NC} GPG anahtar dosyası boş veya oluşturulamadı"
+            sudo rm -f /etc/apt/keyrings/gierens.gpg
             return 1
         fi
         
@@ -262,21 +292,32 @@ _apt_install_eza() {
         echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
         sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
         
-        # Update and install
-        if sudo apt update -qq 2>&1 | grep -q "NO_PUBKEY\|not signed"; then
-             echo -e "${RED}[HATA]${NC} Eza repository GPG doğrulaması başarısız"
+        # Update package list
+        echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
+        if ! sudo apt update -qq 2>&1 | grep -v "NO_PUBKEY\|not signed"; then
+             echo -e "${RED}[HATA]${NC} Eza repository güncellemesi başarısız"
+             echo -e "${YELLOW}[!]${NC} Repository dosyaları temizleniyor..."
+             sudo rm -f /etc/apt/sources.list.d/gierens.list
+             sudo rm -f /etc/apt/keyrings/gierens.gpg
+             return 1
+        fi
+        
+        # Check for GPG errors one more time
+        if sudo apt update 2>&1 | grep -q "NO_PUBKEY.*EC29E2090CE3FD43\|not signed.*gierens"; then
+             echo -e "${RED}[HATA]${NC} GPG doğrulaması hala başarısız (EC29E2090CE3FD43)"
              echo -e "${YELLOW}[!]${NC} Repository kaldırılıyor..."
              sudo rm -f /etc/apt/sources.list.d/gierens.list
              sudo rm -f /etc/apt/keyrings/gierens.gpg
              return 1
         fi
         
-        sudo apt install -y eza 2>/dev/null || {
+        # Install eza
+        if sudo apt install -y eza 2>/dev/null; then
+            echo -e "${GREEN}[BAŞARILI]${NC} Eza kuruldu"
+        else
             echo -e "${RED}[HATA]${NC} Eza paketi kurulamadı"
             return 1
-        }
-        
-        echo -e "${GREEN}[BAŞARILI]${NC} Eza kuruldu"
+        fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
     fi
