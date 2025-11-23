@@ -4,64 +4,51 @@
 # Dependencies: lib/common.sh, lib/package-manager.sh, modules/javascript.sh
 
 # Install Claude Code CLI
+# Install Claude Code CLI
 install_claude_code() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI kurulumu başlatılıyor..."
+    gum_header "CLAUDE CODE CLI" "Anthropic Claude Terminal"
 
-    # Check if already installed (command is 'claude', not 'claude-code')
+    # Check if already installed
     if command -v claude &> /dev/null; then
         local version
         version=$(claude --version 2>/dev/null | head -n1 || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Claude Code CLI zaten kurulu: $version"
+        gum_success "Atlandı" "Claude Code CLI zaten kurulu: $version"
         track_skip "Claude Code CLI" "Zaten kurulu"
         return 0
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Claude Code CLI indiriliyor: $CLAUDE_CODE_INSTALL_URL"
-
-    # Download installer to temp file for better error handling
-    local temp_installer
-    temp_installer=$(mktemp)
-
-    if curl -fsSL "$CLAUDE_CODE_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
-
-        # Run installer
-        if bash "$temp_installer"; then
-            rm -f "$temp_installer"
-            reload_shell_configs
-
-            # Check for 'claude' command (not 'claude-code')
-            if command -v claude &> /dev/null; then
-                local version
-                version=$(claude --version 2>/dev/null | head -n1 || echo "unknown")
-                echo -e "${GREEN}[BAŞARILI]${NC} Claude Code CLI kurulumu tamamlandı: $version"
-                echo -e "${CYAN}[ℹ]${NC} Komut: ${GREEN}claude${NC} (not claude-code)"
-                track_success "Claude Code CLI" "$version"
-                return 0
-            else
-                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama claude komutu bulunamadı!"
-                echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
-                echo -e "${YELLOW}[!]${NC} veya yeni terminal açın"
-                track_failure "Claude Code CLI" "Komut bulunamadı (shell reload gerekli)"
-                return 1
-            fi
+    # Download and install
+    local temp_installer=$(mktemp)
+    
+    local install_cmd="
+        if curl -fsSL \"$CLAUDE_CODE_INSTALL_URL\" -o \"$temp_installer\" 2>/dev/null; then
+            bash \"$temp_installer\"
+            rm -f \"$temp_installer\"
         else
-            rm -f "$temp_installer"
-            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
-            track_failure "Claude Code CLI" "Kurulum scripti başarısız"
+            rm -f \"$temp_installer\"
+            exit 1
+        fi
+    "
+
+    if gum_spin_run "Claude Code CLI kuruluyor..." "$install_cmd"; then
+        reload_shell_configs
+
+        if command -v claude &> /dev/null; then
+            local version
+            version=$(claude --version 2>/dev/null | head -n1 || echo "unknown")
+            gum_success "Başarılı" "Claude Code CLI kuruldu: $version"
+            gum_info "Kullanım" "Komut: claude"
+            track_success "Claude Code CLI" "$version"
+            return 0
+        else
+            gum_alert "Dikkat" "Kurulum tamamlandı ama 'claude' komutu bulunamadı. Shell'i yenileyin: source ~/.bashrc"
+            track_failure "Claude Code CLI" "Komut bulunamadı (shell reload gerekli)"
             return 1
         fi
     else
-        rm -f "$temp_installer"
-        echo -e "${RED}[HATA]${NC} Claude Code CLI indirilemedi!"
-        echo -e "${YELLOW}[!]${NC} URL: $CLAUDE_CODE_INSTALL_URL"
-        echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
-        echo -e "    - URL geçersiz olabilir (404)"
-        echo -e "    - İnternet bağlantısı sorunu"
-        echo -e "    - GitHub erişim sorunu"
-        echo -e "${CYAN}[ℹ]${NC} Elle kurmak için: npm install -g @anthropic-ai/claude-code"
-        track_failure "Claude Code CLI" "İndirme başarısız (URL veya ağ sorunu)"
+        gum_alert "Hata" "Claude Code CLI kurulumu başarısız! Elle kurmak için: npm install -g @anthropic-ai/claude-code"
+        track_failure "Claude Code CLI" "İndirme veya kurulum başarısız"
         return 1
     fi
 }
@@ -232,13 +219,13 @@ install_copilot_cli() {
 # Install GitHub CLI
 install_github_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kurulumu başlatılıyor..."
+    gum_header "GITHUB CLI" "Git İşlemleri için CLI Aracı"
 
     # Check if already installed
     if command -v gh &> /dev/null; then
         local version
         version=$(gh --version 2>/dev/null | head -n1 || echo "unknown")
-        echo -e "${CYAN}[!]${NC} GitHub CLI zaten kurulu: $version"
+        gum_success "Atlandı" "GitHub CLI zaten kurulu: $version"
         track_skip "GitHub CLI" "Zaten kurulu"
         return 0
     fi
@@ -248,60 +235,55 @@ install_github_cli() {
         detect_package_manager
     fi
 
-    # FIX BUG-004: Use safe_install_packages() to prevent command injection
+    # APT-specific setup (GPG key + repository)
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} GitHub GPG key ekleniyor..."
-        
-        # Download to temp file first to avoid pipe+sudo issues
-        local temp_keyring
-        temp_keyring=$(mktemp)
-        
-        if curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o "$temp_keyring"; then
-            # Move with sudo
-            if ! sudo mv "$temp_keyring" /usr/share/keyrings/githubcli-archive-keyring.gpg; then
-                rm -f "$temp_keyring"
-                track_failure "GitHub CLI" "GPG key taşınamadı (sudo hatası)"
-                return 1
+        local setup_cmd="
+            # Download GPG key
+            temp_keyring=\$(mktemp)
+            if curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o \"\$temp_keyring\"; then
+                sudo mv \"\$temp_keyring\" /usr/share/keyrings/githubcli-archive-keyring.gpg
+                sudo chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg
+            else
+                rm -f \"\$temp_keyring\"
+                exit 1
             fi
-            # Ensure correct permissions
-            sudo chmod 644 /usr/share/keyrings/githubcli-archive-keyring.gpg
-        else
-            rm -f "$temp_keyring"
-            track_failure "GitHub CLI" "GPG key indirilemedi"
+            
+            # Add repository
+            echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+            sudo apt update -qq
+        "
+        
+        if ! gum_spin_run "GitHub repository ekleniyor..." "$setup_cmd"; then
+            track_failure "GitHub CLI" "Repository kurulumu başarısız"
             return 1
         fi
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-        sudo apt update
-        if ! safe_install_packages gh; then
-            track_failure "GitHub CLI" "apt install başarısız"
-            return 1
-        fi
-
     elif [ "$PKG_MANAGER" = "dnf" ] || [ "$PKG_MANAGER" = "yum" ]; then
-        sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-        if ! safe_install_packages gh; then
-            track_failure "GitHub CLI" "dnf install başarısız"
-            return 1
-        fi
-
-    elif [ "$PKG_MANAGER" = "pacman" ]; then
-        if ! safe_install_packages github-cli; then
-            track_failure "GitHub CLI" "pacman install başarısız"
+        if ! gum_spin_run "GitHub repository ekleniyor..." "sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo"; then
+            track_failure "GitHub CLI" "Repository kurulumu başarısız"
             return 1
         fi
     fi
 
-    if command -v gh &> /dev/null; then
-        local version
-        version=$(gh --version 2>/dev/null | head -n1 || echo "unknown")
-        echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kurulumu tamamlandı: $version"
-        echo -e "\n${CYAN}[BİLGİ]${NC} GitHub hesabınızla oturum açmak için:"
-        echo -e "  ${GREEN}gh auth login${NC}"
-        track_success "GitHub CLI" "$version"
-        return 0
+    # Install package
+    local pkg_name="gh"
+    [ "$PKG_MANAGER" = "pacman" ] && pkg_name="github-cli"
+    
+    if gum_spin_run "GitHub CLI kuruluyor..." "sudo $INSTALL_CMD install -y $pkg_name"; then
+        if command -v gh &> /dev/null; then
+            local version
+            version=$(gh --version 2>/dev/null | head -n1 || echo "unknown")
+            gum_success "Başarılı" "GitHub CLI kuruldu: $version"
+            gum_info "İpucu" "Giriş için: gh auth login"
+            track_success "GitHub CLI" "$version"
+            return 0
+        else
+            gum_alert "Hata" "Kurulum tamamlandı ama 'gh' komutu bulunamadı"
+            track_failure "GitHub CLI" "Komut bulunamadı"
+            return 1
+        fi
     else
-        echo -e "${RED}[HATA]${NC} GitHub CLI kurulumu başarısız!"
-        track_failure "GitHub CLI" "Kurulum tamamlandı ama komut bulunamadı"
+        gum_alert "Hata" "GitHub CLI kurulumu başarısız!"
+        track_failure "GitHub CLI" "Paket kurulumu başarısız"
         return 1
     fi
 }
