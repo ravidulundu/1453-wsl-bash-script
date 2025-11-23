@@ -17,7 +17,7 @@ install_gum() {
     fi
 
     # Detect package manager
-    if [ -z "$PKG_MANAGER" ]; then
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
@@ -126,7 +126,7 @@ install_modern_cli_tools() {
     echo ""
 
     # Detect package manager
-    if [ -z "$PKG_MANAGER" ]; then
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 

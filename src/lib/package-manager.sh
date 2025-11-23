@@ -282,7 +282,7 @@ safe_remove_packages() {
     fi
 
     # Auto-detect package manager if not already set
-    if [ -z "$PKG_MANAGER" ]; then
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
@@ -314,7 +314,7 @@ safe_remove_packages() {
 get_install_command_hint() {
     local package="$1"
 
-    if [ -z "$PKG_MANAGER" ]; then
+    if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
