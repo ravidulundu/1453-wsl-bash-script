@@ -20,6 +20,9 @@ source "${SCRIPT_DIR}/lib/init.sh"
 # shellcheck source=config/colors.sh
 source "${SCRIPT_DIR}/config/colors.sh"
 
+# shellcheck source=config/theme.sh
+source "${SCRIPT_DIR}/config/theme.sh"
+
 # shellcheck source=config/constants.sh
 source "${SCRIPT_DIR}/config/constants.sh"
 
@@ -35,6 +38,9 @@ source "${SCRIPT_DIR}/config/banner.sh"
 # Phase 3: Load core libraries
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+
+# shellcheck source=lib/gum-init.sh
+source "${SCRIPT_DIR}/lib/gum-init.sh"
 
 # shellcheck source=lib/package-manager.sh
 source "${SCRIPT_DIR}/lib/package-manager.sh"
@@ -108,12 +114,40 @@ echo -e "${YELLOW}[BİLGİ]${NC} Araç versiyonları hazırlanıyor..."
 init_tool_versions
 echo -e "${GREEN}[[+]]${NC} Araç versiyonları hazır"
 
-# Phase 7: Sudo authentication and keep-alive
+# Phase 7: Ensure Gum is installed for modern TUI (critical dependency)
+# Moved before sudo auth to allow using gum for password input
+if ! command -v gum &>/dev/null; then
+    echo -e "${YELLOW}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
+    if command -v ensure_gum_installed &>/dev/null; then
+        ensure_gum_installed 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+    fi
+fi
+
+# Phase 8: Sudo authentication and keep-alive
 # Request sudo password once at the start
 echo -e "${YELLOW}[BİLGİ]${NC} Script bazı işlemler için sudo yetkisi gerektirir."
-echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
 
-if sudo -v; then
+# Authenticate with sudo (using Gum if available)
+sudo_success=0
+if command -v gum &>/dev/null; then
+    # Use Gum for password input (masked)
+    # Loop up to 3 times for incorrect password
+    for i in {1..3}; do
+        if gum_password "Sudo şifresi (Gerekli)" | sudo -S -v 2>/dev/null; then
+            sudo_success=1
+            break
+        fi
+        gum_alert "Hata" "Yanlış şifre, lütfen tekrar deneyin ($i/3)"
+    done
+else
+    # Fallback to standard sudo prompt
+    echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
+    if sudo -v; then
+        sudo_success=1
+    fi
+fi
+
+if [ $sudo_success -eq 1 ]; then
     echo -e "${GREEN}[[+]]${NC} Sudo yetkisi alındı"
     echo -e "${YELLOW}[DEBUG]${NC} Trap kuruluyor..." >&2
 
@@ -141,18 +175,8 @@ if sudo -v; then
     echo -e "${YELLOW}[DEBUG]${NC} Background PID: $SUDO_KEEPALIVE_PID" >&2
 else
     echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
-fi
-
-
-echo ""
-echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..." >&2
-
-# Phase 7: Ensure Gum is installed for modern TUI (critical dependency)
-if ! command -v gum &>/dev/null; then
-    echo -e "${YELLOW}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
-    if command -v install_gum &>/dev/null; then
-        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
-    fi
+    # Optional: Exit if sudo is strictly required
+    # exit 1
 fi
 
 # Phase 8: Initialize TUI and run main program
