@@ -232,7 +232,7 @@ _apt_install_eza() {
     if ! command -v eza &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Eza kuruluyor..."
         
-        # Remove old repository files to prevent conflicts
+        # Remove old repository files to prevent conflicts (CRITICAL - do this FIRST)
         sudo rm -f /etc/apt/sources.list.d/gierens.list 2>/dev/null
         sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
         
@@ -255,9 +255,12 @@ _apt_install_eza() {
         for gpg_url in "${gpg_sources[@]}"; do
             echo -e "${YELLOW}[BİLGİ]${NC} GPG anahtarı indiriliyor: $gpg_url"
             
+            # Delete key file before each attempt to avoid overwrite prompts
+            sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
+            
             # Try wget first (more reliable for piping to gpg)
             if command -v wget &>/dev/null; then
-                if wget --timeout=15 --tries=2 -qO- "$gpg_url" 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
+                if wget --timeout=15 --tries=2 -qO- "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
                     gpg_success=true
                     echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
                     break
@@ -265,7 +268,7 @@ _apt_install_eza() {
             fi
             
             # Fallback to curl
-            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" 2>/dev/null | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
+            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
                 gpg_success=true
                 echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
                 break
