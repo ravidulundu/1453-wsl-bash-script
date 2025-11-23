@@ -5,7 +5,7 @@
 # Track if banner has been shown (prevents flicker)
 BANNER_SHOWN=0
 
-# Function to display the banner
+# Function to display the banner (AI CLI Style)
 show_banner() {
     # ONLY clear screen on first call (prevents flicker)
     if [ "$BANNER_SHOWN" -eq 0 ]; then
@@ -13,92 +13,21 @@ show_banner() {
         BANNER_SHOWN=1
     fi
 
-    # Check if Gum is available for modern display
-    if command -v gum &>/dev/null; then
-        # Check terminal width for responsiveness
-        if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -lt 60 ]; then
-            # Terminal too narrow - show compact banner
-            gum style \
-                --foreground 212 --bold --align center \
-                "1453.AI WSL Setup"
-            echo ""
-            gum style --foreground 51 --align center "WSL Vibe Coder'lar İçin Otomatik Kurulum"
-            echo ""
-            gum style --foreground 226 --align center "📌 v2.0 Modular"
-            echo ""
-        else
-            # Calculate responsive widths based on terminal size
-            local ascii_width=80
-            local title_width=76
-            local info_width=76
-
-            # If terminal is wider than 80, use dynamic widths
-            if [ -n "${TUI_WIDTH:-}" ] && [ "$TUI_WIDTH" -gt 80 ]; then
-                ascii_width=$TUI_WIDTH
-                title_width=$((TUI_WIDTH - 4))
-                info_width=$((TUI_WIDTH - 4))
-            fi
-
-            # Ensure widths don't exceed terminal
-            [ "$ascii_width" -gt "$TUI_WIDTH" ] && ascii_width=$TUI_WIDTH
-            [ "$title_width" -gt $((TUI_WIDTH - 4)) ] && title_width=$((TUI_WIDTH - 4))
-            [ "$info_width" -gt $((TUI_WIDTH - 4)) ] && info_width=$((TUI_WIDTH - 4))
-
-            # Modern Gum banner - ASCII art (responsive)
-            gum style \
-                --foreground 51 --bold \
-                --align center --width "$ascii_width" \
-                '   /$$ /$$   /$$ /$$$$$$$   /$$$$$$ ' \
-                ' /$$$$| $$  | $$| $$____/  /$$__  $$' \
-                '|_  $$| $$  | $$| $$      |__/  \ $$' \
-                '  | $$| $$$$$$$$| $$$$$$$    /$$$$$$/' \
-                '  | $$|_____  $$|_____  $$  |___  $$' \
-                '  | $$      | $$ /$$  \ $$ /$$  \ $$' \
-                ' /$$$$$$    | $$|  $$$$$$/|  $$$$$$/' \
-                '|______/    |__/ \______/  \______/ '
-
-            echo ""
-
-            # Title box (responsive)
-            gum style \
-                --foreground 212 --border rounded --align center \
-                --width "$title_width" --padding "1 2" \
-                "1453.AI - WSL Vibe Coder'lar İçin Otomatik Kurulum Rehberi"
-
-            echo ""
-
-            # Info lines (centered + responsive)
-            gum style --foreground 226 --align center --width "$info_width" "📌 Script Sürümü: v2.0 Modular"
-            gum style --foreground 51 --align center --width "$info_width" "🔗 GitHub: https://github.com/ravidulundu/1453-wsl-bash-script"
-            gum style --foreground 141 --align center --width "$info_width" "📅 Tarih: $(date '+%Y-%m-%d %H:%M:%S')"
-            echo ""
-        fi
-    else
-        # Traditional ASCII banner (fallback with padding)
-        echo ""
-        echo -e "  ${CYAN}"
-        echo '     /$$ /$$   /$$ /$$$$$$$   /$$$$$$ '
-        echo '   /$$$$| $$  | $$| $$____/  /$$__  $$'
-        echo '  |_  $$| $$  | $$| $$      |__/  \ $$'
-        echo '    | $$| $$$$$$$$| $$$$$$$    /$$$$$$/'
-        echo '    | $$|_____  $$|_____  $$  |___  $$'
-        echo '    | $$      | $$ /$$  \ $$ /$$  \ $$'
-        echo '   /$$$$$$    | $$|  $$$$$$/|  $$$$$$/'
-        echo '  |______/    |__/ \______/  \______/ '
-        echo -e "${NC}"
-        echo ""
-
-        echo -e "  ${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "  ${BLUE}║   1453.AI - WSL Vibe Coder'lar İçin Otomatik Kurulum Rehberi   ║${NC}"
-        echo -e "  ${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-        echo ""
-
-        # Script Information (with padding)
-        echo -e "  ${YELLOW}Script Sürümü:${NC} v2.0 Modular"
-        echo -e "  ${YELLOW}GitHub:${NC} https://github.com/ravidulundu/1453-wsl-bash-script"
-        echo -e "  ${YELLOW}Tarih:${NC} $(date '+%Y-%m-%d %H:%M:%S')"
-        echo ""
-    fi
+    # Modern minimalist banner (AI CLI inspired)
+    local width=70
+    local separator=$(printf '%*s' "$width" '' | tr ' ' '=')
+    
+    echo ""
+    echo "$separator"
+    echo "  1453.AI WSL Setup - Automated Development Environment"
+    echo "$separator"
+    echo ""
+    echo "  Version: v2.0 Modular"
+    echo "  GitHub:  github.com/ravidulundu/1453-wsl-bash-script"
+    echo "  Date:    $(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+    echo "$separator"
+    echo ""
 }
 
 # Export the function and variable so they're available to other modules

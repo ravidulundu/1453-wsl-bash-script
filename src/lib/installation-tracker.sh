@@ -38,10 +38,15 @@ track_skip() {
     SKIPPED_INSTALLATIONS+=("$tool_name - $reason")
 }
 
-# Show installation summary
+# Show installation summary (AI CLI Style)
 show_installation_summary() {
+    local width=70
+    local separator=$(printf '%*s' "$width" '' | tr ' ' '-')
+    
     echo ""
-    echo -e "${CYAN}KURULUM ÖZETİ${NC}"
+    echo "$separator"
+    echo "  Installation Summary"
+    echo "$separator"
     echo ""
 
     # Count totals
@@ -51,67 +56,66 @@ show_installation_summary() {
     local total_count=$((success_count + failed_count + skipped_count))
 
     if [ $total_count -eq 0 ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Hiçbir kurulum yapılmadı."
+        echo "  [INFO] No installations performed."
         return 0
     fi
 
     # Show successful installations
     if [ $success_count -gt 0 ]; then
-        echo -e "${GREEN}✅ BAŞARILI KURULUMLAR ($success_count):${NC}"
+        echo -e "  ${GREEN}Successful Installations ($success_count):${NC}"
         for item in "${SUCCESSFUL_INSTALLATIONS[@]}"; do
-            echo -e "   ${GREEN}•${NC} $item"
+            echo -e "    [+] $item"
         done
         echo ""
     fi
 
     # Show skipped installations
     if [ $skipped_count -gt 0 ]; then
-        echo -e "${CYAN}[SKIP]  ATLANAN KURULUMLAR ($skipped_count):${NC}"
+        echo -e "  ${CYAN}Skipped Installations ($skipped_count):${NC}"
         for item in "${SKIPPED_INSTALLATIONS[@]}"; do
-            echo -e "   ${CYAN}•${NC} $item"
+            echo -e "    [ ] $item"
         done
         echo ""
     fi
 
     # Show failed installations
     if [ $failed_count -gt 0 ]; then
-        echo -e "${RED}❌ BAŞARISIZ KURULUMLAR ($failed_count):${NC}"
+        echo -e "  ${RED}Failed Installations ($failed_count):${NC}"
         for item in "${FAILED_INSTALLATIONS[@]}"; do
-            echo -e "   ${RED}•${NC} $item"
+            echo -e "    [-] $item"
         done
         echo ""
-        echo -e "${YELLOW}[!]${NC} Başarısız kurulumlar için elle kurulum yapabilirsiniz."
-        echo -e "${YELLOW}[!]${NC} Detaylar için yukarıdaki hata mesajlarına bakın."
+        echo "  [!] Manual installation may be required for failed items."
+        echo "  [!] Check error messages above for details."
         echo ""
     fi
 
-    # Show summary
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  Toplam: $total_count  |  ${GREEN}Başarılı: $success_count${NC}  |  ${CYAN}Atlanan: $skipped_count${NC}  |  ${RED}Başarısiz: $failed_count${NC}"
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    # Status line
+    echo "$separator"
+    echo -e "  Total: $total_count | ${GREEN}Success: $success_count${NC} | ${CYAN}Skipped: $skipped_count${NC} | ${RED}Failed: $failed_count${NC}"
+    echo "$separator"
     echo ""
     
     # Show post-installation instructions if there were successful installations
     if [ $success_count -gt 0 ]; then
-        echo -e "${YELLOW}[LIST] KURULUM SONRASI YAPMALISINIZ:${NC}"
+        echo "  Post-Installation Steps:"
         echo ""
-        echo -e "${GREEN}1.${NC} Terminal ortamınızı yenileyin (aşağıdakilerden birini seçin):"
-        echo -e "   ${CYAN}•${NC} ${GREEN}source ~/.bashrc${NC}  ${YELLOW}(en hızlı yöntem)${NC}"
-        echo -e "   ${CYAN}•${NC} ${GREEN}exec bash${NC}  ${YELLOW}(bash kullanıyorsanız)${NC}"
-        echo -e "   ${CYAN}•${NC} Terminali kapatıp yeniden açın  ${YELLOW}(en garantili)${NC}"
+        echo "  1. Reload your shell environment:"
+        echo "     > source ~/.bashrc              (fastest method)"
+        echo "     > exec bash                     (if using bash)"
+        echo "     > Close and reopen terminal     (most reliable)"
         echo ""
-        echo -e "${GREEN}2.${NC} Kurulumları test edin:"
-        echo -e "   ${CYAN}•${NC} ${GREEN}python3 --version${NC}  ${YELLOW}(Python kuruldu mu?)${NC}"
-        echo -e "   ${CYAN}•${NC} ${GREEN}node --version${NC}  ${YELLOW}(Node.js kuruldu mu?)${NC}"
-        echo -e "   ${CYAN}•${NC} ${GREEN}which nvm${NC}  ${YELLOW}(NVM yolu)${NC}"
+        echo "  2. Verify installations:"
+        echo "     > python3 --version"
+        echo "     > node --version"
+        echo "     > which nvm"
         echo ""
-        echo -e "${GREEN}3.${NC} Yeni araçları keşfedin:"
-        echo -e "   ${CYAN}•${NC} ${GREEN}bat --help${NC}  ${YELLOW}(modern cat komutu)${NC}"
-        echo -e "   ${CYAN}•${NC} ${GREEN}eza --help${NC}  ${YELLOW}(modern ls komutu)${NC}"
-        echo -e "   ${CYAN}•${NC} ${GREEN}lazygit${NC}  ${YELLOW}(Git TUI)${NC}"
+        echo "  3. Explore new tools:"
+        echo "     > bat --help                    (modern cat)"
+        echo "     > eza --help                    (modern ls)"
+        echo "     > lazygit                       (Git TUI)"
         echo ""
-        echo -e "${YELLOW}[INFO] İPUCU:${NC} Shell değişiklikleri aktif olana kadar yeni kurulumlar çalışmayabilir!"
-        echo -e "${YELLOW}[WARNING]  ÖNEMLİ:${NC} Mutlaka ${GREEN}source ~/.bashrc${NC} komutunu çalıştırın veya terminali yeniden başlatın."
+        echo "  [!] IMPORTANT: Run 'source ~/.bashrc' or restart terminal for changes to take effect."
         echo ""
     fi
 
