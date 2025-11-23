@@ -97,6 +97,21 @@ install_docker_engine() {
     else
         sudo service docker start
     fi
+    
+    # WSL: Add Docker auto-start to bashrc
+    if grep -q "microsoft" /proc/version; then
+        if ! grep -q "service docker start" ~/.bashrc 2>/dev/null; then
+            echo -e "${CYAN}[BİLGİ]${NC} WSL için Docker otomatik başlatma ekleniyor..."
+            cat >> ~/.bashrc << 'DOCKER_AUTOSTART'
+
+# Docker auto-start for WSL
+if ! pgrep -x dockerd > /dev/null 2>&1; then
+    sudo service docker start > /dev/null 2>&1
+fi
+DOCKER_AUTOSTART
+            echo -e "${GREEN}[+]${NC} Docker bir sonraki terminal açılışında otomatik başlayacak"
+        fi
+    fi
 
     # Verify installation
     if command -v docker &> /dev/null; then
@@ -105,12 +120,27 @@ install_docker_engine() {
 
         # Check daemon status
         if ! docker info &> /dev/null; then
-            echo -e "\n${YELLOW}[UYARI]${NC} Docker kurulu ama daemon çalışmıyor veya erişilemiyor."
-            echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin etkili olması için oturumu kapatıp açın veya:"
-            echo -e "  ${CYAN}newgrp docker${NC}"
-            echo -e "  ${CYAN}sudo service docker start${NC}"
+            echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${YELLOW}⚠️  ÖNEMLİ: Docker Permission Ayarı Gerekli!${NC}"
+            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "\n${CYAN}Docker çalışıyor ama yetki ayarı gerekiyor.${NC}"
+            echo -e "\n${GREEN}Şunları yapmanız gerekiyor:${NC}"
+            echo -e "\n${YELLOW}1️⃣  Docker daemon'ı başlatın:${NC}"
+            echo -e "   ${CYAN}sudo service docker start${NC}"
+            echo -e "\n${YELLOW}2️⃣  Yeni grup yetkilerini aktifleştirin (iki yöntemden birini):${NC}"
+            echo -e "   ${GREEN}A)${NC} Terminal'i kapatıp yeniden açın (önerilen)"
+            echo -e "   ${GREEN}B)${NC} Şu komutu çalıştırın: ${CYAN}newgrp docker${NC}"
+            echo -e "\n${YELLOW}3️⃣  Test edin:${NC}"
+            echo -e "   ${CYAN}docker ps${NC}"
+            
+            if grep -q "microsoft" /proc/version; then
+                echo -e "\n${CYAN}💡 WSL İpucu: Docker'ın otomatik başlaması için:${NC}"
+                echo -e "   ${GREEN}echo 'sudo service docker start 2>/dev/null' >> ~/.bashrc${NC}"
+            fi
+            
+            echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         else
-            echo -e "${GREEN}[[+]]${NC} Docker Daemon çalışıyor."
+            echo -e "${GREEN}[+]${NC} Docker Daemon çalışıyor."
         fi
     else
         echo -e "${RED}[HATA]${NC} Docker Engine kurulumu başarısız!"
