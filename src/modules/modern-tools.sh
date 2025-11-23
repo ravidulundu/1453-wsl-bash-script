@@ -27,7 +27,7 @@ install_gum() {
 
             # Add Charm repository
             sudo mkdir -p /etc/apt/keyrings
-            curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+            curl -fsSL --retry 3 --retry-delay 5 https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
             echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
 
             echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
@@ -227,15 +227,30 @@ fix_bat_fd_symlinks() {
 }
 
 # REFACTOR O-5: Helper for eza installation
+# REFACTOR O-5: Helper for eza installation
 _apt_install_eza() {
     if ! command -v eza &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Eza kuruluyor..."
         sudo mkdir -p /etc/apt/keyrings
-        wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+        
+        # Remove old key if exists to prevent conflicts
+        sudo rm -f /etc/apt/keyrings/gierens.gpg
+        
+        # Try wget first, then curl
+        if command -v wget &>/dev/null; then
+            wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+        else
+            curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+        fi
+        
         echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
         sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-        sudo apt update
-        sudo apt install -y eza
+        
+        if ! sudo apt update; then
+             echo -e "${YELLOW}[UYARI]${NC} apt update hata verdi, eza kurulumu atlanıyor olabilir..."
+        fi
+        
+        sudo apt install -y eza || echo -e "${RED}[HATA]${NC} Eza kurulamadı."
     else
         echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
     fi
@@ -248,7 +263,7 @@ _apt_install_starship() {
         local temp_starship_script
         temp_starship_script=$(mktemp)
 
-        if curl -fsSL "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
+        if curl -fsSL --retry 3 --retry-delay 5 "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
             echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $STARSHIP_INSTALL_URL"
             echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: starship.rs"
             # Auto-approve for trusted source (starship.rs)
@@ -270,7 +285,7 @@ _apt_install_zoxide() {
         local temp_zoxide_script
         temp_zoxide_script=$(mktemp)
 
-        if curl -fsSL "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
+        if curl -fsSL --retry 3 --retry-delay 5 "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
             echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $ZOXIDE_INSTALL_URL"
             echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: github.com/ajeetdsouza/zoxide"
             # Auto-approve for trusted source
@@ -295,7 +310,7 @@ _apt_install_vivid() {
         local vivid_url="https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/${vivid_deb}"
 
         # Direct download without checksum (vivid project doesn't provide .sha256 files)
-        if curl -fsSL "$vivid_url" -o "$vivid_deb"; then
+        if curl -fsSL --retry 3 --retry-delay 5 "$vivid_url" -o "$vivid_deb"; then
             if sudo dpkg -i "$vivid_deb"; then
                 echo -e "${GREEN}[✓]${NC} Vivid başarıyla kuruldu"
                 rm "$vivid_deb"
@@ -324,14 +339,14 @@ _apt_install_fastfetch() {
             sudo snap install fastfetch 2>/dev/null || {
                 # Method 2: Download latest release from GitHub (using centralized URL)
                 echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-                curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
+                curl -sL --retry 3 --retry-delay 5 "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
                 sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
                 rm -f /tmp/fastfetch.deb
             }
         else
             # Method 2: Direct download (using centralized URL)
             echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-            curl -sL "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
+            curl -sL --retry 3 --retry-delay 5 "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
             sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
             rm -f /tmp/fastfetch.deb
         fi
@@ -379,9 +394,9 @@ _apt_install_lazydocker() {
         # FIX BUG-001: Download to temp file first instead of piping directly to shell
         local temp_script
         temp_script=$(mktemp)
-        trap 'rm -f "$temp_script"' RETURN
+        trap 'rm -f "${temp_script:-}"' RETURN
 
-        if ! curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
+        if ! curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
             echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
             return 1
         fi
@@ -458,7 +473,7 @@ install_starship_generic() {
     if ! command -v starship &> /dev/null; then
         local temp_script
         temp_script=$(mktemp)
-        if curl -fsSL "$STARSHIP_INSTALL_URL" -o "$temp_script"; then
+        if curl -fsSL --retry 3 --retry-delay 5 "$STARSHIP_INSTALL_URL" -o "$temp_script"; then
             sh "$temp_script" -y
             rm -f "$temp_script"
         fi
@@ -469,7 +484,7 @@ install_zoxide_generic() {
     if ! command -v zoxide &> /dev/null; then
         local temp_script
         temp_script=$(mktemp)
-        if curl -fsSL "$ZOXIDE_INSTALL_URL" -o "$temp_script"; then
+        if curl -fsSL --retry 3 --retry-delay 5 "$ZOXIDE_INSTALL_URL" -o "$temp_script"; then
             bash "$temp_script"
             rm -f "$temp_script"
         fi
@@ -504,9 +519,9 @@ install_lazydocker_generic() {
         # FIX BUG-001: Download to temp file first instead of piping directly to shell
         local temp_script
         temp_script=$(mktemp)
-        trap 'rm -f "$temp_script"' RETURN
+        trap 'rm -f "${temp_script:-}"' RETURN
 
-        if ! curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
+        if ! curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
             echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
             return 1
         fi

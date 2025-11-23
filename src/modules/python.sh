@@ -245,9 +245,9 @@ install_uv() {
     # FIX BUG-001: Download to temp file first instead of piping directly to shell
     local temp_script
     temp_script=$(mktemp)
-    trap 'rm -f "$temp_script"' RETURN
+    trap 'rm -f "${temp_script:-}"' RETURN
 
-    if ! curl -fsSL "$UV_INSTALL_URL" -o "$temp_script"; then
+    if ! curl -fsSL --retry 3 --retry-delay 5 "$UV_INSTALL_URL" -o "$temp_script"; then
         echo -e "${RED}[HATA]${NC} UV installer indirilirken hata oluştu"
         track_failure "UV" "İndirme hatası"
         return 1

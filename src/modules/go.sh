@@ -103,7 +103,7 @@ install_go_official() {
     echo -e "${YELLOW}[BİLGİ]${NC} İndiriliyor: $go_tarball"
 
     # Download Go
-    if ! curl -fsSL -O "$download_url"; then
+    if ! curl -fsSL --retry 3 --retry-delay 5 -O "$download_url"; then
         echo -e "${RED}[HATA]${NC} Go indirme başarısız!"
         return 1
     fi

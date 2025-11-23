@@ -82,7 +82,7 @@ check_internet_connection() {
     # Try multiple methods: primary DNS, secondary DNS, and fallback URL
     if ping -c 1 -W 2 "$PRIMARY_DNS_SERVER" &>/dev/null || \
        ping -c 1 -W 2 "$SECONDARY_DNS_SERVER" &>/dev/null || \
-       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" "$DNS_TEST_URL" &>/dev/null; then
+       curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" --retry 3 --retry-delay 5 "$DNS_TEST_URL" &>/dev/null; then
         echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
         return 0
     else
@@ -256,7 +256,7 @@ verify_checksum() {
     # If checksum URL provided and no expected checksum, fetch it
     if [ -n "$checksum_url" ] && [ -z "$expected_checksum" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Checksum indiriliyor: $checksum_url"
-        expected_checksum=$(curl -sL "$checksum_url" | head -n1 | awk '{print $1}')
+        expected_checksum=$(curl -sL --retry 3 --retry-delay 5 "$checksum_url" | head -n1 | awk '{print $1}')
 
         if [ -z "$expected_checksum" ]; then
             echo -e "${RED}[✗]${NC} SECURITY ERROR: Checksum indirilemedi!"
@@ -315,7 +315,7 @@ download_with_checksum() {
     echo -e "${YELLOW}[BİLGİ]${NC} İndiriliyor: $(basename "$url")"
 
     # Download file
-    if ! curl -fsSL -o "$output_path" "$url"; then
+    if ! curl -fsSL --retry 3 --retry-delay 5 -o "$output_path" "$url"; then
         echo -e "${RED}[✗]${NC} İndirme başarısız: $url"
         return 1
     fi

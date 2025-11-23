@@ -129,6 +129,14 @@ record_test() {
     local status="$2"  # PASS, FAIL, WARNING
     local message="$3"
 
+    # Initialize category counters if not exists (fix for set -u)
+    if [ -z "${CATEGORY_TOTAL[$category]:-}" ]; then
+        CATEGORY_TOTAL[$category]=0
+        CATEGORY_PASSED[$category]=0
+        CATEGORY_FAILED[$category]=0
+        CATEGORY_WARNING[$category]=0
+    fi
+
     ((TOTAL_TESTS++))
     ((CATEGORY_TOTAL[$category]++))
 
@@ -160,7 +168,7 @@ record_test() {
 check_command() {
     local cmd="$1"
     local category="$2"
-    local description="$3"
+    local description="${3:-$cmd}"
 
     if command -v "$cmd" &> /dev/null; then
         local version=""
@@ -242,7 +250,7 @@ check_env_var() {
     local category="$2"
     local description="$3"
 
-    if [ -n "${!var}" ]; then
+    if [ -n "${!var:-}" ]; then
         record_test "$category" "PASS" "$description ayarlanmış (${!var})"
         return 0
     else
@@ -557,7 +565,7 @@ test_docker() {
     local category="Docker"
     show_category "$category"
 
-    check_command "docker" "$category"    # Docker Service Check
+    check_command "docker" "$category" "Docker"   # Docker Service Check
 
     if command -v docker &> /dev/null; then
         # Docker daemon kontrolü
