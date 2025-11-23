@@ -85,42 +85,42 @@ install_gemini_cli() {
 # Install OpenCode CLI
 install_opencode_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} OpenCode CLI kurulumu başlatılıyor..."
+    gum_info "Bilgi" "OpenCode CLI kurulumu başlatılıyor..."
 
     # Check if already installed
     if command -v opencode &> /dev/null; then
         local version
         version=$(opencode --version 2>/dev/null || echo "unknown")
-        echo -e "${CYAN}[!]${NC} OpenCode CLI zaten kurulu: $version"
+        gum_success "Atlandı" "OpenCode CLI zaten kurulu: $version"
         track_skip "OpenCode CLI" "Zaten kurulu"
         return 0
     fi
 
     if ! command -v npm &> /dev/null; then
-        echo -e "${YELLOW}[UYARI]${NC} NPM kurulu değil. NVM ile Node.js kuruluyor..."
+        gum_alert "Uyarı" "NPM kurulu değil. NVM ile Node.js kuruluyor..."
         if ! install_nvm; then
             track_failure "OpenCode CLI" "NPM gereksinimi karşılanamadı"
             return 1
         fi
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} OpenCode CLI npm ile kuruluyor..."
+    gum_info "Bilgi" "OpenCode CLI npm ile kuruluyor..."
     if npm install -g opencode-cli; then
         reload_shell_configs
 
         if command -v opencode &> /dev/null; then
             local version
             version=$(opencode --version 2>/dev/null || echo "unknown")
-            echo -e "${GREEN}[BAŞARILI]${NC} OpenCode CLI kurulumu tamamlandı!"
+            gum_success "Başarılı" "OpenCode CLI kurulumu tamamlandı!"
             track_success "OpenCode CLI" "$version"
             return 0
         else
-            echo -e "${RED}[HATA]${NC} OpenCode CLI kurulumu başarısız!"
+            gum_alert "Hata" "OpenCode CLI kurulumu başarısız!"
             track_failure "OpenCode CLI" "Komut bulunamadı"
             return 1
         fi
     else
-        echo -e "${RED}[HATA]${NC} OpenCode CLI kurulumu başarısız!"
+        gum_alert "Hata" "OpenCode CLI kurulumu başarısız!"
         track_failure "OpenCode CLI" "npm install başarısız"
         return 1
     fi
@@ -129,42 +129,42 @@ install_opencode_cli() {
 # Install Qwen CLI
 install_qwen_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Qwen CLI kurulumu başlatılıyor..."
+    gum_info "Bilgi" "Qwen CLI kurulumu başlatılıyor..."
 
     # Check if already installed
     if command -v qwen &> /dev/null; then
         local version
         version=$(qwen --version 2>/dev/null || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Qwen CLI zaten kurulu: $version"
+        gum_success "Atlandı" "Qwen CLI zaten kurulu: $version"
         track_skip "Qwen CLI" "Zaten kurulu"
         return 0
     fi
 
     if ! command -v pipx &> /dev/null; then
-        echo -e "${YELLOW}[UYARI]${NC} Pipx kurulu değil. Önce pipx kuruluyor..."
+        gum_alert "Uyarı" "Pipx kurulu değil. Önce pipx kuruluyor..."
         if ! install_pipx; then
             track_failure "Qwen CLI" "Pipx gereksinimi karşılanamadı"
             return 1
         fi
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Qwen CLI pipx ile kuruluyor..."
+    gum_info "Bilgi" "Qwen CLI pipx ile kuruluyor..."
     if pipx install qwen-cli; then
         reload_shell_configs
 
         if command -v qwen &> /dev/null; then
             local version
             version=$(qwen --version 2>/dev/null || echo "unknown")
-            echo -e "${GREEN}[BAŞARILI]${NC} Qwen CLI kurulumu tamamlandı!"
+            gum_success "Başarılı" "Qwen CLI kurulumu tamamlandı!"
             track_success "Qwen CLI" "$version"
             return 0
         else
-            echo -e "${RED}[HATA]${NC} Qwen CLI kurulumu başarısız!"
+            gum_alert "Hata" "Qwen CLI kurulumu başarısız!"
             track_failure "Qwen CLI" "Komut bulunamadı"
             return 1
         fi
     else
-        echo -e "${RED}[HATA]${NC} Qwen CLI kurulumu başarısız!"
+        gum_alert "Hata" "Qwen CLI kurulumu başarısız!"
         track_failure "Qwen CLI" "pipx install başarısız"
         return 1
     fi
@@ -173,38 +173,38 @@ install_qwen_cli() {
 # Install Copilot CLI
 install_copilot_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kurulumu başlatılıyor..."
+    gum_info "Bilgi" "GitHub Copilot CLI kurulumu başlatılıyor..."
 
     # Check if already installed
     if command -v github-copilot-cli &> /dev/null; then
         local version
         version=$(npm list -g @githubnext/github-copilot-cli 2>/dev/null | grep github-copilot-cli | awk '{print $2}' || echo "unknown")
-        echo -e "${CYAN}[!]${NC} GitHub Copilot CLI zaten kurulu: $version"
+        gum_success "Atlandı" "GitHub Copilot CLI zaten kurulu: $version"
         track_skip "GitHub Copilot CLI" "Zaten kurulu"
         return 0
     fi
 
     if ! command -v npm &> /dev/null; then
-        echo -e "${YELLOW}[UYARI]${NC} NPM kurulu değil. NVM ile Node.js kuruluyor..."
+        gum_alert "Uyarı" "NPM kurulu değil. NVM ile Node.js kuruluyor..."
         if ! install_nvm; then
             track_failure "GitHub Copilot CLI" "NPM gereksinimi karşılanamadı"
             return 1
         fi
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI npm ile kuruluyor..."
+    gum_info "Bilgi" "GitHub Copilot CLI npm ile kuruluyor..."
     if npm install -g @githubnext/github-copilot-cli; then
         reload_shell_configs
 
         local version
         version=$(npm list -g @githubnext/github-copilot-cli 2>/dev/null | grep github-copilot-cli | awk '{print $2}' || echo "unknown")
-        echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kurulumu tamamlandı!"
+        gum_success "Başarılı" "GitHub Copilot CLI kurulumu tamamlandı!"
         echo -e "\n${CYAN}[BİLGİ]${NC} GitHub hesabınızla oturum açmak için:"
         echo -e "  ${GREEN}github-copilot-cli auth${NC}"
         track_success "GitHub Copilot CLI" "$version"
         return 0
     else
-        echo -e "${RED}[HATA]${NC} GitHub Copilot CLI kurulumu başarısız!"
+        gum_alert "Hata" "GitHub Copilot CLI kurulumu başarısız!"
         track_failure "GitHub Copilot CLI" "npm install başarısız"
         return 1
     fi
@@ -329,18 +329,18 @@ install_ai_cli_tools_menu() {
 # Install Qoder CLI
 install_qoder_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI kurulumu başlatılıyor..."
+    gum_info "Bilgi" "Qoder CLI kurulumu başlatılıyor..."
 
     # Check if already installed
     if command -v qoder &> /dev/null; then
         local version
         version=$(qoder --version 2>/dev/null | head -n1 || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Qoder CLI zaten kurulu: $version"
+        gum_success "Atlandı" "Qoder CLI zaten kurulu: $version"
         track_skip "Qoder CLI" "Zaten kurulu"
         return 0
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Qoder CLI indiriliyor: $QODER_INSTALL_URL"
+    gum_info "Bilgi" "Qoder CLI indiriliyor: $QODER_INSTALL_URL"
 
     # Download installer to temp file for better error handling
     local temp_installer
@@ -357,24 +357,24 @@ install_qoder_cli() {
             if command -v qoder &> /dev/null; then
                 local version
                 version=$(qoder --version 2>/dev/null | head -n1 || echo "unknown")
-                echo -e "${GREEN}[BAŞARILI]${NC} Qoder CLI kurulumu tamamlandı: $version"
+                gum_success "Başarılı" "Qoder CLI kurulumu tamamlandı: $version"
                 track_success "Qoder CLI" "$version"
                 return 0
             else
-                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama qoder komutu bulunamadı!"
+                gum_alert "Hata" "Kurulum tamamlandı ama qoder komutu bulunamadı!"
                 echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
                 track_failure "Qoder CLI" "Komut bulunamadı (shell reload gerekli)"
                 return 1
             fi
         else
             rm -f "$temp_installer"
-            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
+            gum_alert "Hata" "Kurulum scripti başarısız!"
             track_failure "Qoder CLI" "Kurulum scripti başarısız"
             return 1
         fi
     else
         rm -f "$temp_installer"
-        echo -e "${RED}[HATA]${NC} Qoder CLI indirilemedi!"
+        gum_alert "Hata" "Qoder CLI indirilemedi!"
         echo -e "${YELLOW}[!]${NC} URL: $QODER_INSTALL_URL"
         echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
         echo -e "    - URL geçersiz olabilir (404)"
@@ -387,18 +387,18 @@ install_qoder_cli() {
 # Install Kiro CLI
 install_kiro_cli() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Kiro CLI kurulumu başlatılıyor..."
+    gum_info "Bilgi" "Kiro CLI kurulumu başlatılıyor..."
 
     # Check if already installed
     if command -v kiro &> /dev/null; then
         local version
         version=$(kiro --version 2>/dev/null | head -n1 || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Kiro CLI zaten kurulu: $version"
+        gum_success "Atlandı" "Kiro CLI zaten kurulu: $version"
         track_skip "Kiro CLI" "Zaten kurulu"
         return 0
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Kiro CLI indiriliyor: $KIRO_INSTALL_URL"
+    gum_info "Bilgi" "Kiro CLI indiriliyor: $KIRO_INSTALL_URL"
 
     # Download installer to temp file for better error handling
     local temp_installer
@@ -415,24 +415,24 @@ install_kiro_cli() {
             if command -v kiro &> /dev/null; then
                 local version
                 version=$(kiro --version 2>/dev/null | head -n1 || echo "unknown")
-                echo -e "${GREEN}[BAŞARILI]${NC} Kiro CLI kurulumu tamamlandı: $version"
+                gum_success "Başarılı" "Kiro CLI kurulumu tamamlandı: $version"
                 track_success "Kiro CLI" "$version"
                 return 0
             else
-                echo -e "${RED}[HATA]${NC} Kurulum tamamlandı ama kiro komutu bulunamadı!"
+                gum_alert "Hata" "Kurulum tamamlandı ama kiro komutu bulunamadı!"
                 echo -e "${YELLOW}[!]${NC} Shell'i yeniden yükleyin: source ~/.bashrc"
                 track_failure "Kiro CLI" "Komut bulunamadı (shell reload gerekli)"
                 return 1
             fi
         else
             rm -f "$temp_installer"
-            echo -e "${RED}[HATA]${NC} Kurulum scripti başarısız!"
+            gum_alert "Hata" "Kurulum scripti başarısız!"
             track_failure "Kiro CLI" "Kurulum scripti başarısız"
             return 1
         fi
     else
         rm -f "$temp_installer"
-        echo -e "${RED}[HATA]${NC} Kiro CLI indirilemedi!"
+        gum_alert "Hata" "Kiro CLI indirilemedi!"
         echo -e "${YELLOW}[!]${NC} URL: $KIRO_INSTALL_URL"
         echo -e "${YELLOW}[!]${NC} Muhtemel nedenler:"
         echo -e "    - URL geçersiz olabilir (404)"
