@@ -387,13 +387,16 @@ cleanup_modern_tools() {
         echo -e "${GREEN}[BAŞARILI]${NC} Zoxide kaldırıldı"
     fi
 
-    # Eza (manual install via repository)
-    if command -v eza &>/dev/null && [ -f /etc/apt/sources.list.d/gierens.list ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Eza kaldırılıyor..."
-        sudo apt remove -y eza 2>/dev/null
+    # Eza repository cleanup (remove gierens repo even if eza isn't installed)
+    if [ -f /etc/apt/sources.list.d/gierens.list ] || [ -f /etc/apt/keyrings/gierens.gpg ]; then
+        echo -e "${YELLOW}[BİLGİ]${NC} Eza repository dosyaları temizleniyor..."
+        if command -v eza &>/dev/null; then
+            sudo apt remove -y eza 2>/dev/null
+        fi
         sudo rm -f /etc/apt/sources.list.d/gierens.list
         sudo rm -f /etc/apt/keyrings/gierens.gpg
-        echo -e "${GREEN}[BAŞARILI]${NC} Eza kaldırıldı"
+        sudo apt update -qq 2>/dev/null
+        echo -e "${GREEN}[BAŞARILI]${NC} Eza repository temizlendi"
     fi
 
     # Vivid (manual .deb install)
