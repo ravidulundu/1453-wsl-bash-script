@@ -178,7 +178,7 @@ _quickstart_preflight_checks() {
 
     if ! run_preflight_checks; then
         echo -e "${RED}[[-]]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
-        echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
+        gum_info "Uyarı" "Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
     return 0
@@ -324,7 +324,7 @@ execute_installation_plan() {
                     show_install_status "NVM" "success"
                 else
                     show_install_status "NVM" "skipped"
-                    echo -e "${YELLOW}[!]${NC} NVM kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "NVM kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -346,7 +346,7 @@ execute_installation_plan() {
                     show_install_status "Bun.js" "success"
                 else
                     show_install_status "Bun.js" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Bun kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Bun kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -367,7 +367,7 @@ execute_installation_plan() {
                 else
                     show_install_status "PHP 8.3" "skipped"
                     track_failure "PHP 8.3"
-                    echo -e "${YELLOW}[!]${NC} PHP kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "PHP kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -386,7 +386,7 @@ execute_installation_plan() {
                     show_install_status "Composer" "success"
                 else
                     show_install_status "Composer" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Composer kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Composer kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -405,7 +405,7 @@ execute_installation_plan() {
                     show_install_status "Go" "success"
                 else
                     show_install_status "Go" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Go kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Go kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -424,7 +424,7 @@ execute_installation_plan() {
                     show_install_status "Claude Code" "success"
                 else
                     show_install_status "Claude Code" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Claude Code kurulumu atlandı..."
+                    gum_info "Uyarı" "Claude Code kurulumu atlandı..."
                 fi
 
                 show_install_status "GitHub CLI" "installing"
@@ -432,7 +432,7 @@ execute_installation_plan() {
                     show_install_status "GitHub CLI" "success"
                 else
                     show_install_status "GitHub CLI" "skipped"
-                    echo -e "${YELLOW}[!]${NC} GitHub CLI kurulumu atlandı..."
+                    gum_info "Uyarı" "GitHub CLI kurulumu atlandı..."
                 fi
                 sleep 1
                 ;;
@@ -451,7 +451,7 @@ execute_installation_plan() {
                     show_install_status "SuperClaude" "success"
                 else
                     show_install_status "SuperClaude" "skipped"
-                    echo -e "${YELLOW}[!]${NC} SuperClaude kurulumu atlandı..."
+                    gum_info "Uyarı" "SuperClaude kurulumu atlandı..."
                 fi
                 sleep 1
                 ;;
@@ -511,7 +511,7 @@ run_quickstart_mode() {
     # Install Gum first for modern TUI (silently if possible)
     if ! has_gum; then
         echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum)..."
-        install_gum || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+        install_gum || gum_info "Uyarı" "Gum kurulamadı, klasik TUI kullanılacak"
     fi
 
     # Show welcome

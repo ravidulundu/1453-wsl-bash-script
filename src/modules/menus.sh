@@ -136,7 +136,7 @@ _advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
         echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum - opsiyonel)..."
-        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulumunu atlandı"
+        install_gum 2>/dev/null || gum_info "Uyarı" "Gum kurulumunu atlandı"
         sleep 1
     fi
 
