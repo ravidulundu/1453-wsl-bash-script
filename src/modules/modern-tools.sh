@@ -327,10 +327,22 @@ _apt_install_eza() {
 _apt_install_starship() {
     if ! command -v starship &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
+        
+        # Try APT first (available in Ubuntu 25.04+ and Debian 13+)
+        echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
+        if sudo apt install -y starship 2>/dev/null; then
+            if command -v starship &> /dev/null; then
+                echo -e "${GREEN}[✓]${NC} Starship APT'den kuruldu"
+                return 0
+            fi
+        fi
+        
+        # Fallback to official install script
+        echo -e "${YELLOW}[BİLGİ]${NC} APT başarısız, resmi script deneniyor..."
         local temp_starship_script
         temp_starship_script=$(mktemp)
 
-        if curl -fsSL --retry 3 --retry-delay 5 "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
+        if curl -fsSL --retry 3 --retry-delay 30 "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
             echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $STARSHIP_INSTALL_URL"
             echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: starship.rs"
             # Auto-approve for trusted source (starship.rs)
@@ -338,6 +350,9 @@ _apt_install_starship() {
             rm -f "$temp_starship_script"
         else
             echo -e "${RED}[✗]${NC} Starship install scripti indirilemedi!"
+            echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
+            rm -f "$temp_starship_script"
+            return 1
         fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
@@ -349,10 +364,22 @@ _apt_install_zoxide() {
     # FIX BUG-010: Download script to temp file, verify source before executing
     if ! command -v zoxide &> /dev/null; then
         echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
+        
+        # Try APT first (available in Ubuntu 22.04+)
+        echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
+        if sudo apt install -y zoxide 2>/dev/null; then
+            if command -v zoxide &> /dev/null; then
+                echo -e "${GREEN}[✓]${NC} Zoxide APT'den kuruldu"
+                return 0
+            fi
+        fi
+        
+        # Fallback to official install script
+        echo -e "${YELLOW}[BİLGİ]${NC} APT başarısız, resmi script deneniyor..."
         local temp_zoxide_script
         temp_zoxide_script=$(mktemp)
 
-        if curl -fsSL --retry 3 --retry-delay 5 "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
+        if curl -fsSL --retry 3 --retry-delay 30 "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
             echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $ZOXIDE_INSTALL_URL"
             echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: github.com/ajeetdsouza/zoxide"
             # Auto-approve for trusted source
@@ -360,6 +387,9 @@ _apt_install_zoxide() {
             rm -f "$temp_zoxide_script"
         else
             echo -e "${RED}[✗]${NC} Zoxide install scripti indirilemedi!"
+            echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
+            rm -f "$temp_zoxide_script"
+            return 1
         fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
