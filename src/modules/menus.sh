@@ -59,7 +59,7 @@ prepare_and_configure_git() {
 # Display main menu
 show_menu() {
     echo ""
-    draw_box_top "⚙️  ADVANCED MODE - ANA MENÜ" 80
+    draw_box_top "[SETUP]  ADVANCED MODE - ANA MENÜ" 80
     draw_box_middle "" 80
     draw_box_middle "  ${CYAN}Python & JavaScript:${NC}" 80
     draw_box_middle "    ${GREEN}3${NC}) Python  ${GREEN}4${NC}) Pip  ${GREEN}5${NC}) Pipx  ${GREEN}6${NC}) UV" 80
@@ -76,12 +76,12 @@ show_menu() {
     draw_box_middle "    ${GREEN}18${NC}) 🐳 Docker (Engine + lazydocker)" 80
     draw_box_middle "" 80
     draw_box_middle "  ${CYAN}Quick Actions:${NC}" 80
-    draw_box_middle "    ${GREEN}1${NC}) ✨ Tam Kurulum (Önerilen)" 80
+    draw_box_middle "    ${GREEN}1${NC})  Tam Kurulum (Önerilen)" 80
     draw_box_middle "    ${GREEN}2${NC}) 🔧 Hazırlık (Sistem + Git)" 80
     draw_box_middle "    ${RED}13${NC}) ❌ AI Frameworks Kaldır" 80
-    draw_box_middle "    ${RED}17${NC}) 🗑️  Temizleme & Sıfırlama" 80
+    draw_box_middle "    ${RED}17${NC}) [DELETE]  Temizleme & Sıfırlama" 80
     draw_box_middle "" 80
-    draw_box_middle "  ${GREEN}0${NC}) ◀ Ana Menüye Dön" 80
+    draw_box_middle "  ${GREEN}0${NC}) < Ana Menüye Dön" 80
     draw_box_middle "" 80
     draw_box_bottom 80
 }
@@ -93,22 +93,22 @@ show_mode_selection() {
         echo ""
 
         # Show mode selection question
-        gum_style --foreground 212 --bold "🎯 Hangi kurulum modunu tercih edersiniz?"
+        gum_style --foreground 212 --bold "[TARGET] Hangi kurulum modunu tercih edersiniz?"
         echo ""
 
         local selection
         selection=$(gum_choose \
-            "🚀 QUICK START MODE (Önerilen)" \
-            "⚙️  ADVANCED MODE" \
+            "=== QUICK START MODE (Önerilen)" \
+            "[SETUP]  ADVANCED MODE" \
             "❌ Çıkış")
 
         case "$selection" in
-            "🚀 QUICK START MODE (Önerilen)")
+            "=== QUICK START MODE (Önerilen)")
                 echo ""
                 run_quickstart_mode
                 continue
                 ;;
-            "⚙️  ADVANCED MODE")
+            "[SETUP]  ADVANCED MODE")
                 echo ""
                 run_advanced_mode
                 break
@@ -160,7 +160,7 @@ _advanced_mode_init() {
     # Detect package manager
     echo ""
     detect_package_manager
-    gum_style --foreground 82 "📦 Paket yöneticisi: $PKG_MANAGER"
+    gum_style --foreground 82 "[PACKAGE] Paket yöneticisi: $PKG_MANAGER"
     sleep 1
 }
 
@@ -180,34 +180,34 @@ run_advanced_mode() {
         # Modern Gum menu
         local selection
         selection=$(gum_choose \
-            "✨ Tam Kurulum (Tüm Araçlar)" \
+            " Tam Kurulum (Tüm Araçlar)" \
             "🔧 Hazırlık (Sistem + Git)" \
             "━━━ Python & JavaScript ━━━" \
-            "  🐍 Python Ekosistemi (Python, pip, pipx, UV)" \
-            "  📦 NVM (Node Version Manager)" \
+            "  [PYTHON] Python Ekosistemi (Python, pip, pipx, UV)" \
+            "  [PACKAGE] NVM (Node Version Manager)" \
             "  ⚡ Bun.js" \
             "━━━ Backend & Languages ━━━" \
-            "  🐘 PHP Kurulum" \
+            "  [PHP] PHP Kurulum" \
             "  🎼 Composer" \
-            "  🐹 Go Language" \
+            "  [GO] Go Language" \
             "━━━ AI & Modern Tools ━━━" \
-            "  🤖 AI CLI Araçları" \
-            "  🧠 AI Frameworks" \
-            "  ✨ Modern CLI Tools" \
+            "  [AI] AI CLI Araçları" \
+            "  [AI] AI Frameworks" \
+            "   Modern CLI Tools" \
             "  🎨 Shell Ortamı Yapılandırma" \
             "━━━ Docker & Utilities ━━━" \
             "  🐳 Docker (Engine + lazydocker)" \
             "━━━ Maintenance ━━━" \
             "  ❌ AI Frameworks Kaldır" \
-            "  🗑️  Temizleme & Sıfırlama" \
+            "  [DELETE]  Temizleme & Sıfırlama" \
             "━━━━━━━━━━━━━━━━━━━━━" \
-            "◀ Ana Menüye Dön" \
+            "< Ana Menüye Dön" \
             "🚪 Çıkış")
 
         case "$selection" in
-            "✨ Tam Kurulum (Tüm Araçlar)")
+            " Tam Kurulum (Tüm Araçlar)")
                 echo ""
-                gum_style --foreground 226 "🚀 Tam kurulum başlatılıyor..."
+                gum_style --foreground 226 "=== Tam kurulum başlatılıyor..."
                 sleep 1
                 update_system
                 configure_git
@@ -275,7 +275,7 @@ run_advanced_mode() {
                 ;;
             *"Çıkış"*)
                 echo ""
-                gum_style --foreground 82 "👋 Görüşürüz!"
+                gum_style --foreground 82 " Görüşürüz!"
                 exit 0
                 ;;
             "━"*)
@@ -288,7 +288,7 @@ run_advanced_mode() {
         if [ "$NVM_INSTALLED" = true ] || [ "$PYTHON_INSTALLED" = true ]; then
             echo ""
             gum_style --foreground 226 --border rounded --padding "1 2" \
-                "⚠️  Yeni kurulumlar tespit edildi!" \
+                "[WARNING]  Yeni kurulumlar tespit edildi!" \
                 "Değişikliklerin aktif olması için:" \
                 "  • source ~/.bashrc (veya ~/.zshrc)" \
                 "  • Ya da terminali yeniden başlatın"

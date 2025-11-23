@@ -262,7 +262,7 @@ _apt_install_eza() {
             if command -v wget &>/dev/null; then
                 if wget --timeout=15 --tries=2 -qO- "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
                     gpg_success=true
-                    echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
+                    echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
                     break
                 fi
             fi
@@ -270,7 +270,7 @@ _apt_install_eza() {
             # Fallback to curl
             if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" 2>/dev/null | sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg 2>/dev/null; then
                 gpg_success=true
-                echo -e "${GREEN}[✓]${NC} GPG anahtarı başarıyla indirildi"
+                echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
                 break
             fi
             
@@ -335,7 +335,7 @@ _apt_install_starship() {
         echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
         if sudo apt install -y starship 2>/dev/null; then
             if command -v starship &> /dev/null; then
-                echo -e "${GREEN}[✓]${NC} Starship APT'den kuruldu"
+                echo -e "${GREEN}[[+]]${NC} Starship APT'den kuruldu"
                 return 0
             fi
         fi
@@ -353,7 +353,7 @@ _apt_install_starship() {
             sh "$temp_starship_script" -y
             rm -f "$temp_starship_script"
         else
-            echo -e "${RED}[✗]${NC} Starship install scripti indirilemedi!"
+            echo -e "${RED}[[-]]${NC} Starship install scripti indirilemedi!"
             echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
             rm -f "$temp_starship_script"
             return 1
@@ -373,7 +373,7 @@ _apt_install_zoxide() {
         echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
         if sudo apt install -y zoxide 2>/dev/null; then
             if command -v zoxide &> /dev/null; then
-                echo -e "${GREEN}[✓]${NC} Zoxide APT'den kuruldu"
+                echo -e "${GREEN}[[+]]${NC} Zoxide APT'den kuruldu"
                 return 0
             fi
         fi
@@ -390,7 +390,7 @@ _apt_install_zoxide() {
             bash "$temp_zoxide_script"
             rm -f "$temp_zoxide_script"
         else
-            echo -e "${RED}[✗]${NC} Zoxide install scripti indirilemedi!"
+            echo -e "${RED}[[-]]${NC} Zoxide install scripti indirilemedi!"
             echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
             rm -f "$temp_zoxide_script"
             return 1
@@ -413,14 +413,14 @@ _apt_install_vivid() {
         # Direct download without checksum (vivid project doesn't provide .sha256 files)
         if curl -fsSL --retry 3 --retry-delay 5 "$vivid_url" -o "$vivid_deb"; then
             if sudo dpkg -i "$vivid_deb"; then
-                echo -e "${GREEN}[✓]${NC} Vivid başarıyla kuruldu"
+                echo -e "${GREEN}[[+]]${NC} Vivid başarıyla kuruldu"
                 rm "$vivid_deb"
             else
-                echo -e "${RED}[✗]${NC} Vivid paketi kurulamadı (dpkg hatası)"
+                echo -e "${RED}[[-]]${NC} Vivid paketi kurulamadı (dpkg hatası)"
                 rm -f "$vivid_deb"
             fi
         else
-            echo -e "${RED}[✗]${NC} Vivid indirilemedi (404 veya ağ hatası)"
+            echo -e "${RED}[[-]]${NC} Vivid indirilemedi (404 veya ağ hatası)"
         fi
     else
         echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
@@ -478,7 +478,7 @@ _apt_install_lazygit() {
             sudo install lazygit /usr/local/bin
             rm lazygit lazygit.tar.gz
         else
-            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            echo -e "${RED}[[-]]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
             rm -f lazygit.tar.gz lazygit
         fi
     else
@@ -532,7 +532,7 @@ install_modern_tools_apt() {
     _apt_install_lazygit
     _apt_install_lazydocker
 
-    echo -e "${GREEN}[✓]${NC} APT araç kurulumu tamamlandı!"
+    echo -e "${GREEN}[[+]]${NC} APT araç kurulumu tamamlandı!"
 }
 
 # Install modern tools for DNF/YUM (Fedora/RHEL)
@@ -609,7 +609,7 @@ install_lazygit_generic() {
             sudo install lazygit /usr/local/bin
             rm lazygit lazygit.tar.gz
         else
-            echo -e "${RED}[✗]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
+            echo -e "${RED}[[-]]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
             rm -f lazygit.tar.gz lazygit
         fi
     fi

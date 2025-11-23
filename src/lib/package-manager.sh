@@ -172,12 +172,12 @@ update_system() {
         fi
 
         if safe_update_system; then
-            echo -e "${GREEN}[✓]${NC} Sistem güncellemesi başarılı!"
+            echo -e "${GREEN}[[+]]${NC} Sistem güncellemesi başarılı!"
             break
         fi
 
         if [ $update_attempt -eq $MAX_UPDATE_RETRIES ]; then
-            echo -e "${RED}[✗]${NC} Sistem güncellemesi $MAX_UPDATE_RETRIES denemede başarısız!"
+            echo -e "${RED}[[-]]${NC} Sistem güncellemesi $MAX_UPDATE_RETRIES denemede başarısız!"
             echo -e "${YELLOW}[!]${NC} Paket kurulumları yapılacak ama bazıları başarısız olabilir..."
         fi
         ((update_attempt++))
@@ -188,26 +188,26 @@ update_system() {
     if [ "$PKG_MANAGER" = "apt" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip-full"
         if ! install_package_with_retry "curl wget git jq zip unzip p7zip-full" 3; then
-            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${RED}[[-]]${NC} Bazı temel paketler 3 denemede kurulamadı!"
             echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y curl wget git jq zip unzip p7zip-full"
         else
-            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+            echo -e "${GREEN}[[+]]${NC} Temel paketler kuruldu"
         fi
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (build-essential) kuruluyor..."
         if ! install_package_with_retry "build-essential" 3; then
-            echo -e "${RED}[✗]${NC} build-essential 3 denemede kurulamadı!"
+            echo -e "${RED}[[-]]${NC} build-essential 3 denemede kurulamadı!"
             echo -e "${YELLOW}[!]${NC} Lütfen elle kurun: sudo apt install -y build-essential"
         else
-            echo -e "${GREEN}[✓]${NC} build-essential kuruldu"
+            echo -e "${GREEN}[[+]]${NC} build-essential kuruldu"
         fi
 
     elif [ "$PKG_MANAGER" = "dnf" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
         if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
-            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${RED}[[-]]${NC} Bazı temel paketler 3 denemede kurulamadı!"
         else
-            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+            echo -e "${GREEN}[[+]]${NC} Temel paketler kuruldu"
         fi
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
@@ -218,7 +218,7 @@ update_system() {
                 sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo dnf groupinstall "Development Tools" -y; then
-                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                echo -e "${GREEN}[[+]]${NC} Development Tools kuruldu"
                 break
             fi
             ((dev_attempt++))
@@ -226,9 +226,9 @@ update_system() {
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
         if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
-            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${RED}[[-]]${NC} Bazı temel paketler 3 denemede kurulamadı!"
         else
-            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+            echo -e "${GREEN}[[+]]${NC} Temel paketler kuruldu"
         fi
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (base-devel) kuruluyor..."
@@ -239,7 +239,7 @@ update_system() {
                 sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo pacman -S base-devel --noconfirm; then
-                echo -e "${GREEN}[✓]${NC} base-devel kuruldu"
+                echo -e "${GREEN}[[+]]${NC} base-devel kuruldu"
                 break
             fi
             ((dev_attempt++))
@@ -248,9 +248,9 @@ update_system() {
     elif [ "$PKG_MANAGER" = "yum" ]; then
         echo -e "${YELLOW}[BİLGİ]${NC} Kuruluyor: curl, wget, git, jq, zip, unzip, p7zip"
         if ! install_package_with_retry "curl wget git jq zip unzip p7zip" 3; then
-            echo -e "${RED}[✗]${NC} Bazı temel paketler 3 denemede kurulamadı!"
+            echo -e "${RED}[[-]]${NC} Bazı temel paketler 3 denemede kurulamadı!"
         else
-            echo -e "${GREEN}[✓]${NC} Temel paketler kuruldu"
+            echo -e "${GREEN}[[+]]${NC} Temel paketler kuruldu"
         fi
 
         echo -e "${YELLOW}[BİLGİ]${NC} Geliştirme araçları (Development Tools) kuruluyor..."
@@ -261,7 +261,7 @@ update_system() {
                 sleep "$RETRY_DELAY_SECONDS"
             fi
             if sudo yum groupinstall "Development Tools" -y; then
-                echo -e "${GREEN}[✓]${NC} Development Tools kuruldu"
+                echo -e "${GREEN}[[+]]${NC} Development Tools kuruldu"
                 break
             fi
             ((dev_attempt++))
@@ -269,7 +269,7 @@ update_system() {
     fi
 
     echo ""
-    echo -e "${GREEN}[✓]${NC} Sistem paket kurulumu tamamlandı!"
+    echo -e "${GREEN}[[+]]${NC} Sistem paket kurulumu tamamlandı!"
     echo -e "${CYAN}[ℹ]${NC} Eksik paketler varsa yukarıdaki mesajlara bakın."
 }
 

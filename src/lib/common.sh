@@ -76,17 +76,17 @@ mask_secret() {
 
 # Check internet connection
 check_internet_connection() {
-    echo -e "${CYAN}[✓]${NC} İnternet bağlantısı kontrol ediliyor..."
+    echo -e "${CYAN}[[+]]${NC} İnternet bağlantısı kontrol ediliyor..."
 
     # FIX BUG-015: Use configurable DNS servers instead of hardcoded values
     # Try multiple methods: primary DNS, secondary DNS, and fallback URL
     if ping -c 1 -W 2 "$PRIMARY_DNS_SERVER" &>/dev/null || \
        ping -c 1 -W 2 "$SECONDARY_DNS_SERVER" &>/dev/null || \
        curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" --retry 3 --retry-delay 5 "$DNS_TEST_URL" &>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} İnternet bağlantısı: OK"
+        echo -e "${GREEN}[[+]]${NC} İnternet bağlantısı: OK"
         return 0
     else
-        echo -e "${RED}[✗]${NC} İnternet bağlantısı yok!"
+        echo -e "${RED}[[-]]${NC} İnternet bağlantısı yok!"
         echo -e "${YELLOW}[!]${NC} Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin."
         return 1
     fi
@@ -124,15 +124,15 @@ start_sudo_keepalive() {
 
 # Check sudo access
 check_sudo_access() {
-    echo -e "${CYAN}[✓]${NC} Sudo yetkisi kontrol ediliyor..."
+    echo -e "${CYAN}[[+]]${NC} Sudo yetkisi kontrol ediliyor..."
 
     if sudo -n true 2>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} Sudo yetkisi: OK"
+        echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
         return 0
     else
         echo -e "${YELLOW}[!]${NC} Sudo şifresi gerekiyor..."
         if sudo true; then
-            echo -e "${GREEN}[✓]${NC} Sudo yetkisi: OK"
+            echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
 
             # Start background sudo keepalive
             start_sudo_keepalive
@@ -140,7 +140,7 @@ check_sudo_access() {
 
             return 0
         else
-            echo -e "${RED}[✗]${NC} Sudo yetkisi alınamadı!"
+            echo -e "${RED}[[-]]${NC} Sudo yetkisi alınamadı!"
             return 1
         fi
     fi
@@ -148,20 +148,20 @@ check_sudo_access() {
 
 # Check disk space (minimum 2GB recommended)
 check_disk_space() {
-    echo -e "${CYAN}[✓]${NC} Disk alanı kontrol ediliyor..."
+    echo -e "${CYAN}[[+]]${NC} Disk alanı kontrol ediliyor..."
 
     local available_mb
     available_mb=$(df -m "$HOME" | awk 'NR==2 {print $4}')
 
     if [ "$available_mb" -ge "$RECOMMENDED_DISK_SPACE_MB" ]; then
-        echo -e "${GREEN}[✓]${NC} Disk alanı: ${available_mb} MB mevcut"
+        echo -e "${GREEN}[[+]]${NC} Disk alanı: ${available_mb} MB mevcut"
         return 0
     elif [ "$available_mb" -ge "$WARNING_DISK_SPACE_MB" ]; then
         echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az ${RECOMMENDED_DISK_SPACE_MB}MB önerilir)"
         echo -e "${YELLOW}[!]${NC} Devam ediliyor ama bazı kurulumlar başarısız olabilir..."
         return 0
     else
-        echo -e "${RED}[✗]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
+        echo -e "${RED}[[-]]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
         echo -e "${YELLOW}[!]${NC} En az ${WARNING_DISK_SPACE_MB}MB boş alan gerekiyor!"
         return 1
     fi
@@ -173,7 +173,7 @@ check_apt_repositories() {
         return 0  # Skip for non-APT systems
     fi
 
-    echo -e "${CYAN}[✓]${NC} APT repository erişimi kontrol ediliyor..."
+    echo -e "${CYAN}[[+]]${NC} APT repository erişimi kontrol ediliyor..."
 
     # Check if timeout command is available
     if command -v timeout &>/dev/null; then
@@ -181,10 +181,10 @@ check_apt_repositories() {
             echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
             return 0
         elif timeout "$APT_UPDATE_TIMEOUT_SECONDS" sudo apt-get update -qq &>/dev/null; then
-            echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
+            echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
             return 0
         else
-            echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
+            echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
             echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
             return 1
         fi
@@ -194,10 +194,10 @@ check_apt_repositories() {
             echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
             return 0
         elif sudo apt-get update -qq &>/dev/null; then
-            echo -e "${GREEN}[✓]${NC} APT repository erişimi: OK"
+            echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
             return 0
         else
-            echo -e "${RED}[✗]${NC} APT repository erişim sorunu!"
+            echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
             echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
             return 1
         fi
@@ -228,11 +228,11 @@ run_preflight_checks() {
 
     echo ""
     if [ "$all_passed" = true ]; then
-        echo -e "${GREEN}[✓]${NC} Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
+        echo -e "${GREEN}[[+]]${NC} Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
         echo ""
         return 0
     else
-        echo -e "${RED}[✗]${NC} Bazı kritik kontroller başarısız!"
+        echo -e "${RED}[[-]]${NC} Bazı kritik kontroller başarısız!"
         echo -e "${YELLOW}[!]${NC} Yukarıdaki hataları düzeltin ve tekrar deneyin."
         echo ""
         return 1
@@ -249,7 +249,7 @@ verify_checksum() {
 
     # Check if file exists
     if [ ! -f "$file_path" ]; then
-        echo -e "${RED}[✗]${NC} Dosya bulunamadı: $file_path"
+        echo -e "${RED}[[-]]${NC} Dosya bulunamadı: $file_path"
         return 1
     fi
 
@@ -259,7 +259,7 @@ verify_checksum() {
         expected_checksum=$(curl -sL --retry 3 --retry-delay 5 "$checksum_url" | head -n1 | awk '{print $1}')
 
         if [ -z "$expected_checksum" ]; then
-            echo -e "${RED}[✗]${NC} SECURITY ERROR: Checksum indirilemedi!"
+            echo -e "${RED}[[-]]${NC} SECURITY ERROR: Checksum indirilemedi!"
             echo -e "${RED}[!]${NC} Güvenlik nedeniyle indirme başarısız sayılıyor."
             return 1  # SECURITY FIX: Fail if checksum cannot be fetched
         fi
@@ -267,7 +267,7 @@ verify_checksum() {
 
     # FIX BUG-023: Validate checksum format (64 hex characters for SHA256)
     if ! [[ "$expected_checksum" =~ ^[a-fA-F0-9]{64}$ ]]; then
-        echo -e "${RED}[✗]${NC} SECURITY ERROR: Geçersiz checksum formatı!"
+        echo -e "${RED}[[-]]${NC} SECURITY ERROR: Geçersiz checksum formatı!"
         echo -e "${RED}[!]${NC} SHA256 checksum 64 hex karakter olmalı"
         echo -e "${RED}[!]${NC} Alınan: ${expected_checksum:0:32}..."
         return 1  # SECURITY FIX: Fail on invalid checksum format
@@ -280,7 +280,7 @@ verify_checksum() {
     elif command -v shasum &>/dev/null; then
         actual_checksum=$(shasum -a 256 "$file_path" | awk '{print $1}')
     else
-        echo -e "${RED}[✗]${NC} SECURITY ERROR: SHA256 aracı bulunamadı!"
+        echo -e "${RED}[[-]]${NC} SECURITY ERROR: SHA256 aracı bulunamadı!"
         echo -e "${RED}[!]${NC} Checksum doğrulaması yapılamıyor (sha256sum veya shasum gerekli)"
         echo -e "${RED}[!]${NC} Güvenlik nedeniyle işlem iptal ediliyor."
         return 1  # SECURITY FIX: Fail if no checksum tool available (CRITICAL)
@@ -293,10 +293,10 @@ verify_checksum() {
     expected_lower=$(echo "$expected_checksum" | tr '[:upper:]' '[:lower:]')
 
     if [ "$actual_lower" = "$expected_lower" ]; then
-        echo -e "${GREEN}[✓]${NC} Checksum doğrulandı: ${expected_checksum:0:$CHECKSUM_DISPLAY_LENGTH}..."
+        echo -e "${GREEN}[[+]]${NC} Checksum doğrulandı: ${expected_checksum:0:$CHECKSUM_DISPLAY_LENGTH}..."
         return 0
     else
-        echo -e "${RED}[✗]${NC} Checksum uyuşmuyor!"
+        echo -e "${RED}[[-]]${NC} Checksum uyuşmuyor!"
         echo -e "${YELLOW}[!]${NC} Beklenen: ${expected_checksum:0:$CHECKSUM_FULL_DISPLAY}..."
         echo -e "${YELLOW}[!]${NC} Bulunan:  ${actual_checksum:0:$CHECKSUM_FULL_DISPLAY}..."
         echo -e "${RED}[!]${NC} Dosya bozuk veya güvenlik sorunu olabilir!"
@@ -316,11 +316,11 @@ download_with_checksum() {
 
     # Download file
     if ! curl -fsSL --retry 3 --retry-delay 30 -o "$output_path" "$url"; then
-        echo -e "${RED}[✗]${NC} İndirme başarısız: $url"
+        echo -e "${RED}[[-]]${NC} İndirme başarısız: $url"
         return 1
     fi
 
-    echo -e "${GREEN}[✓]${NC} İndirme tamamlandı: $(basename "$output_path")"
+    echo -e "${GREEN}[[+]]${NC} İndirme tamamlandı: $(basename "$output_path")"
 
     # Verify checksum if provided
     if [ -n "$checksum_or_url" ]; then
@@ -352,7 +352,7 @@ download_with_checksum() {
                     return 1
                 fi
             else
-                echo -e "${RED}[✗]${NC} SECURITY ERROR: Checksum dosyası indirilemedi!"
+                echo -e "${RED}[[-]]${NC} SECURITY ERROR: Checksum dosyası indirilemedi!"
                 echo -e "${RED}[!]${NC} Dosya silinecek: $(basename "$output_path")"
                 rm -f "$output_path"  # SECURITY FIX: Remove file if checksum unavailable
                 return 1

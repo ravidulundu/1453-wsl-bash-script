@@ -222,7 +222,7 @@ install_php_version() {
 # Menu for PHP version selection
 install_php_version_menu() {
     echo ""
-    gum_style --foreground 212 --bold "🐘 PHP Sürüm Seçimi"
+    gum_style --foreground 212 --bold "[PHP] PHP Sürüm Seçimi"
     echo ""
 
     # Build menu options
@@ -231,17 +231,17 @@ install_php_version_menu() {
         options+=("PHP ${ver}")
     done
     options+=("━━━━━━━━━━━━━━━━━━━━━")
-    options+=("📦 Tüm sürümleri kur")
-    options+=("◀ Ana menüye dön")
+    options+=("[PACKAGE] Tüm sürümleri kur")
+    options+=("< Ana menüye dön")
 
     local selection
     selection=$(gum_choose "${options[@]}")
 
     case "$selection" in
-        "◀ Ana menüye dön"|"")
+        "< Ana menüye dön"|"")
             return
             ;;
-        "📦 Tüm sürümleri kur")
+        "[PACKAGE] Tüm sürümleri kur")
             for ver in "${PHP_SUPPORTED_VERSIONS[@]}"; do
                 install_php_version "$ver"
             done

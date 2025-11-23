@@ -366,11 +366,11 @@ crust = "#11111b"
 
 # Format
 format = """
-[┌───────────────────────────────────>](bold green)
-[│](bold green)$username$hostname$shlvl$directory$git_branch$git_status$git_commit$git_state
-[│](bold green)$nodejs$bun$deno$python$golang$rust$php$java$ruby$lua
-[│](bold green)$docker_context$kubernetes$terraform$cmake$conda
-[└─>](bold green)$character"""
+[+----------------------------------->](bold green)
+[|](bold green)$username$hostname$shlvl$directory$git_branch$git_status$git_commit$git_state
+[|](bold green)$nodejs$bun$deno$python$golang$rust$php$java$ruby$lua
+[|](bold green)$docker_context$kubernetes$terraform$cmake$conda
+[+->](bold green)$character"""
 
 # Right format
 right_format = """$jobs $cmd_duration $time"""
@@ -434,7 +434,7 @@ conflicted = "✖"
 ahead = "⇡${count}"
 behind = "⇣${count}"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"
-up_to_date = "✓"
+up_to_date = "[+]"
 untracked = "?${count}"
 stashed = "$"
 modified = "!${count}"

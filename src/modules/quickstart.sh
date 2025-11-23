@@ -8,22 +8,22 @@ show_quickstart_welcome() {
     # Banner shown at script start, don't redraw
     echo ""
 
-    gum_style --foreground 82 --bold "🚀 QUICK START MODE - VIBE CODERS İÇİN"
+    gum_style --foreground 82 --bold "=== QUICK START MODE - VIBE CODERS İÇİN"
     echo ""
-    echo -e "${GREEN}Merhaba vibe coder! 👋${NC}"
+    echo -e "${GREEN}Merhaba vibe coder! ${NC}"
     echo ""
     echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
-    echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ✨${NC}"
+    echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ${NC}"
     echo ""
-    gum_style --foreground 226 "💡 Nasıl çalışır?"
+    gum_style --foreground 226 "[INFO] Nasıl çalışır?"
     echo "  1. Deneyim seviyenizi belirtirsiniz"
     echo "  2. Ne yapmak istediğinizi seçersiniz"
     echo "  3. Size önerilen araçları otomatik kurarım"
     echo ""
-    gum_style --foreground 82 "🎯 Sonunda şunları elde edersiniz:"
-    echo "  ✓ İhtiyacınız olan tüm geliştirici araçları"
-    echo "  ✓ Hazır ortam"
-    echo "  ✓ Hemen kod yazmaya başlayabilirsiniz!"
+    gum_style --foreground 82 "[TARGET] Sonunda şunları elde edersiniz:"
+    echo "  [+] İhtiyacınız olan tüm geliştirici araçları"
+    echo "  [+] Hazır ortam"
+    echo "  [+] Hemen kod yazmaya başlayabilirsiniz!"
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
@@ -34,7 +34,7 @@ show_quickstart_welcome() {
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
-        echo -e "${YELLOW}⚙️  Advanced Mode${NC} → Detaylı menü ile kendiniz seçim yapabilirsiniz."
+        echo -e "${YELLOW}[SETUP]  Advanced Mode${NC} → Detaylı menü ile kendiniz seçim yapabilirsiniz."
         return 1
     fi
 
@@ -45,7 +45,7 @@ show_quickstart_welcome() {
 show_presets() {
     echo ""
 
-    gum_style --foreground 212 --bold "📦 KURULUM PAKETLERİ"
+    gum_style --foreground 212 --bold "[PACKAGE] KURULUM PAKETLERİ"
     echo ""
     echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun:${NC}"
     echo ""
@@ -53,9 +53,9 @@ show_presets() {
     local selection
     selection=$(gum_choose \
         "🌐 WEB DEVELOPMENT - Python + Node.js + PHP + Composer" \
-        "🤖 AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
-        "⚙️  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
-        "🚀 EVERYTHING - Full-stack + AI + Backend (hepsi)" \
+        "[AI] AI DEVELOPMENT - Python + AI CLI Tools + AI Frameworks" \
+        "[SETUP]  BACKEND DEVELOPMENT - Python + Go + PHP + Composer" \
+        "=== EVERYTHING - Full-stack + AI + Backend (hepsi)" \
         "📱 MOBILE + WEB - Python + Node.js + PHP + Flutter")
 
     case "$selection" in
@@ -78,19 +78,19 @@ generate_installation_plan() {
 
     echo ""
     if has_gum; then
-        gum_style --foreground 82 --bold "🚀 KURULUM BAŞLIYOR!"
+        gum_style --foreground 82 --bold "=== KURULUM BAŞLIYOR!"
     else
-        echo -e "${GREEN}🚀 KURULUM BAŞLIYOR!${NC}"
+        echo -e "${GREEN}=== KURULUM BAŞLIYOR!${NC}"
     fi
     echo ""
 
     # Always install base tools
-    echo -e "${YELLOW}📦 İlk önce (tüm paketlerde):${NC}"
-    echo -e "  ✓ Sistem güncellemeleri"
-    echo -e "  ✓ Git yapılandırması"
-    echo -e "  ✓ Python + pip + pipx + UV"
-    echo -e "  ✓ Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
-    echo -e "  ✓ Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
+    echo -e "${YELLOW}[PACKAGE] İlk önce (tüm paketlerde):${NC}"
+    echo -e "  [+] Sistem güncellemeleri"
+    echo -e "  [+] Git yapılandırması"
+    echo -e "  [+] Python + pip + pipx + UV"
+    echo -e "  [+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
+    echo -e "  [+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
     echo ""
 
     # Build tool list based on preset
@@ -99,44 +99,44 @@ generate_installation_plan() {
     case $preset in
         "web")
             echo -e "${YELLOW}🌐 Web Development paketi:${NC}"
-            echo -e "  ✓ Node.js (NVM)"
-            echo -e "  ✓ Bun.js runtime"
-            echo -e "  ✓ PHP + Composer"
+            echo -e "  [+] Node.js (NVM)"
+            echo -e "  [+] Bun.js runtime"
+            echo -e "  [+] PHP + Composer"
             tools+=("nvm" "node" "bun" "php" "composer")
             ;;
         "ai")
-            echo -e "${YELLOW}🤖 AI Development paketi:${NC}"
-            echo -e "  ✓ Node.js (AI araçları için)"
-            echo -e "  ✓ AI CLI Tools (Claude, Gemini, etc.)"
-            echo -e "  ✓ AI Frameworks (SuperClaude, etc.)"
+            echo -e "${YELLOW}[AI] AI Development paketi:${NC}"
+            echo -e "  [+] Node.js (AI araçları için)"
+            echo -e "  [+] AI CLI Tools (Claude, Gemini, etc.)"
+            echo -e "  [+] AI Frameworks (SuperClaude, etc.)"
             tools+=("nvm" "node" "ai_cli" "ai_frameworks")
             ;;
         "backend")
-            echo -e "${YELLOW}⚙️  Backend Development paketi:${NC}"
-            echo -e "  ✓ Go language"
-            echo -e "  ✓ PHP + Composer"
+            echo -e "${YELLOW}[SETUP]  Backend Development paketi:${NC}"
+            echo -e "  [+] Go language"
+            echo -e "  [+] PHP + Composer"
             tools+=("go" "php" "composer")
             ;;
         "everything")
-            echo -e "${YELLOW}🚀 EVERYTHING paketi:${NC}"
-            echo -e "  ✓ Node.js + Bun.js"
-            echo -e "  ✓ Go language"
-            echo -e "  ✓ PHP + Composer"
-            echo -e "  ✓ AI CLI Tools + Frameworks"
-            echo -e "  ✓ GitHub CLI"
+            echo -e "${YELLOW}=== EVERYTHING paketi:${NC}"
+            echo -e "  [+] Node.js + Bun.js"
+            echo -e "  [+] Go language"
+            echo -e "  [+] PHP + Composer"
+            echo -e "  [+] AI CLI Tools + Frameworks"
+            echo -e "  [+] GitHub CLI"
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
             echo -e "${YELLOW}📱 Mobile + Web paketi:${NC}"
-            echo -e "  ✓ Node.js"
-            echo -e "  ✓ PHP + Composer"
-            echo -e "  ✓ Flutter araçları"
+            echo -e "  [+] Node.js"
+            echo -e "  [+] PHP + Composer"
+            echo -e "  [+] Flutter araçları"
             tools+=("nvm" "node" "php" "composer")
             ;;
     esac
 
     echo ""
-    echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+    echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${GREEN}Toplam ${#tools[@]} araç kurulacak${NC}"
     echo ""
 
@@ -154,9 +154,9 @@ _quickstart_show_welcome() {
     echo ""
 
     if has_gum; then
-        gum_style --foreground 82 --bold "🚀 QUICK START MODE - KURULUM BAŞLIYOR"
+        gum_style --foreground 82 --bold "=== QUICK START MODE - KURULUM BAŞLIYOR"
     else
-        echo -e "${GREEN}🚀 QUICK START MODE - KURULUM BAŞLIYOR${NC}"
+        echo -e "${GREEN}=== QUICK START MODE - KURULUM BAŞLIYOR${NC}"
     fi
     echo ""
     echo -e "${YELLOW}Kurulum planınız hazırlanıyor...${NC}"
@@ -179,7 +179,7 @@ _quickstart_preflight_checks() {
     echo ""
 
     if ! run_preflight_checks; then
-        echo -e "${RED}[✗]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+        echo -e "${RED}[[-]]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
         echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
@@ -191,9 +191,9 @@ _quickstart_update_system() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 212 --bold "📦 SİSTEM GÜNCELLENİYOR"
+        gum_style --foreground 212 --bold "[PACKAGE] SİSTEM GÜNCELLENİYOR"
     else
-        echo -e "${YELLOW}📦 SİSTEM GÜNCELLENİYOR${NC}"
+        echo -e "${YELLOW}[PACKAGE] SİSTEM GÜNCELLENİYOR${NC}"
     fi
     echo ""
     show_install_status "System Update" "installing"
@@ -225,9 +225,9 @@ _quickstart_install_python() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 81 --bold "🐍 PYTHON EKOSİSTEMİ KURULUYOR"
+        gum_style --foreground 81 --bold "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
     else
-        echo -e "${CYAN}🐍 PYTHON EKOSİSTEMİ KURULUYOR${NC}"
+        echo -e "${CYAN}[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR${NC}"
     fi
     echo ""
 
@@ -356,9 +356,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 141 --bold "🐘 PHP 8.3 KURULUYOR"
+                    gum_style --foreground 141 --bold "[PHP] PHP 8.3 KURULUYOR"
                 else
-                    echo -e "${YELLOW}🐘 PHP 8.3 KURULUYOR${NC}"
+                    echo -e "${YELLOW}[PHP] PHP 8.3 KURULUYOR${NC}"
                 fi
                 echo ""
                 show_install_status "PHP 8.3" "installing"
@@ -415,9 +415,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 212 --bold "🤖 AI CLI ARAÇLARI KURULUYOR"
+                    gum_style --foreground 212 --bold "[AI] AI CLI ARAÇLARI KURULUYOR"
                 else
-                    echo -e "${YELLOW}🤖 AI CLI ARAÇLARI KURULUYOR${NC}"
+                    echo -e "${YELLOW}[AI] AI CLI ARAÇLARI KURULUYOR${NC}"
                 fi
                 echo ""
 
@@ -442,9 +442,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 141 --bold "🧠 AI FRAMEWORK KURULUYOR"
+                    gum_style --foreground 141 --bold "[AI] AI FRAMEWORK KURULUYOR"
                 else
-                    echo -e "${YELLOW}🧠 AI FRAMEWORK KURULUYOR${NC}"
+                    echo -e "${YELLOW}[AI] AI FRAMEWORK KURULUYOR${NC}"
                 fi
                 echo ""
                 show_install_status "SuperClaude" "installing"
@@ -479,31 +479,31 @@ execute_installation_plan() {
 
     echo ""
     if has_gum; then
-        gum_style --foreground 212 --bold "🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
+        gum_style --foreground 212 --bold "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     else
-        echo -e "${YELLOW}🎉 TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!${NC}"
+        echo -e "${YELLOW}[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!${NC}"
     fi
     echo ""
-    echo -e "${CYAN}💡 ŞİMDİ NE YAPACAKSINIZ?${NC}"
+    echo -e "${CYAN}[INFO] ŞİMDİ NE YAPACAKSINIZ?${NC}"
     echo ""
-    echo -e "${GREEN}▶ ADIM 1: Terminal Ortamını Yenileyin${NC}"
+    echo -e "${GREEN}> ADIM 1: Terminal Ortamını Yenileyin${NC}"
     echo -e "   Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
     echo -e "   ${YELLOW}→${NC} ${GREEN}source ~/.bashrc${NC}"
     echo ""
     echo -e "   ${YELLOW}veya${NC} terminali kapatıp yeniden açın (daha garantili)"
     echo ""
-    echo -e "${GREEN}▶ ADIM 2: Kurulumları Test Edin${NC}"
+    echo -e "${GREEN}> ADIM 2: Kurulumları Test Edin${NC}"
     echo -e "   ${CYAN}•${NC} Python: ${GREEN}python3 --version${NC}"
     echo -e "   ${CYAN}•${NC} Node.js: ${GREEN}node --version${NC}"
     echo -e "   ${CYAN}•${NC} NVM: ${GREEN}nvm --version${NC}"
     echo -e "   ${CYAN}•${NC} Modern CLI: ${GREEN}bat --version${NC}, ${GREEN}eza --version${NC}"
     echo ""
-    echo -e "${GREEN}▶ ADIM 3: Kodlamaya Başlayın!${NC}"
+    echo -e "${GREEN}> ADIM 3: Kodlamaya Başlayın!${NC}"
     echo -e "   ${CYAN}•${NC} Proje oluşturun: ${GREEN}mkdir my-project && cd my-project${NC}"
     echo -e "   ${CYAN}•${NC} Python venv: ${GREEN}python3 -m venv venv${NC}"
     echo -e "   ${CYAN}•${NC} Node proje: ${GREEN}npm init -y${NC}"
     echo ""
-    echo -e "${YELLOW}⚙️  İleri düzey araçlar için:${NC}"
+    echo -e "${YELLOW}[SETUP]  İleri düzey araçlar için:${NC}"
     echo -e "   Scripti tekrar çalıştırıp ${GREEN}'Advanced Mode'${NC} seçin"
     echo ""
 }

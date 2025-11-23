@@ -94,7 +94,7 @@ install_go_official() {
         go_version="1.21.5"
         echo -e "${CYAN}[BİLGİ]${NC} Kullanılacak sürüm: go$go_version"
     else
-        echo -e "${GREEN}[✓]${NC} Son sürüm bulundu: $go_version"
+        echo -e "${GREEN}[[+]]${NC} Son sürüm bulundu: $go_version"
     fi
 
     local go_tarball="go${go_version}.linux-${arch}.tar.gz"
@@ -257,15 +257,15 @@ install_go() {
 # Interactive Go installation menu
 install_go_menu() {
     echo ""
-    gum_style --foreground 81 --bold "🐹 Go Language Kurulumu"
+    gum_style --foreground 81 --bold "[GO] Go Language Kurulumu"
     echo ""
 
     local selection
     selection=$(gum_choose \
-        "✨ Otomatik Kurulum (Önerilen)" \
-        "📦 Resmi Binary Kurulumu" \
+        " Otomatik Kurulum (Önerilen)" \
+        "[PACKAGE] Resmi Binary Kurulumu" \
         "🔧 Paket Yöneticisi Kurulumu" \
-        "◀ Ana menüye dön")
+        "< Ana menüye dön")
 
     case "$selection" in
         *"Otomatik"*) install_go ;;

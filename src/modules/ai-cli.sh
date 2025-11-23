@@ -24,7 +24,7 @@ install_claude_code() {
     temp_installer=$(mktemp)
 
     if curl -fsSL "$CLAUDE_CODE_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
 
         # Run installer
         if bash "$temp_installer"; then
@@ -294,22 +294,22 @@ install_github_cli() {
 # AI CLI Tools installation menu
 install_ai_cli_tools_menu() {
     echo ""
-    gum_style --foreground 212 --bold "🤖 AI CLI Araçları Kurulumu"
+    gum_style --foreground 212 --bold "[AI] AI CLI Araçları Kurulumu"
     echo ""
 
     local selection
     selection=$(gum_choose \
-        "🧠 Claude Code CLI" \
-        "✨ Gemini CLI" \
+        "[AI] Claude Code CLI" \
+        " Gemini CLI" \
         "💻 OpenCode CLI" \
         "🌟 Qwen CLI" \
-        "🤖 GitHub Copilot CLI" \
-        "📦 GitHub CLI" \
+        "[AI] GitHub Copilot CLI" \
+        "[PACKAGE] GitHub CLI" \
         "⚡ Qoder CLI" \
-        "🚀 Kiro CLI" \
+        "=== Kiro CLI" \
         "━━━━━━━━━━━━━━━━━━━━━" \
-        "📦 Tümünü Kur" \
-        "◀ Ana menüye dön")
+        "[PACKAGE] Tümünü Kur" \
+        "< Ana menüye dön")
 
     case "$selection" in
         *"Claude Code"*) install_claude_code ;;
@@ -356,7 +356,7 @@ install_qoder_cli() {
     temp_installer=$(mktemp)
 
     if curl -fsSL "$QODER_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
 
         # Run installer
         if bash "$temp_installer"; then
@@ -414,7 +414,7 @@ install_kiro_cli() {
     temp_installer=$(mktemp)
 
     if curl -fsSL "$KIRO_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[✓]${NC} İndirme başarılı, kuruluyor..."
+        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
 
         # Run installer
         if bash "$temp_installer"; then

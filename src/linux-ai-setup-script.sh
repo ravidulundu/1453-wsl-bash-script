@@ -106,7 +106,7 @@ fi
 # Phase 6: Initialize tool versions (must be called before any installations)
 echo -e "${YELLOW}[BİLGİ]${NC} Araç versiyonları hazırlanıyor..."
 init_tool_versions
-echo -e "${GREEN}[✓]${NC} Araç versiyonları hazır"
+echo -e "${GREEN}[[+]]${NC} Araç versiyonları hazır"
 
 # Phase 7: Sudo authentication and keep-alive
 # Request sudo password once at the start
@@ -114,7 +114,7 @@ echo -e "${YELLOW}[BİLGİ]${NC} Script bazı işlemler için sudo yetkisi gerek
 echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
 
 if sudo -v; then
-    echo -e "${GREEN}[✓]${NC} Sudo yetkisi alındı"
+    echo -e "${GREEN}[[+]]${NC} Sudo yetkisi alındı"
     echo -e "${YELLOW}[DEBUG]${NC} Trap kuruluyor..." >&2
 
     # FIX BUG-012: Set trap BEFORE starting background process to prevent race condition

@@ -159,17 +159,17 @@ remove_superclaude() {
 # AI Frameworks installation menu
 install_ai_frameworks_menu() {
     echo ""
-    gum_style --foreground 212 --bold "🧠 AI Framework'leri Kurulumu"
+    gum_style --foreground 212 --bold "[AI] AI Framework'leri Kurulumu"
     echo ""
 
     local selection
     selection=$(gum_choose \
-        "✨ SuperGemini (Gemini Framework)" \
+        " SuperGemini (Gemini Framework)" \
         "🌟 SuperQwen (Qwen Framework)" \
-        "🧠 SuperClaude (Claude Framework)" \
+        "[AI] SuperClaude (Claude Framework)" \
         "━━━━━━━━━━━━━━━━━━━━━" \
-        "📦 Tümünü Kur" \
-        "◀ Ana menüye dön")
+        "[PACKAGE] Tümünü Kur" \
+        "< Ana menüye dön")
 
     case "$selection" in
         *"SuperGemini"*) install_supergemini ;;
@@ -193,12 +193,12 @@ remove_ai_frameworks_menu() {
 
     local selection
     selection=$(gum_choose \
-        "🗑️  SuperGemini'yi Kaldır" \
-        "🗑️  SuperQwen'i Kaldır" \
-        "🗑️  SuperClaude'u Kaldır" \
+        "[DELETE]  SuperGemini'yi Kaldır" \
+        "[DELETE]  SuperQwen'i Kaldır" \
+        "[DELETE]  SuperClaude'u Kaldır" \
         "━━━━━━━━━━━━━━━━━━━━━" \
         "🚮 Tümünü Kaldır" \
-        "◀ Ana menüye dön")
+        "< Ana menüye dön")
 
     case "$selection" in
         *"SuperGemini"*) remove_supergemini ;;

@@ -21,14 +21,14 @@ install_python() {
 
         # Check if pip module is available
         if python3 -m pip --version &>/dev/null; then
-            echo -e "${GREEN}[✓]${NC} pip modülü mevcut"
+            echo -e "${GREEN}[[+]]${NC} pip modülü mevcut"
             track_skip "Python" "Zaten kurulu ($version)"
         else
             echo -e "${YELLOW}[!]${NC} pip modülü eksik, python3-pip kuruluyor..."
 
             # Use install_package_with_retry for safer installation
             if ! install_package_with_retry "python3-pip python3-venv"; then
-                echo -e "${RED}[✗]${NC} python3-pip kurulumu başarısız!"
+                echo -e "${RED}[[-]]${NC} python3-pip kurulumu başarısız!"
                 echo -e "${YELLOW}[!]${NC} Elle kurun: $(get_install_command_hint "python3-pip python3-venv")"
                 track_failure "Python (pip modülü)" "pip kurulumu başarısız"
             else
@@ -42,7 +42,7 @@ install_python() {
 
     # Use install_package_with_retry instead of direct command
     if ! install_package_with_retry "python3 python3-pip python3-venv"; then
-        echo -e "${RED}[✗]${NC} Python kurulumu başarısız!"
+        echo -e "${RED}[[-]]${NC} Python kurulumu başarısız!"
         echo -e "${YELLOW}[!]${NC} Elle kurun: $(get_install_command_hint "python3 python3-pip python3-venv")"
         return 1
     fi
@@ -54,7 +54,7 @@ install_python() {
 
         # Verify pip module
         if python3 -m pip --version &>/dev/null; then
-            echo -e "${GREEN}[✓]${NC} pip modülü başarıyla kuruldu"
+            echo -e "${GREEN}[[+]]${NC} pip modülü başarıyla kuruldu"
         else
             echo -e "${YELLOW}[!]${NC} pip modülü kontrol edilemiyor, devam ediliyor..."
         fi

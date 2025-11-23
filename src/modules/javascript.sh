@@ -132,11 +132,11 @@ install_bun() {
     if ! command -v unzip &>/dev/null; then
         echo -e "${YELLOW}[!]${NC} unzip gerekli, kuruluyor..."
         if ! install_package_with_retry "unzip"; then
-            echo -e "${RED}[✗]${NC} unzip kurulumu başarısız!"
+            echo -e "${RED}[[-]]${NC} unzip kurulumu başarısız!"
             echo -e "${YELLOW}[!]${NC} Elle kurun: sudo apt install -y unzip"
             return 1
         fi
-        echo -e "${GREEN}[✓]${NC} unzip kuruldu"
+        echo -e "${GREEN}[[+]]${NC} unzip kuruldu"
     fi
 
     echo -e "${YELLOW}[BİLGİ]${NC} Bun.js (curl) ile kuruluyor..."

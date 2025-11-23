@@ -54,10 +54,10 @@ install_docker_engine() {
         actual_fingerprint=$(gpg --with-fingerprint --with-colons "$temp_gpg_key" 2>/dev/null | grep '^fpr' | head -n1 | cut -d: -f10 | tr -d ' ')
 
         if [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]; then
-            echo -e "${GREEN}[✓]${NC} GPG anahtarı doğrulandı."
+            echo -e "${GREEN}[[+]]${NC} GPG anahtarı doğrulandı."
             sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
         else
-            echo -e "${RED}[✗]${NC} GPG anahtarı doğrulanamadı!"
+            echo -e "${RED}[[-]]${NC} GPG anahtarı doğrulanamadı!"
             echo -e "${YELLOW}[UYARI]${NC} Güvenlik nedeniyle kurulum devam ediyor ama GPG doğrulaması başarısız!"
             sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
         fi
@@ -110,7 +110,7 @@ install_docker_engine() {
             echo -e "  ${CYAN}newgrp docker${NC}"
             echo -e "  ${CYAN}sudo service docker start${NC}"
         else
-            echo -e "${GREEN}[✓]${NC} Docker Daemon çalışıyor."
+            echo -e "${GREEN}[[+]]${NC} Docker Daemon çalışıyor."
         fi
     else
         echo -e "${RED}[HATA]${NC} Docker Engine kurulumu başarısız!"
@@ -182,7 +182,7 @@ install_lazydocker_tool() {
         sudo chmod +x /usr/local/bin/lazydocker
         rm -f /tmp/lazydocker.tar.gz
     else
-        echo -e "${RED}[✗]${NC} Lazydocker kurulumu başarısız! (checksum doğrulanamadı)"
+        echo -e "${RED}[[-]]${NC} Lazydocker kurulumu başarısız! (checksum doğrulanamadı)"
         rm -f /tmp/lazydocker.tar.gz
         return 1
     fi
@@ -208,8 +208,8 @@ install_docker_menu() {
         "🐳 Docker Engine Kurulumu (Önerilen)" \
         "📊 lazydocker Kurulumu (Terminal UI)" \
         "━━━━━━━━━━━━━━━━━━━━━" \
-        "📦 Tümünü Kur (Engine + lazydocker)" \
-        "◀ Ana menüye dön")
+        "[PACKAGE] Tümünü Kur (Engine + lazydocker)" \
+        "< Ana menüye dön")
 
     case "$selection" in
         *"Docker Engine"*) install_docker_engine ;;

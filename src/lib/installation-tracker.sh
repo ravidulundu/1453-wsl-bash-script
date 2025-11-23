@@ -66,7 +66,7 @@ show_installation_summary() {
 
     # Show skipped installations
     if [ $skipped_count -gt 0 ]; then
-        echo -e "${CYAN}⏭️  ATLANAN KURULUMLAR ($skipped_count):${NC}"
+        echo -e "${CYAN}[SKIP]  ATLANAN KURULUMLAR ($skipped_count):${NC}"
         for item in "${SKIPPED_INSTALLATIONS[@]}"; do
             echo -e "   ${CYAN}•${NC} $item"
         done
@@ -93,7 +93,7 @@ show_installation_summary() {
     
     # Show post-installation instructions if there were successful installations
     if [ $success_count -gt 0 ]; then
-        echo -e "${YELLOW}📋 KURULUM SONRASI YAPMALISINIZ:${NC}"
+        echo -e "${YELLOW}[LIST] KURULUM SONRASI YAPMALISINIZ:${NC}"
         echo ""
         echo -e "${GREEN}1.${NC} Terminal ortamınızı yenileyin (aşağıdakilerden birini seçin):"
         echo -e "   ${CYAN}•${NC} ${GREEN}source ~/.bashrc${NC}  ${YELLOW}(en hızlı yöntem)${NC}"
@@ -110,8 +110,8 @@ show_installation_summary() {
         echo -e "   ${CYAN}•${NC} ${GREEN}eza --help${NC}  ${YELLOW}(modern ls komutu)${NC}"
         echo -e "   ${CYAN}•${NC} ${GREEN}lazygit${NC}  ${YELLOW}(Git TUI)${NC}"
         echo ""
-        echo -e "${YELLOW}💡 İPUCU:${NC} Shell değişiklikleri aktif olana kadar yeni kurulumlar çalışmayabilir!"
-        echo -e "${YELLOW}⚠️  ÖNEMLİ:${NC} Mutlaka ${GREEN}source ~/.bashrc${NC} komutunu çalıştırın veya terminali yeniden başlatın."
+        echo -e "${YELLOW}[INFO] İPUCU:${NC} Shell değişiklikleri aktif olana kadar yeni kurulumlar çalışmayabilir!"
+        echo -e "${YELLOW}[WARNING]  ÖNEMLİ:${NC} Mutlaka ${GREEN}source ~/.bashrc${NC} komutunu çalıştırın veya terminali yeniden başlatın."
         echo ""
     fi
 

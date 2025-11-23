@@ -59,7 +59,7 @@ confirm_cleanup() {
     local item="$1"
 
     echo ""
-    echo -e "${RED}⚠️  UYARI: Bu işlem GERİ ALINAMAZ!${NC}"
+    echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}"
     echo -e "${YELLOW}Şunlar silinecek: $item${NC}"
     echo ""
 
@@ -733,7 +733,7 @@ cleanup_docker() {
 # Cleanup all installations (keep configs)
 cleanup_installations() {
     echo ""
-    echo -e "${RED}🗑️  TÜM KURULUMLAR TEMİZLENİYOR${NC}"
+    echo -e "${RED}[DELETE]  TÜM KURULUMLAR TEMİZLENİYOR${NC}"
     echo ""
 
     if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
@@ -756,10 +756,10 @@ cleanup_installations() {
 # Full reset (white flag)
 cleanup_full_reset() {
     echo ""
-    echo -e "${RED}🔴 TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
+    echo -e "${RED}[RED] TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
     echo ""
 
-    echo -e "${RED}⚠️  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
+    echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
     echo -e "${YELLOW}Silinecekler:${NC}"
     echo -e "  • ${RED}Tüm kurulumlar${NC} (Python, Node, PHP, Go, Docker, etc.)"
     echo -e "  • ${RED}Tüm modern CLI tools${NC} (bat, eza, starship, zoxide, fzf, etc.)"
@@ -838,22 +838,22 @@ cleanup_full_reset() {
 # Individual cleanup menu
 show_individual_cleanup_menu() {
     echo ""
-    gum_style --foreground 226 --bold "📦 Tek Tek Temizleme Menüsü"
+    gum_style --foreground 226 --bold "[PACKAGE] Tek Tek Temizleme Menüsü"
     echo ""
 
     local selection
     selection=$(gum_choose \
         "🔧 Sistem Paketleri (jq, zip, build-essential)" \
-        "🐍 Python (python3, pip, pipx, uv)" \
-        "📦 Node.js (nvm, node, npm, bun)" \
-        "🐘 PHP (php, composer)" \
-        "🐹 Go" \
+        "[PYTHON] Python (python3, pip, pipx, uv)" \
+        "[PACKAGE] Node.js (nvm, node, npm, bun)" \
+        "[PHP] PHP (php, composer)" \
+        "[GO] Go" \
         "🐳 Docker (docker-ce, lazydocker)" \
-        "✨ Modern CLI Tools (bat, eza, starship)" \
+        " Modern CLI Tools (bat, eza, starship)" \
         "🎨 Shell Config (.bashrc, aliases)" \
-        "🤖 AI CLI Tools" \
-        "🧠 AI Frameworks" \
-        "◀ Geri")
+        "[AI] AI CLI Tools" \
+        "[AI] AI Frameworks" \
+        "< Geri")
 
     case "$selection" in
         *"Sistem Paketleri"*)
@@ -913,24 +913,24 @@ show_individual_cleanup_menu() {
 # Main cleanup menu
 show_cleanup_menu() {
     echo ""
-    gum_style --foreground 196 --bold "🗑️  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
+    gum_style --foreground 196 --bold "[DELETE]  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
     echo ""
 
     local selection
     selection=$(gum_choose \
-        "🔴 TAM SIFIRLAMA (Beyaz Bayrak) - ⚠️  TEHLİKELİ" \
+        "[RED] TAM SIFIRLAMA (Beyaz Bayrak) - [WARNING]  TEHLİKELİ" \
         "🧹 Kurulumları Temizle (Config korunur)" \
-        "📦 Tek Tek Temizle" \
-        "⚙️  Sadece Config Temizle (Kurulumlar korunur)" \
+        "[PACKAGE] Tek Tek Temizle" \
+        "[SETUP]  Sadece Config Temizle (Kurulumlar korunur)" \
         "━━━━━━━━━━━━━━━━━━━━━" \
         "📊 Kurulu Olanları Göster" \
-        "◀ Ana Menüye Dön")
+        "< Ana Menüye Dön")
 
     case "$selection" in
         *"TAM SIFIRLAMA"*)
             echo ""
             gum_style --foreground 196 --border rounded --padding "1 2" \
-                "⚠️  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
+                "[WARNING]  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
                 "Bu işlem geri alınamaz!"
             echo ""
             if gum_confirm "Devam etmek istediğinizden emin misiniz?"; then

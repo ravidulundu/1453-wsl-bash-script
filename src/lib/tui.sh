@@ -79,9 +79,9 @@ init_tui() {
     echo -e "${YELLOW}[DEBUG]${NC} init_tui: done - WIDTH=$TUI_WIDTH HEIGHT=$TUI_HEIGHT" >&2
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # PROGRESS BAR FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 # Show progress bar
 # Usage: show_progress_bar <current> <total> <message>
@@ -136,7 +136,7 @@ show_install_status() {
 
     case "$status" in
         "pending")
-            icon="○"
+            icon="[ ]"
             color="$CYAN"
             status_text="Pending"
             ;;
@@ -146,17 +146,17 @@ show_install_status() {
             status_text="Installing..."
             ;;
         "success")
-            icon="✓"
+            icon="[+]"
             color="$GREEN"
             status_text="Completed"
             ;;
         "failed")
-            icon="✗"
+            icon="[-]"
             color="$RED"
             status_text="Failed"
             ;;
         "skipped")
-            icon="⊘"
+            icon="[X]"
             color="$YELLOW"
             status_text="Skipped"
             ;;
@@ -165,9 +165,9 @@ show_install_status() {
     printf "  ${color}[%s]${NC} %-30s %s\n" "$icon" "$item" "$status_text"
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # BOX DRAWING FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 # Draw a box with title
 # Usage: draw_box <title> <width>
@@ -180,13 +180,13 @@ draw_box_top() {
     title_len=$(get_display_width "$title")
     local padding=$(( (width - title_len - 4) / 2 ))
 
-    echo -e "${CYAN}╔$(printf '%0.s═' $(seq 1 $((width-2))))╗${NC}"
-    echo -ne "${CYAN}║${NC}"
+    echo -e "${CYAN}+$(printf '%0.s-' $(seq 1 $((width-2))))+${NC}"
+    echo -ne "${CYAN}|${NC}"
     printf "%0.s " $(seq 1 $padding)
     echo -ne "${YELLOW}${title}${NC}"
     printf "%0.s " $(seq 1 $((width - title_len - padding - 2)))
-    echo -e "${CYAN}║${NC}"
-    echo -e "${CYAN}╠$(printf '%0.s═' $(seq 1 $((width-2))))╣${NC}"
+    echo -e "${CYAN}|${NC}"
+    echo -e "${CYAN}╠$(printf '%0.s-' $(seq 1 $((width-2))))╣${NC}"
 }
 
 draw_box_middle() {
@@ -198,20 +198,20 @@ draw_box_middle() {
     content_len=$(get_display_width "$content")
     local padding=$((width - content_len - 4))
 
-    echo -ne "${CYAN}║${NC} "
+    echo -ne "${CYAN}|${NC} "
     echo -ne "${content}"
     printf "%0.s " $(seq 1 $padding)
-    echo -e " ${CYAN}║${NC}"
+    echo -e " ${CYAN}|${NC}"
 }
 
 draw_box_bottom() {
     local width="${1:-80}"
-    echo -e "${CYAN}╚$(printf '%0.s═' $(seq 1 $((width-2))))╝${NC}"
+    echo -e "${CYAN}+$(printf '%0.s-' $(seq 1 $((width-2))))+${NC}"
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # INSTALLATION PROGRESS DISPLAY
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 # Global installation tracking
 declare -A INSTALL_STATUS
@@ -245,8 +245,8 @@ update_install_progress() {
 display_install_progress() {
     clear
 
-    draw_box_top "🚀 1453.AI WSL Setup - Installation Progress" 70
-    echo -e "${CYAN}║${NC}                                                                    ${CYAN}║${NC}"
+    draw_box_top "=== 1453.AI WSL Setup - Installation Progress" 70
+    echo -e "${CYAN}|${NC}                                                                    ${CYAN}|${NC}"
 
     # Show each item status
     for item in "${!INSTALL_STATUS[@]}"; do
@@ -255,7 +255,7 @@ display_install_progress() {
         draw_box_middle "$line" 70
     done
 
-    echo -e "${CYAN}║${NC}                                                                    ${CYAN}║${NC}"
+    echo -e "${CYAN}|${NC}                                                                    ${CYAN}|${NC}"
 
     # Show total progress
     local percentage=$((INSTALL_CURRENT * 100 / INSTALL_TOTAL))
@@ -272,9 +272,9 @@ display_install_progress() {
     draw_box_bottom 70
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # MENU FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 # Show menu (Dialog or Pure Bash)
 # Usage: tui_menu <title> <prompt> <option1> <option2> ...
@@ -300,9 +300,9 @@ tui_menu() {
         # Pure bash menu
         clear
         draw_box_top "$title" 70
-        echo -e "${CYAN}║${NC}                                                                    ${CYAN}║${NC}"
+        echo -e "${CYAN}|${NC}                                                                    ${CYAN}|${NC}"
         draw_box_middle "${YELLOW}${prompt}${NC}" 70
-        echo -e "${CYAN}║${NC}                                                                    ${CYAN}║${NC}"
+        echo -e "${CYAN}|${NC}                                                                    ${CYAN}|${NC}"
 
         local i=1
         for opt in "${options[@]}"; do
@@ -310,7 +310,7 @@ tui_menu() {
             ((i++))
         done
 
-        echo -e "${CYAN}║${NC}                                                                    ${CYAN}║${NC}"
+        echo -e "${CYAN}|${NC}                                                                    ${CYAN}|${NC}"
         draw_box_bottom 70
 
         echo -ne "\n${YELLOW}Seçiminiz (1-${#options[@]}): ${NC}"
@@ -360,9 +360,9 @@ tui_infobox() {
     fi
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # GUM TUI WRAPPER FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 # Check if Gum is available
 has_gum() {
@@ -561,9 +561,9 @@ gum_filter() {
     fi
 }
 
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 # EXPORT FUNCTIONS
-# ═══════════════════════════════════════════════════════════
+# -----------------------------------------------------------
 
 export TUI_MODE TUI_WIDTH TUI_HEIGHT
 export -f get_display_width
