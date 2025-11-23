@@ -5,36 +5,34 @@
 
 # Show welcome screen for Quick Start mode
 show_quickstart_welcome() {
-    # Banner shown at script start, don't redraw
     echo ""
-
-    gum_style --foreground 82 --bold "=== QUICK START MODE - VIBE CODERS İÇİN"
+    
+    gum_style --foreground 82 --bold "🚀 HIZLI BAŞLANGIÇ MODU"
     echo ""
-    echo -e "${GREEN}Merhaba vibe coder! ${NC}"
+    gum_style --foreground 226 "Teknik detayları bilmeyenler için tasarlandı."
+    gum_style --foreground 226 "Birkaç basit soru, gerisini otomatik kurulum!"
     echo ""
-    echo -e "${YELLOW}Bu mod, teknik detayları bilmeyenler için tasarlandı.${NC}"
-    echo -e "${YELLOW}Size birkaç basit soru soracağım, gerisini bana bırakın! ${NC}"
+    
+    echo "✨ Nasıl çalışır?"
+    echo "  1. Ne yapmak istediğinizi seçin"
+    echo "  2. Önerilen araçları otomatik kurarım"
+    echo "  3. Hemen kod yazmaya başlayın!"
     echo ""
-    gum_style --foreground 226 "[INFO] Nasıl çalışır?"
-    echo "  1. Deneyim seviyenizi belirtirsiniz"
-    echo "  2. Ne yapmak istediğinizi seçersiniz"
-    echo "  3. Size önerilen araçları otomatik kurarım"
-    echo ""
-    gum_style --foreground 82 "[TARGET] Sonunda şunları elde edersiniz:"
-    echo "  [+] İhtiyacınız olan tüm geliştirici araçları"
-    echo "  [+] Hazır ortam"
-    echo "  [+] Hemen kod yazmaya başlayabilirsiniz!"
+    
+    echo "🎯 Sonunda elde edeceğiniz:"
+    echo "  ✓ Tüm geliştirici araçları"
+    echo "  ✓ Hazır ortam"
+    echo "  ✓ Modern CLI tools"
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
-    # Clear any pending input that might cause read to return immediately
     while read -r -t 0; do read -r -t 0.01 -N 1000; done 2>/dev/null
 
     response=$(gum_input --placeholder "Başlayalım mı? (Enter=Evet, n=Hayır)")
 
     if [[ "$response" =~ ^[nN]$ ]]; then
-        echo -e "\n${CYAN}ℹ️  ${NC}İsterseniz Advanced Mode'dan devam edebilirsiniz."
-        echo -e "${YELLOW}[SETUP]  Advanced Mode${NC} → Detaylı menü ile kendiniz seçim yapabilirsiniz."
+        echo ""
+        gum_style --foreground 99 "İsterseniz Gelişmiş Mod'dan devam edebilirsiniz."
         return 1
     fi
 
@@ -44,10 +42,10 @@ show_quickstart_welcome() {
 # Show preset selection
 show_presets() {
     echo ""
-
-    gum_style --foreground 212 --bold "[PACKAGE] KURULUM PAKETLERİ"
+    
+    gum_style --foreground 212 --bold "📦 Kurulum Paketleri"
     echo ""
-    echo -e "${CYAN}Ne yapmak istiyorsun? Hangi paketi istiyorsun:${NC}"
+    gum_style --foreground 99 "Ne yapmak istiyorsunuz?"
     echo ""
 
     local selection

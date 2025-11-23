@@ -143,16 +143,16 @@ _advanced_mode_init() {
 
     # Run pre-flight checks with TUI
     echo ""
-    gum_style --foreground 212 --border double --align center --width 60 --margin "1 2" --padding "1 4" \
-        "🔍 ADVANCED MODE - SİSTEM KONTROLÜ"
+    gum_style --foreground 212 --bold "🔍 ADVANCED MODE - Sistem Kontrolü"
     echo ""
 
     if ! run_preflight_checks; then
-        gum_style --foreground 196 --border rounded --align center --width 60 --padding "1 2" \
-            "❌ Sistem gereksinimleri karşılanamadı!" \
-            "Bazı kurulumlar başarısız olabilir."
+        echo ""
+        gum_style --foreground 196 --bold "❌ Sistem gereksinimleri karşılanamadı!"
+        gum_style --foreground 226 "Bazı kurulumlar başarısız olabilir."
         sleep 2
     else
+        echo ""
         gum_style --foreground 82 "✅ Sistem kontrolleri başarılı!"
         sleep 1
     fi
@@ -160,7 +160,7 @@ _advanced_mode_init() {
     # Detect package manager
     echo ""
     detect_package_manager
-    gum_style --foreground 82 "[PACKAGE] Paket yöneticisi: $PKG_MANAGER"
+    gum_style --foreground 82 "📦 Paket yöneticisi: $PKG_MANAGER"
     sleep 1
 }
 
@@ -177,16 +177,8 @@ run_advanced_mode() {
         # Banner shown at script start, don't redraw
         echo ""
 
-        # Modern Gum menu header
-        gum style \
-            --border double \
-            --margin "0 0" \
-            --padding "0 2" \
-            --border-foreground 212 \
-            --foreground 212 \
-            "ADVANCED SETUP MODE" \
-            "Select a category or tool to install"
-
+        # Menu header
+        gum_style --foreground 212 --bold "⚙️  ADVANCED SETUP MODE"
         echo ""
 
         # Modern Gum menu
