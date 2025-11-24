@@ -195,11 +195,13 @@ download_file_silent() {
     local dest="$2"
 
     # Add GitHub token if available (prevents rate limiting)
+    # DRY: Prepare curl options dynamically
+    local curl_opts=(-fsSL)
     if [ -n "$GITHUB_TOKEN" ]; then
-        curl -fsSL -H "Authorization: token $GITHUB_TOKEN" "$url" -o "$dest" 2>/dev/null
-    else
-        curl -fsSL "$url" -o "$dest" 2>/dev/null
+        curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
     fi
+
+    curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null
 }
 
 # Dosya indirme fonksiyonu (verbose mod)
@@ -567,16 +569,15 @@ main() {
         printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
 
         # Download file silently (with GitHub token if available)
+        # DRY: Prepare curl options dynamically
+        local curl_opts=(-fsSL)
         if [ -n "$GITHUB_TOKEN" ]; then
-            if ! curl -fsSL -H "Authorization: token $GITHUB_TOKEN" "$url" -o "$dest" 2>/dev/null; then
-                failed=$((failed + 1))
-                failed_files+=("$description")
-            fi
-        else
-            if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-                failed=$((failed + 1))
-                failed_files+=("$description")
-            fi
+            curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
+        fi
+
+        if ! curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null; then
+            failed=$((failed + 1))
+            failed_files+=("$description")
         fi
     done
 
