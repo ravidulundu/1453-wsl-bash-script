@@ -98,112 +98,135 @@ confirm_cleanup() {
 }
 
 # Show installed items
+# Show installed items
 show_installed_items() {
     echo ""
-    echo ""
+    gum_header "SİSTEM DURUMU" "Kurulu Araçlar ve Konfigürasyonlar"
+    
+    local report_file=$(mktemp)
+    
+    cat > "$report_file" << EOF
+# 📊 Sistem Durumu
 
-    echo "[Python Ekosistemi]"
-    if command -v python3 &>/dev/null; then
-        echo "  ✅ Python: $(python3 --version 2>&1 | cut -d' ' -f2)"
-    else
-        echo "  ❌ Python: Kurulu değil"
+## 🐍 Python Ekosistemi
+EOF
+
+    if command -v python3 &>/dev/null; then 
+        echo "- ✅ **Python**: $(python3 --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ Python" >> "$report_file"
     fi
 
-    if command -v pip &>/dev/null; then
-        echo "  ✅ pip: $(pip --version 2>&1 | cut -d' ' -f2)"
-    else
-        echo "  ❌ pip: Kurulu değil"
+    if command -v pip &>/dev/null; then 
+        echo "- ✅ **pip**: $(pip --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ pip" >> "$report_file"
     fi
 
-    if command -v pipx &>/dev/null; then
-        echo "  ✅ pipx: Kurulu"
-    else
-        echo "  ❌ pipx: Kurulu değil"
+    if command -v pipx &>/dev/null; then 
+        echo "- ✅ **pipx**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ pipx" >> "$report_file"
     fi
 
-    if command -v uv &>/dev/null; then
-        echo "  ✅ UV: $(uv --version 2>&1 | cut -d' ' -f2)"
-    else
-        echo "  ❌ UV: Kurulu değil"
+    if command -v uv &>/dev/null; then 
+        echo "- ✅ **UV**: $(uv --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ UV" >> "$report_file"
     fi
 
-    echo ""
-    echo "[JavaScript Ekosistemi]"
-    if command -v node &>/dev/null; then
-        echo "  ✅ Node.js: $(node --version)"
-        echo "  ✅ npm: $(npm --version)"
-    else
-        echo "  ❌ Node.js: Kurulu değil"
+    cat >> "$report_file" << EOF
+
+## 📜 JavaScript Ekosistemi
+EOF
+    if command -v node &>/dev/null; then 
+        echo "- ✅ **Node.js**: $(node --version)" >> "$report_file"
+    else 
+        echo "- ❌ Node.js" >> "$report_file"
     fi
 
-    if [ -d "$HOME/.nvm" ]; then
-        echo "  ✅ NVM: Kurulu"
-    else
-        echo "  ❌ NVM: Kurulu değil"
+    if command -v npm &>/dev/null; then 
+        echo "- ✅ **npm**: $(npm --version)" >> "$report_file"
+    else 
+        echo "- ❌ npm" >> "$report_file"
     fi
 
-    if command -v bun &>/dev/null; then
-        echo "  ✅ Bun: $(bun --version)"
-    else
-        echo "  ❌ Bun: Kurulu değil"
+    if [ -d "$HOME/.nvm" ]; then 
+        echo "- ✅ **NVM**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ NVM" >> "$report_file"
     fi
 
-    echo ""
-    echo "[PHP Ekosistemi]"
-    if command -v php &>/dev/null; then
-        echo "  ✅ PHP: $(php --version 2>&1 | head -1 | cut -d' ' -f2)"
-    else
-        echo "  ❌ PHP: Kurulu değil"
+    if command -v bun &>/dev/null; then 
+        echo "- ✅ **Bun**: $(bun --version)" >> "$report_file"
+    else 
+        echo "- ❌ Bun" >> "$report_file"
     fi
 
-    if command -v composer &>/dev/null; then
-        echo "  ✅ Composer: Kurulu"
-    else
-        echo "  ❌ Composer: Kurulu değil"
+    cat >> "$report_file" << EOF
+
+## 🐘 PHP & Go
+EOF
+    if command -v php &>/dev/null; then 
+        echo "- ✅ **PHP**: $(php --version 2>&1 | head -1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ PHP" >> "$report_file"
     fi
 
-    echo ""
-    echo "[Go]"
-    if command -v go &>/dev/null; then
-        echo "  ✅ Go: $(go version | cut -d' ' -f3)"
-    else
-        echo "  ❌ Go: Kurulu değil"
+    if command -v composer &>/dev/null; then 
+        echo "- ✅ **Composer**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ Composer" >> "$report_file"
     fi
 
-    echo ""
-    echo "[Docker]"
-    if command -v docker &>/dev/null; then
-        echo "  ✅ Docker Engine: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)"
-    else
-        echo "  ❌ Docker Engine: Kurulu değil"
-    fi
-    if command -v lazydocker &>/dev/null; then
-        echo "  ✅ lazydocker"
-    else
-        echo "  ❌ lazydocker"
+    if command -v go &>/dev/null; then 
+        echo "- ✅ **Go**: $(go version | cut -d' ' -f3)" >> "$report_file"
+    else 
+        echo "- ❌ Go" >> "$report_file"
     fi
 
-    echo ""
-    echo "[Modern CLI Tools]"
+    cat >> "$report_file" << EOF
+
+## 🐳 Docker
+EOF
+    if command -v docker &>/dev/null; then 
+        echo "- ✅ **Docker**: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)" >> "$report_file"
+    else 
+        echo "- ❌ Docker" >> "$report_file"
+    fi
+
+    if command -v lazydocker &>/dev/null; then 
+        echo "- ✅ **lazydocker**" >> "$report_file"
+    else 
+        echo "- ❌ lazydocker" >> "$report_file"
+    fi
+
+    cat >> "$report_file" << EOF
+
+## 🛠️ Modern CLI Tools
+EOF
     local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit")
     for tool in "${tools[@]}"; do
-        if command -v "$tool" &>/dev/null; then
-            echo "  ✅ $tool"
-        else
-            echo "  ❌ $tool"
+        if command -v "$tool" &>/dev/null; then 
+            echo "- ✅ **$tool**" >> "$report_file"
+        else 
+            echo "- ❌ $tool" >> "$report_file"
         fi
     done
 
-    echo ""
-    echo "[Config Dosyaları]"
-    [ -f ~/.bash_aliases ] && echo "  ✅ .bash_aliases" || echo "  ❌ .bash_aliases"
-    [ -f ~/.config/starship.toml ] && echo "  ✅ starship.toml" || echo "  ❌ starship.toml"
+    cat >> "$report_file" << EOF
 
-    echo ""
-    echo "[Kurulum Dizini]"
-    [ -d ~/.1453-wsl-setup ] && echo "  ✅ ~/.1453-wsl-setup" || echo "  ❌ ~/.1453-wsl-setup"
+## ⚙️ Konfigürasyonlar
+EOF
+    if [ -f ~/.bash_aliases ]; then echo "- ✅ **.bash_aliases**" >> "$report_file"; else echo "- ❌ .bash_aliases" >> "$report_file"; fi
+    if [ -f ~/.config/starship.toml ]; then echo "- ✅ **starship.toml**" >> "$report_file"; else echo "- ❌ starship.toml" >> "$report_file"; fi
+    if [ -d ~/.1453-wsl-setup ]; then echo "- ✅ **~/.1453-wsl-setup**" >> "$report_file"; else echo "- ❌ ~/.1453-wsl-setup" >> "$report_file"; fi
 
+    gum format < "$report_file"
+    rm -f "$report_file"
     echo ""
+    gum_style --foreground 212 "Devam etmek için bir tuşa basın..."
+    read -n 1 -s
 }
 
 # Cleanup System Packages (installed by update_system())
@@ -242,7 +265,7 @@ cleanup_system_packages() {
     fi
 
     gum_info "Bilgi" "curl, wget, git korundu (sistem için kritik olabilir)"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Sistem paketleri temizlendi"
+    gum_success "Başarılı" "\n Sistem paketleri temizlendi"
 }
 
 # Cleanup Python ecosystem
@@ -287,7 +310,7 @@ cleanup_python() {
         gum_info "Bilgi" "python3 korundu (sistem paketi olabilir)"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Python ekosistemi temizlendi"
+    gum_success "Başarılı" "\n Python ekosistemi temizlendi"
 }
 
 # Cleanup Node.js and NVM
@@ -318,7 +341,7 @@ cleanup_nodejs() {
         gum_success "Başarılı" "Bun kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Node.js ekosistemi temizlendi"
+    gum_success "Başarılı" "\n Node.js ekosistemi temizlendi"
 }
 
 # Cleanup PHP and Composer
@@ -357,7 +380,7 @@ cleanup_php() {
         gum_success "Başarılı" "PHP paketleri kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} PHP ekosistemi temizlendi"
+    gum_success "Başarılı" "\n PHP ekosistemi temizlendi"
 }
 
 # Cleanup Go
@@ -505,11 +528,11 @@ cleanup_shell_configs() {
     # FIX BUG-008: Validate marker integrity before cleanup
     # Count START and END markers to ensure they're balanced
     if [ -f ~/.bashrc ]; then
-        local start_count=$(grep -c "$BASHRC_MARKER_GENERIC_PATTERN" ~/.bashrc 2>/dev/null || echo "0")
-        local end_count=$(grep -c "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0")
+    gum_style --foreground 251 "$BASHRC_MARKER_GENERIC_PATTERN" ~/.bashrc 2>/dev/null || echo "0"
+    gum_style --foreground 251 "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0"
 
         if [ "$start_count" -ne "$end_count" ]; then
-            echo -e "${RED}[UYARI]${NC} .bashrc'de eşleşmeyen START/END marker'ları bulundu!"
+    gum_alert "Uyarı" ".bashrc'de eşleşmeyen START/END marker'ları bulundu!"
             gum_info "Bilgi" "START marker'ları: $start_count, END marker'ları: $end_count"
             gum_info "Bilgi" "Elle kontrol etmeniz önerilir: ~/.bashrc"
             gum_info "Dikkat" "Temizleme atlanıyor (güvenlik için)."
@@ -591,10 +614,10 @@ cleanup_shell_configs() {
         gum_success "Başarılı" "FZF bash config silindi"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için:"
-    echo "  source ~/.bashrc"
-    echo -e "  ${YELLOW}veya terminali yeniden başlatın${NC}"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell config tamamen temizlendi"
+    gum_info "Bilgi" "\n Değişikliklerin aktif olması için:"
+    gum_style --foreground 251 "  source ~/.bashrc"
+    gum_info "Bilgi" "veya terminali yeniden başlatın"
+    gum_success "Başarılı" "\n Shell config tamamen temizlendi"
 }
 
 # Cleanup AI CLI Tools
@@ -649,7 +672,7 @@ cleanup_ai_tools() {
         fi
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} AI CLI tools temizlendi"
+    gum_success "Başarılı" "\n AI CLI tools temizlendi"
 }
 
 # Cleanup AI Frameworks
@@ -669,7 +692,7 @@ cleanup_ai_frameworks() {
         remove_superclaude
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} AI frameworks temizlendi"
+    gum_success "Başarılı" "\n AI frameworks temizlendi"
 }
 
 # Cleanup Docker
@@ -736,11 +759,11 @@ cleanup_docker() {
     else
         # Default to 'no' in non-interactive mode (CI/CD, scripts)
         delete_data="h"
-        echo -e "\n${CYAN}[BİLGİ]${NC} Non-interactive mod: Docker verileri korunuyor"
+    gum_info "Bilgi" "\n Non-interactive mod: Docker verileri korunuyor"
     fi
 
     if [[ "$delete_data" =~ ^[Ee]$ ]]; then
-        echo -e "${RED}[UYARI]${NC} Docker verileri siliniyor..."
+    gum_alert "Uyarı" "Docker verileri siliniyor..."
         sudo rm -rf /var/lib/docker
         sudo rm -rf /var/lib/containerd
         gum_success "Başarılı" "Docker verileri silindi"
@@ -748,14 +771,14 @@ cleanup_docker() {
         gum_info "Bilgi" "Docker verileri korundu (/var/lib/docker)"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Docker temizlendi"
+    gum_success "Başarılı" "\n Docker temizlendi"
     gum_info "Dikkat" "Değişikliklerin tam aktif olması için terminali yeniden başlatın"
 }
 
 # Cleanup all installations (keep configs)
 cleanup_installations() {
     echo ""
-    echo -e "${RED}[DELETE]  TÜM KURULUMLAR TEMİZLENİYOR${NC}"
+    gum_alert "Uyarı" "TÜM KURULUMLAR TEMİZLENİYOR"
     echo ""
 
     if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
@@ -772,24 +795,24 @@ cleanup_installations() {
     cleanup_ai_tools
     cleanup_ai_frameworks
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Tüm kurulumlar temizlendi (Config dosyaları korundu)"
+    gum_success "Başarılı" "\n Tüm kurulumlar temizlendi (Config dosyaları korundu)"
 }
 
 # Full reset (white flag)
 cleanup_full_reset() {
     echo ""
-    echo -e "${RED}[RED] TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
+    gum_alert "Uyarı" "TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR"
     echo ""
 
-    echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
+    gum_alert "Uyarı" "UYARI: Bu işlem GERİ ALINAMAZ!\n"
     gum_info "Bilgi" "Silinecekler:"
-    echo -e "  • ${RED}Tüm kurulumlar${NC} (Python, Node, PHP, Go, Docker, etc.)"
-    echo -e "  • ${RED}Tüm modern CLI tools${NC} (bat, eza, starship, zoxide, fzf, etc.)"
-    echo -e "  • ${RED}Shell config değişiklikleri${NC} (.bashrc, .bash_aliases)"
-    echo -e "  • ${RED}AI tools ve frameworks${NC}"
-    echo -e "  • ${RED}Kurulum dizini${NC} (~/.1453-wsl-setup)"
-    echo -e "  • ${RED}Kaynak kod dizini${NC} (~/1453-wsl-bash-script - eğer varsa)"
-    echo -e "  • ${RED}Config dosyaları${NC} (starship, fzf, zoxide)"
+    gum_style --foreground 212 "• Tüm kurulumlar (Python, Node, PHP, Go, Docker, etc.)"
+    gum_style --foreground 212 "• Tüm modern CLI tools (bat, eza, starship, zoxide, fzf, etc.)"
+    gum_style --foreground 212 "• Shell config değişiklikleri (.bashrc, .bash_aliases)"
+    gum_style --foreground 212 "• AI tools ve frameworks"
+    gum_style --foreground 212 "• Kurulum dizini (~/.1453-wsl-setup)"
+    gum_style --foreground 212 "• Kaynak kod dizini (~/1453-wsl-bash-script - eğer varsa)"
+    gum_style --foreground 212 "• Config dosyaları (starship, fzf, zoxide)"
     echo ""
     gum_info "Bilgi" "WSL ilk kurulduğu haline gelecek!"
     echo ""
@@ -812,13 +835,13 @@ cleanup_full_reset() {
 
     # Remove installation directory
     if [ -d ~/.1453-wsl-setup ]; then
-        echo -e "\n${YELLOW}[BİLGİ]${NC} Kurulum dizini kaldırılıyor..."
+    gum_info "Bilgi" "\n Kurulum dizini kaldırılıyor..."
         safe_rm ~/.1453-wsl-setup
         gum_success "Başarılı" "Kurulum dizini kaldırıldı"
     fi
 
     # Remove source code directory if exists
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Kaynak kod dizini kontrol ediliyor..."
+    gum_info "Bilgi" "\n Kaynak kod dizini kontrol ediliyor..."
     local source_dirs=(
         "$HOME/1453-wsl-bash-script"
         "$HOME/Downloads/1453-wsl-bash-script"
@@ -839,14 +862,14 @@ cleanup_full_reset() {
     done
 
     # Force reload shell to default state
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Shell sıfırlanıyor..."
+    gum_info "Bilgi" "\n Shell sıfırlanıyor..."
     
     # Factory Reset .bashrc from /etc/skel (User Suggestion)
     if [ -f /etc/skel/.bashrc ]; then
         echo ""
-        echo -e "${YELLOW}[ÖNERİ]${NC} .bashrc dosyasını Ubuntu varsayılan ayarlarına döndürmek ister misiniz?"
+    gum_info "Bilgi" ".bashrc dosyasını Ubuntu varsayılan ayarlarına döndürmek ister misiniz?"
         gum_info "Bilgi" "Bu işlem, .bashrc dosyasını tamamen silip /etc/skel/.bashrc ile değiştirir."
-        echo -e "${RED}[UYARI]${NC} Script dışındaki özel ayarlarınız da silinecektir!"
+    gum_alert "Uyarı" "Script dışındaki özel ayarlarınız da silinecektir!"
         
         if gum_confirm "Ubuntu varsayılan .bashrc dosyasına dön?"; then
             # Backup current one last time
@@ -864,13 +887,13 @@ cleanup_full_reset() {
     fi
 
     echo ""
-    echo -e "${GREEN}✅ TAM SIFIRLAMA TAMAMLANDI${NC}"
+    gum_success "Başarılı" "✅ TAM SIFIRLAMA TAMAMLANDI"
     echo ""
     gum_info "Bilgi" "WSL ilk kurulum haline getirildi."
-    echo -e "${YELLOW}[ÖNEMLİ]${NC} Değişikliklerin tam aktif olması için:"
-    echo -e "  ${RED}1. Tüm terminal pencerelerini kapatın${NC}"
-    echo -e "  ${RED}2. WSL'i yeniden başlatın: ${CYAN}wsl --shutdown${NC}"
-    echo -e "  ${RED}3. Yeni terminal açın${NC}"
+    gum_info "Bilgi" "Değişikliklerin tam aktif olması için:"
+    gum_style --foreground 212 "1. Tüm terminal pencerelerini kapatın"
+    gum_info "Bilgi" "${RED}2. WSL'i yeniden başlatın: wsl --shutdown"
+    gum_style --foreground 212 "3. Yeni terminal açın"
     echo ""
     gum_info "Bilgi" "Script'i tekrar çalıştırarak yeniden kurulum yapabilirsiniz."
 }

@@ -16,8 +16,8 @@ configure_git() {
 
     if [ -n "$current_user" ] && [ -n "$current_email" ]; then
         gum_info "Bilgi" "Mevcut Git yapılandırması:"
-        echo -e "  Kullanıcı: ${GREEN}$current_user${NC}"
-        echo -e "  E-posta: ${GREEN}$current_email${NC}"
+    gum_style --foreground 212 "Kullanıcı: $current_user"
+    gum_style --foreground 212 "E-posta: $current_email"
         echo ""
 
         # Use Gum confirm if available
@@ -45,8 +45,8 @@ configure_git() {
     git config --global user.email "$git_email"
 
     gum_success "Başarılı" "Git yapılandırması tamamlandı!"
-    echo -e "  Kullanıcı: $git_user"
-    echo -e "  E-posta: $git_email"
+    gum_style --foreground 212 "Kullanıcı: $git_user"
+    gum_style --foreground 212 "E-posta: $git_email"
     track_success "Git Yapılandırması" "$git_user <$git_email>"
 }
 
@@ -113,7 +113,7 @@ show_mode_selection() {
                 break
                 ;;
             "🚪 Çıkış")
-                echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
+    gum_style --foreground 212 "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
             *)
@@ -135,7 +135,7 @@ show_advanced_menu() {
 _advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
-        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum - opsiyonel)..."
+    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum - opsiyonel)..."
         install_gum 2>/dev/null || gum_info "Uyarı" "Gum kurulumunu atlandı"
         sleep 1
     fi

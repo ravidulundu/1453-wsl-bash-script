@@ -13,16 +13,16 @@ show_quickstart_welcome() {
     gum_style --foreground 226 "Birkaç basit soru, gerisini otomatik kurulum!"
     echo ""
     
-    echo "✨ Nasıl çalışır?"
-    echo "  1. Ne yapmak istediğinizi seçin"
-    echo "  2. Önerilen araçları otomatik kurarım"
-    echo "  3. Hemen kod yazmaya başlayın!"
+    gum_style --foreground 251 "✨ Nasıl çalışır?"
+    gum_style --foreground 251 "  1. Ne yapmak istediğinizi seçin"
+    gum_style --foreground 251 "  2. Önerilen araçları otomatik kurarım"
+    gum_style --foreground 251 "  3. Hemen kod yazmaya başlayın!"
     echo ""
     
-    echo "🎯 Sonunda elde edeceğiniz:"
-    echo "  ✓ Tüm geliştirici araçları"
-    echo "  ✓ Hazır ortam"
-    echo "  ✓ Modern CLI tools"
+    gum_style --foreground 251 "🎯 Sonunda elde edeceğiniz:"
+    gum_style --foreground 251 "  ✓ Tüm geliştirici araçları"
+    gum_style --foreground 251 "  ✓ Hazır ortam"
+    gum_style --foreground 251 "  ✓ Modern CLI tools"
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
@@ -63,7 +63,7 @@ show_presets() {
         *"Her Şey"*) QUICKSTART_PRESET_CHOICE="everything" ;;
         *"Mobil + Web"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
         *)
-            echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
+    gum_alert "Uyarı" "\n Geçersiz seçim!"
             sleep 1
             show_presets
             ;;
@@ -78,17 +78,17 @@ generate_installation_plan() {
     if has_gum; then
         gum_style --foreground 82 --bold "=== KURULUM BAŞLIYOR!"
     else
-        echo -e "${GREEN}=== KURULUM BAŞLIYOR!${NC}"
+    gum_style --foreground 212 "=== KURULUM BAŞLIYOR!"
     fi
     echo ""
 
     # Always install base tools
     gum_info "Bilgi" "[PACKAGE] İlk önce (tüm paketlerde):"
-    echo -e "  [+] Sistem güncellemeleri"
-    echo -e "  [+] Git yapılandırması"
-    echo -e "  [+] Python + pip + pipx + UV"
-    echo -e "  [+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
-    echo -e "  [+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
+    gum_style --foreground 212 "[+] Sistem güncellemeleri"
+    gum_style --foreground 212 "[+] Git yapılandırması"
+    gum_style --foreground 212 "[+] Python + pip + pipx + UV"
+    gum_style --foreground 212 "[+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
+    gum_style --foreground 212 "[+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
     echo ""
 
     # Build tool list based on preset
@@ -97,45 +97,45 @@ generate_installation_plan() {
     case $preset in
         "web")
             gum_info "Bilgi" "🌐 Web Development paketi:"
-            echo -e "  [+] Node.js (NVM)"
-            echo -e "  [+] Bun.js runtime"
-            echo -e "  [+] PHP + Composer"
+    gum_style --foreground 212 "[+] Node.js (NVM)"
+    gum_style --foreground 212 "[+] Bun.js runtime"
+    gum_style --foreground 212 "[+] PHP + Composer"
             tools+=("nvm" "node" "bun" "php" "composer")
             ;;
         "ai")
             gum_info "Bilgi" "[AI] AI Development paketi:"
-            echo -e "  [+] Node.js (AI araçları için)"
-            echo -e "  [+] AI CLI Tools (Claude, Gemini, etc.)"
-            echo -e "  [+] AI Frameworks (SuperClaude, etc.)"
+    gum_style --foreground 212 "[+] Node.js (AI araçları için)"
+    gum_style --foreground 212 "[+] AI CLI Tools (Claude, Gemini, etc.)"
+    gum_style --foreground 212 "[+] AI Frameworks (SuperClaude, etc.)"
             tools+=("nvm" "node" "ai_cli" "ai_frameworks")
             ;;
         "backend")
             gum_info "Bilgi" "[SETUP]  Backend Development paketi:"
-            echo -e "  [+] Go language"
-            echo -e "  [+] PHP + Composer"
+    gum_style --foreground 212 "[+] Go language"
+    gum_style --foreground 212 "[+] PHP + Composer"
             tools+=("go" "php" "composer")
             ;;
         "everything")
             gum_info "Bilgi" "=== EVERYTHING paketi:"
-            echo -e "  [+] Node.js + Bun.js"
-            echo -e "  [+] Go language"
-            echo -e "  [+] PHP + Composer"
-            echo -e "  [+] AI CLI Tools + Frameworks"
-            echo -e "  [+] GitHub CLI"
+    gum_style --foreground 212 "[+] Node.js + Bun.js"
+    gum_style --foreground 212 "[+] Go language"
+    gum_style --foreground 212 "[+] PHP + Composer"
+    gum_style --foreground 212 "[+] AI CLI Tools + Frameworks"
+    gum_style --foreground 212 "[+] GitHub CLI"
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
             gum_info "Bilgi" "📱 Mobile + Web paketi:"
-            echo -e "  [+] Node.js"
-            echo -e "  [+] PHP + Composer"
-            echo -e "  [+] Flutter araçları"
+    gum_style --foreground 212 "[+] Node.js"
+    gum_style --foreground 212 "[+] PHP + Composer"
+    gum_style --foreground 212 "[+] Flutter araçları"
             tools+=("nvm" "node" "php" "composer")
             ;;
     esac
 
     echo ""
-    echo -e "${CYAN}------------------------------------------------------------${NC}"
-    echo -e "${GREEN}Toplam ${#tools[@]} araç kurulacak${NC}"
+    gum_info "Bilgi" "------------------------------------------------------------"
+    gum_style --foreground 212 "Toplam ${#tools[@]} araç kurulacak"
     echo ""
 
     # Return the tools array
@@ -154,13 +154,13 @@ _quickstart_show_welcome() {
     if has_gum; then
         gum_style --foreground 82 --bold "=== QUICK START MODE - KURULUM BAŞLIYOR"
     else
-        echo -e "${GREEN}=== QUICK START MODE - KURULUM BAŞLIYOR${NC}"
+    gum_style --foreground 212 "=== QUICK START MODE - KURULUM BAŞLIYOR"
     fi
     echo ""
     gum_info "Bilgi" "Kurulum planınız hazırlanıyor..."
-    echo -e "${GREEN}${#tools[@]}${NC} araç otomatik kurulacak"
+    gum_style --foreground 212 "${#tools[@]} araç otomatik kurulacak"
     echo ""
-    echo -e "${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')"
+    gum_info "Bilgi" "Sürüm: v2.2.1 | Tarih: $(date '+%Y-%m-%d %H:%M')"
     echo ""
     sleep 3
 }
@@ -172,12 +172,12 @@ _quickstart_preflight_checks() {
     if has_gum; then
         gum_style --foreground 51 --bold "🔍 SİSTEM KONTROL EDİLİYOR"
     else
-        echo -e "${CYAN}🔍 SİSTEM KONTROL EDİLİYOR${NC}"
+    gum_info "Bilgi" "🔍 SİSTEM KONTROL EDİLİYOR"
     fi
     echo ""
 
     if ! run_preflight_checks; then
-        echo -e "${RED}[[-]]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+    gum_style --foreground 212 "[[-]] Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
         gum_info "Uyarı" "Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
@@ -225,7 +225,7 @@ _quickstart_install_python() {
     if has_gum; then
         gum_style --foreground 81 --bold "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
     else
-        echo -e "${CYAN}[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR${NC}"
+    gum_info "Bilgi" "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
     fi
     echo ""
 
@@ -266,7 +266,7 @@ _quickstart_setup_shell() {
     if has_gum; then
         gum_style --foreground 51 --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
     else
-        echo -e "${CYAN}🐚 SHELL ORTAMI YAPILANDIRILIYOR${NC}"
+    gum_info "Bilgi" "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
     fi
     echo ""
     show_install_status "Shell Setup" "installing"
@@ -315,7 +315,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 82 --bold "🟢 NODE.JS KURULUYOR (NVM)"
                 else
-                    echo -e "${GREEN}🟢 NODE.JS KURULUYOR (NVM)${NC}"
+    gum_style --foreground 212 "🟢 NODE.JS KURULUYOR (NVM)"
                 fi
                 echo ""
                 show_install_status "NVM" "installing"
@@ -396,7 +396,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 51 --bold "🔷 GO LANGUAGE KURULUYOR"
                 else
-                    echo -e "${CYAN}🔷 GO LANGUAGE KURULUYOR${NC}"
+    gum_info "Bilgi" "🔷 GO LANGUAGE KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Go" "installing"
@@ -466,10 +466,10 @@ execute_installation_plan() {
     if has_gum; then
         gum_style --foreground 82 --bold "✅ KURULUM TAMAMLANDI!"
     else
-        echo -e "${GREEN}✅ KURULUM TAMAMLANDI!${NC}"
+    gum_success "Başarılı" "✅ KURULUM TAMAMLANDI!"
     fi
     echo ""
-    echo -e "${GREEN}Tüm araçlar başarıyla kuruldu!${NC}"
+    gum_style --foreground 212 "Tüm araçlar başarıyla kuruldu!"
     echo ""
 
     # Show installation summary
@@ -482,27 +482,27 @@ execute_installation_plan() {
         gum_info "Bilgi" "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     fi
     echo ""
-    echo -e "${CYAN}[INFO] ŞİMDİ NE YAPACAKSINIZ?${NC}"
+    gum_info "Bilgi" "[INFO] ŞİMDİ NE YAPACAKSINIZ?"
     echo ""
-    echo -e "${GREEN}> ADIM 1: Terminal Ortamını Yenileyin${NC}"
-    echo -e "   Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
-    echo -e "   ${YELLOW}→${NC} ${GREEN}source ~/.bashrc${NC}"
+    gum_style --foreground 212 "> ADIM 1: Terminal Ortamını Yenileyin"
+    gum_style --foreground 212 "Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
+    gum_info "Bilgi" "→ ${GREEN}source ~/.bashrc"
     echo ""
-    echo -e "   ${YELLOW}veya${NC} terminali kapatıp yeniden açın (daha garantili)"
+    gum_info "Bilgi" "veya terminali kapatıp yeniden açın (daha garantili)"
     echo ""
-    echo -e "${GREEN}> ADIM 2: Kurulumları Test Edin${NC}"
-    echo -e "   ${CYAN}•${NC} Python: ${GREEN}python3 --version${NC}"
-    echo -e "   ${CYAN}•${NC} Node.js: ${GREEN}node --version${NC}"
-    echo -e "   ${CYAN}•${NC} NVM: ${GREEN}nvm --version${NC}"
-    echo -e "   ${CYAN}•${NC} Modern CLI: ${GREEN}bat --version${NC}, ${GREEN}eza --version${NC}"
+    gum_style --foreground 212 "> ADIM 2: Kurulumları Test Edin"
+    gum_info "Bilgi" "• Python: ${GREEN}python3 --version"
+    gum_info "Bilgi" "• Node.js: ${GREEN}node --version"
+    gum_info "Bilgi" "• NVM: ${GREEN}nvm --version"
+    gum_info "Bilgi" "• Modern CLI: ${GREEN}bat --version, ${GREEN}eza --version"
     echo ""
-    echo -e "${GREEN}> ADIM 3: Kodlamaya Başlayın!${NC}"
-    echo -e "   ${CYAN}•${NC} Proje oluşturun: ${GREEN}mkdir my-project && cd my-project${NC}"
-    echo -e "   ${CYAN}•${NC} Python venv: ${GREEN}python3 -m venv venv${NC}"
-    echo -e "   ${CYAN}•${NC} Node proje: ${GREEN}npm init -y${NC}"
+    gum_style --foreground 212 "> ADIM 3: Kodlamaya Başlayın!"
+    gum_info "Bilgi" "• Proje oluşturun: ${GREEN}mkdir my-project && cd my-project"
+    gum_info "Bilgi" "• Python venv: ${GREEN}python3 -m venv venv"
+    gum_info "Bilgi" "• Node proje: ${GREEN}npm init -y"
     echo ""
     gum_info "Bilgi" "[SETUP]  İleri düzey araçlar için:"
-    echo -e "   Scripti tekrar çalıştırıp ${GREEN}'Advanced Mode'${NC} seçin"
+    gum_style --foreground 212 "Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
     echo ""
 }
 
@@ -510,7 +510,7 @@ execute_installation_plan() {
 run_quickstart_mode() {
     # Install Gum first for modern TUI (silently if possible)
     if ! has_gum; then
-        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum)..."
+    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum)..."
         install_gum || gum_info "Uyarı" "Gum kurulamadı, klasik TUI kullanılacak"
     fi
 
@@ -523,7 +523,7 @@ run_quickstart_mode() {
     show_presets
     local preset="$QUICKSTART_PRESET_CHOICE"
 
-    echo -e "\n${CYAN}⚡ Bir saniye, başlıyorum...${NC}"
+    gum_info "Bilgi" "\n⚡ Bir saniye, başlıyorum..."
     sleep 1
 
     # Generate and show plan
