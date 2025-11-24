@@ -1,6 +1,6 @@
 # 🚀 1453 WSL Architect
 
-![1453 WSL Architect Terminal](https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/1453-WSL-Architect/docs/assets/wsl_architect_terminal.png)
+![1453 WSL Architect Terminal](https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/docs/assets/wsl_architect_terminal.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Bash](https://img.shields.io/badge/Bash-5.0+-green.svg)](https://www.gnu.org/software/bash/)
