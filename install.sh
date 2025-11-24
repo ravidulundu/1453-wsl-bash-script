@@ -299,6 +299,9 @@ main() {
         exit 1
     fi
 
+    # Install Gum EARLY to ensure modern UI during download phase
+    install_gum_minimal
+
     # Kurulum dizin yapısını oluştur
     if has_gum; then
         # Calculate margin for centering
@@ -556,8 +559,8 @@ END_OF_LAUNCHER_SCRIPT
         echo ""
     fi
 
-    # Install Gum for modern TUI (critical dependency)
-    install_gum_minimal
+    # Install Gum for modern TUI (Already installed at start, check again just in case)
+    # install_gum_minimal
 
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""

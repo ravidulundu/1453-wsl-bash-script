@@ -7,22 +7,29 @@
 show_quickstart_welcome() {
     echo ""
     
-    gum_style --foreground 82 --bold "🚀 HIZLI BAŞLANGIÇ MODU"
-    echo ""
-    gum_style --foreground 226 "Teknik detayları bilmeyenler için tasarlandı."
-    gum_style --foreground 226 "Birkaç basit soru, gerisini otomatik kurulum!"
+    # PRD: Streaming Text - Welcome mesajı daktilo ile
+    if command -v typewriter_effect &>/dev/null; then
+        typewriter_effect "🚀 1453 WSL Architect - Hızlı Başlangıç Modu" 0.04
+        echo ""
+    else
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "🚀 HIZLI BAŞLANGIÇ MODU"
+        echo ""
+    fi
+    
+    gum_style --foreground "$COLOR_GOLD_FG" "Teknik detayları bilmeyenler için tasarlandı."
+    gum_style --foreground "$COLOR_GOLD_FG" "Birkaç basit soru, gerisini otomatik kurulum!"
     echo ""
     
-    echo "✨ Nasıl çalışır?"
-    echo "  1. Ne yapmak istediğinizi seçin"
-    echo "  2. Önerilen araçları otomatik kurarım"
-    echo "  3. Hemen kod yazmaya başlayın!"
+    gum_style --foreground "$COLOR_TEXT_FG" "✨ Nasıl çalışır?"
+    gum_style --foreground "$COLOR_TEXT_FG" "  1. Ne yapmak istediğinizi seçin"
+    gum_style --foreground "$COLOR_TEXT_FG" "  2. Önerilen araçları otomatik kurarım"
+    gum_style --foreground "$COLOR_TEXT_FG" "  3. Hemen kod yazmaya başlayın!"
     echo ""
     
-    echo "🎯 Sonunda elde edeceğiniz:"
-    echo "  ✓ Tüm geliştirici araçları"
-    echo "  ✓ Hazır ortam"
-    echo "  ✓ Modern CLI tools"
+    gum_style --foreground "$COLOR_TEXT_FG" "🎯 Sonunda elde edeceğiniz:"
+    gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Tüm geliştirici araçları"
+    gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Hazır ortam"
+    gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Modern CLI tools"
     echo ""
 
     # CRITICAL FIX: Flush stdin buffer before reading
@@ -32,7 +39,7 @@ show_quickstart_welcome() {
 
     if [[ "$response" =~ ^[nN]$ ]]; then
         echo ""
-        gum_style --foreground 99 "İsterseniz Gelişmiş Mod'dan devam edebilirsiniz."
+        gum_style --foreground "$COLOR_MUTED_FG" "İsterseniz Gelişmiş Mod'dan devam edebilirsiniz."
         return 1
     fi
 
@@ -43,9 +50,9 @@ show_quickstart_welcome() {
 show_presets() {
     echo ""
     
-    gum_style --foreground 212 --bold "📦 Kurulum Paketleri"
+    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "📦 Kurulum Paketleri"
     echo ""
-    gum_style --foreground 99 "Ne yapmak istiyorsunuz?"
+    gum_style --foreground "$COLOR_MUTED_FG" "Ne yapmak istiyorsunuz?"
     echo ""
 
     local selection
@@ -63,7 +70,7 @@ show_presets() {
         *"Her Şey"*) QUICKSTART_PRESET_CHOICE="everything" ;;
         *"Mobil + Web"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
         *)
-            echo -e "\n${RED}[HATA]${NC} Geçersiz seçim!"
+    gum_alert "Uyarı" "\n Geçersiz seçim!"
             sleep 1
             show_presets
             ;;
@@ -76,19 +83,19 @@ generate_installation_plan() {
 
     echo ""
     if has_gum; then
-        gum_style --foreground 82 --bold "=== KURULUM BAŞLIYOR!"
+        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "=== KURULUM BAŞLIYOR!"
     else
-        echo -e "${GREEN}=== KURULUM BAŞLIYOR!${NC}"
+        gum_style --foreground "$COLOR_TEXT_FG" "=== KURULUM BAŞLIYOR!"
     fi
     echo ""
 
     # Always install base tools
-    echo -e "${YELLOW}[PACKAGE] İlk önce (tüm paketlerde):${NC}"
-    echo -e "  [+] Sistem güncellemeleri"
-    echo -e "  [+] Git yapılandırması"
-    echo -e "  [+] Python + pip + pipx + UV"
-    echo -e "  [+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
-    echo -e "  [+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
+    gum_info "Bilgi" "[PACKAGE] İlk önce (tüm paketlerde):"
+    gum_style --foreground "$COLOR_TEXT_FG" "[+] Sistem güncellemeleri"
+    gum_style --foreground "$COLOR_TEXT_FG" "[+] Git yapılandırması"
+    gum_style --foreground "$COLOR_TEXT_FG" "[+] Python + pip + pipx + UV"
+    gum_style --foreground "$COLOR_TEXT_FG" "[+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
+    gum_style --foreground "$COLOR_TEXT_FG" "[+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
     echo ""
 
     # Build tool list based on preset
@@ -96,46 +103,46 @@ generate_installation_plan() {
 
     case $preset in
         "web")
-            echo -e "${YELLOW}🌐 Web Development paketi:${NC}"
-            echo -e "  [+] Node.js (NVM)"
-            echo -e "  [+] Bun.js runtime"
-            echo -e "  [+] PHP + Composer"
+            gum_info "Bilgi" "🌐 Web Development paketi:"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js (NVM)"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Bun.js runtime"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
             tools+=("nvm" "node" "bun" "php" "composer")
             ;;
         "ai")
-            echo -e "${YELLOW}[AI] AI Development paketi:${NC}"
-            echo -e "  [+] Node.js (AI araçları için)"
-            echo -e "  [+] AI CLI Tools (Claude, Gemini, etc.)"
-            echo -e "  [+] AI Frameworks (SuperClaude, etc.)"
+            gum_info "Bilgi" "[AI] AI Development paketi:"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js (AI araçları için)"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] AI CLI Tools (Claude, Gemini, etc.)"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] AI Frameworks (SuperClaude, etc.)"
             tools+=("nvm" "node" "ai_cli" "ai_frameworks")
             ;;
         "backend")
-            echo -e "${YELLOW}[SETUP]  Backend Development paketi:${NC}"
-            echo -e "  [+] Go language"
-            echo -e "  [+] PHP + Composer"
+            gum_info "Bilgi" "[SETUP]  Backend Development paketi:"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Go language"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
             tools+=("go" "php" "composer")
             ;;
         "everything")
-            echo -e "${YELLOW}=== EVERYTHING paketi:${NC}"
-            echo -e "  [+] Node.js + Bun.js"
-            echo -e "  [+] Go language"
-            echo -e "  [+] PHP + Composer"
-            echo -e "  [+] AI CLI Tools + Frameworks"
-            echo -e "  [+] GitHub CLI"
+            gum_info "Bilgi" "=== EVERYTHING paketi:"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js + Bun.js"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Go language"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] AI CLI Tools + Frameworks"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] GitHub CLI"
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
-            echo -e "${YELLOW}📱 Mobile + Web paketi:${NC}"
-            echo -e "  [+] Node.js"
-            echo -e "  [+] PHP + Composer"
-            echo -e "  [+] Flutter araçları"
+            gum_info "Bilgi" "📱 Mobile + Web paketi:"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
+            gum_style --foreground "$COLOR_TEXT_FG" "[+] Flutter araçları"
             tools+=("nvm" "node" "php" "composer")
             ;;
     esac
 
     echo ""
-    echo -e "${CYAN}------------------------------------------------------------${NC}"
-    echo -e "${GREEN}Toplam ${#tools[@]} araç kurulacak${NC}"
+    gum_info "Bilgi" "------------------------------------------------------------"
+    gum_style --foreground "$COLOR_TEXT_FG" "Toplam ${#tools[@]} araç kurulacak"
     echo ""
 
     # Return the tools array
@@ -152,15 +159,15 @@ _quickstart_show_welcome() {
     echo ""
 
     if has_gum; then
-        gum_style --foreground 82 --bold "=== QUICK START MODE - KURULUM BAŞLIYOR"
+        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "=== QUICK START MODE - KURULUM BAŞLIYOR"
     else
-        echo -e "${GREEN}=== QUICK START MODE - KURULUM BAŞLIYOR${NC}"
+    gum_style --foreground "$COLOR_TEXT_FG" "=== QUICK START MODE - KURULUM BAŞLIYOR"
     fi
     echo ""
-    echo -e "${YELLOW}Kurulum planınız hazırlanıyor...${NC}"
-    echo -e "${GREEN}${#tools[@]}${NC} araç otomatik kurulacak"
+    gum_info "Bilgi" "Kurulum planınız hazırlanıyor..."
+    gum_style --foreground "$COLOR_TEXT_FG" "${#tools[@]} araç otomatik kurulacak"
     echo ""
-    echo -e "${CYAN}Sürüm:${NC} v2.2.1 | ${CYAN}Tarih:${NC} $(date '+%Y-%m-%d %H:%M')"
+    gum_info "Bilgi" "Sürüm: v2.2.1 | Tarih: $(date '+%Y-%m-%d %H:%M')"
     echo ""
     sleep 3
 }
@@ -170,15 +177,15 @@ _quickstart_preflight_checks() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 51 --bold "🔍 SİSTEM KONTROL EDİLİYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "🔍 SİSTEM KONTROL EDİLİYOR"
     else
-        echo -e "${CYAN}🔍 SİSTEM KONTROL EDİLİYOR${NC}"
+    gum_info "Bilgi" "🔍 SİSTEM KONTROL EDİLİYOR"
     fi
     echo ""
 
     if ! run_preflight_checks; then
-        echo -e "${RED}[[-]]${NC} Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
-        echo -e "${YELLOW}[!]${NC} Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
+    gum_style --foreground "$COLOR_TEXT_FG" "[[-]] Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+        gum_info "Uyarı" "Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
     return 0
@@ -189,9 +196,9 @@ _quickstart_update_system() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 212 --bold "[PACKAGE] SİSTEM GÜNCELLENİYOR"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "[PACKAGE] SİSTEM GÜNCELLENİYOR"
     else
-        echo -e "${YELLOW}[PACKAGE] SİSTEM GÜNCELLENİYOR${NC}"
+        gum_info "Bilgi" "[PACKAGE] SİSTEM GÜNCELLENİYOR"
     fi
     echo ""
     show_install_status "System Update" "installing"
@@ -206,9 +213,9 @@ _quickstart_configure_git() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 226 --bold "🔧 GIT YAPILANDIRMASI"
+        gum_style --foreground "$COLOR_GOLD_FG" --bold "🔧 GIT YAPILANDIRMASI"
     else
-        echo -e "${YELLOW}🔧 GIT YAPILANDIRMASI${NC}"
+        gum_info "Bilgi" "🔧 GIT YAPILANDIRMASI"
     fi
     echo ""
     show_install_status "Git Configuration" "installing"
@@ -223,9 +230,9 @@ _quickstart_install_python() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 81 --bold "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
     else
-        echo -e "${CYAN}[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR${NC}"
+    gum_info "Bilgi" "[PYTHON] PYTHON EKOSİSTEMİ KURULUYOR"
     fi
     echo ""
 
@@ -249,9 +256,9 @@ _quickstart_install_modern_tools() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 212 --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
     else
-        echo -e "${YELLOW}⚡ MODERN CLI ARAÇLARI KURULUYOR${NC}"
+        gum_info "Bilgi" "⚡ MODERN CLI ARAÇLARI KURULUYOR"
     fi
     echo ""
     show_install_status "Modern CLI Tools" "installing"
@@ -264,9 +271,9 @@ _quickstart_setup_shell() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground 51 --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
     else
-        echo -e "${CYAN}🐚 SHELL ORTAMI YAPILANDIRILIYOR${NC}"
+    gum_info "Bilgi" "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
     fi
     echo ""
     show_install_status "Shell Setup" "installing"
@@ -313,9 +320,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 82 --bold "🟢 NODE.JS KURULUYOR (NVM)"
+                    gum_style --foreground "$COLOR_SUCCESS_FG" --bold "🟢 NODE.JS KURULUYOR (NVM)"
                 else
-                    echo -e "${GREEN}🟢 NODE.JS KURULUYOR (NVM)${NC}"
+    gum_style --foreground "$COLOR_TEXT_FG" "🟢 NODE.JS KURULUYOR (NVM)"
                 fi
                 echo ""
                 show_install_status "NVM" "installing"
@@ -324,7 +331,7 @@ execute_installation_plan() {
                     show_install_status "NVM" "success"
                 else
                     show_install_status "NVM" "skipped"
-                    echo -e "${YELLOW}[!]${NC} NVM kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "NVM kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -335,9 +342,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 212 --bold "⚡ BUN.JS KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ BUN.JS KURULUYOR"
                 else
-                    echo -e "${YELLOW}⚡ BUN.JS KURULUYOR${NC}"
+                    gum_info "Bilgi" "⚡ BUN.JS KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Bun.js" "installing"
@@ -346,7 +353,7 @@ execute_installation_plan() {
                     show_install_status "Bun.js" "success"
                 else
                     show_install_status "Bun.js" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Bun kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Bun kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -354,9 +361,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 141 --bold "[PHP] PHP 8.3 KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "[PHP] PHP 8.3 KURULUYOR"
                 else
-                    echo -e "${YELLOW}[PHP] PHP 8.3 KURULUYOR${NC}"
+                    gum_info "Bilgi" "[PHP] PHP 8.3 KURULUYOR"
                 fi
                 echo ""
                 show_install_status "PHP 8.3" "installing"
@@ -367,7 +374,7 @@ execute_installation_plan() {
                 else
                     show_install_status "PHP 8.3" "skipped"
                     track_failure "PHP 8.3"
-                    echo -e "${YELLOW}[!]${NC} PHP kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "PHP kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -375,9 +382,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 226 --bold "🎼 COMPOSER KURULUYOR"
+                    gum_style --foreground "$COLOR_GOLD_FG" --bold "🎼 COMPOSER KURULUYOR"
                 else
-                    echo -e "${YELLOW}🎼 COMPOSER KURULUYOR${NC}"
+                    gum_info "Bilgi" "🎼 COMPOSER KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Composer" "installing"
@@ -386,7 +393,7 @@ execute_installation_plan() {
                     show_install_status "Composer" "success"
                 else
                     show_install_status "Composer" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Composer kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Composer kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -394,9 +401,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 51 --bold "🔷 GO LANGUAGE KURULUYOR"
+                    gum_style --foreground "$COLOR_INFO_FG" --bold "🔷 GO LANGUAGE KURULUYOR"
                 else
-                    echo -e "${CYAN}🔷 GO LANGUAGE KURULUYOR${NC}"
+    gum_info "Bilgi" "🔷 GO LANGUAGE KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Go" "installing"
@@ -405,7 +412,7 @@ execute_installation_plan() {
                     show_install_status "Go" "success"
                 else
                     show_install_status "Go" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Go kurulumu atlandı, devam ediliyor..."
+                    gum_info "Uyarı" "Go kurulumu atlandı, devam ediliyor..."
                 fi
                 sleep 1
                 ;;
@@ -413,9 +420,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 212 --bold "[AI] AI CLI ARAÇLARI KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "[AI] AI CLI ARAÇLARI KURULUYOR"
                 else
-                    echo -e "${YELLOW}[AI] AI CLI ARAÇLARI KURULUYOR${NC}"
+                    gum_info "Bilgi" "[AI] AI CLI ARAÇLARI KURULUYOR"
                 fi
                 echo ""
 
@@ -424,7 +431,7 @@ execute_installation_plan() {
                     show_install_status "Claude Code" "success"
                 else
                     show_install_status "Claude Code" "skipped"
-                    echo -e "${YELLOW}[!]${NC} Claude Code kurulumu atlandı..."
+                    gum_info "Uyarı" "Claude Code kurulumu atlandı..."
                 fi
 
                 show_install_status "GitHub CLI" "installing"
@@ -432,7 +439,7 @@ execute_installation_plan() {
                     show_install_status "GitHub CLI" "success"
                 else
                     show_install_status "GitHub CLI" "skipped"
-                    echo -e "${YELLOW}[!]${NC} GitHub CLI kurulumu atlandı..."
+                    gum_info "Uyarı" "GitHub CLI kurulumu atlandı..."
                 fi
                 sleep 1
                 ;;
@@ -440,9 +447,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground 141 --bold "[AI] AI FRAMEWORK KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "[AI] AI FRAMEWORK KURULUYOR"
                 else
-                    echo -e "${YELLOW}[AI] AI FRAMEWORK KURULUYOR${NC}"
+                    gum_info "Bilgi" "[AI] AI FRAMEWORK KURULUYOR"
                 fi
                 echo ""
                 show_install_status "SuperClaude" "installing"
@@ -451,7 +458,7 @@ execute_installation_plan() {
                     show_install_status "SuperClaude" "success"
                 else
                     show_install_status "SuperClaude" "skipped"
-                    echo -e "${YELLOW}[!]${NC} SuperClaude kurulumu atlandı..."
+                    gum_info "Uyarı" "SuperClaude kurulumu atlandı..."
                 fi
                 sleep 1
                 ;;
@@ -464,12 +471,12 @@ execute_installation_plan() {
     # Installation complete (banner shown at script start, don't redraw)
     echo ""
     if has_gum; then
-        gum_style --foreground 82 --bold "✅ KURULUM TAMAMLANDI!"
+        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "✅ KURULUM TAMAMLANDI!"
     else
-        echo -e "${GREEN}✅ KURULUM TAMAMLANDI!${NC}"
+    gum_success "Başarılı" "✅ KURULUM TAMAMLANDI!"
     fi
     echo ""
-    echo -e "${GREEN}Tüm araçlar başarıyla kuruldu!${NC}"
+    gum_style --foreground "$COLOR_TEXT_FG" "Tüm araçlar başarıyla kuruldu!"
     echo ""
 
     # Show installation summary
@@ -477,32 +484,32 @@ execute_installation_plan() {
 
     echo ""
     if has_gum; then
-        gum_style --foreground 212 --bold "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     else
-        echo -e "${YELLOW}[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!${NC}"
+        gum_info "Bilgi" "[SUCCESS] TEBRİKLER! GELİŞTİRME ORTAMINIZ HAZIR!"
     fi
     echo ""
-    echo -e "${CYAN}[INFO] ŞİMDİ NE YAPACAKSINIZ?${NC}"
+    gum_info "Bilgi" "[INFO] ŞİMDİ NE YAPACAKSINIZ?"
     echo ""
-    echo -e "${GREEN}> ADIM 1: Terminal Ortamını Yenileyin${NC}"
-    echo -e "   Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
-    echo -e "   ${YELLOW}→${NC} ${GREEN}source ~/.bashrc${NC}"
+    gum_style --foreground "$COLOR_GOLD_FG" "> ADIM 1: Terminal Ortamını Yenileyin"
+    gum_style --foreground "$COLOR_TEXT_FG" "Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
+    gum_info "Bilgi" "→ ${GREEN}source ~/.bashrc"
     echo ""
-    echo -e "   ${YELLOW}veya${NC} terminali kapatıp yeniden açın (daha garantili)"
+    gum_info "Bilgi" "veya terminali kapatıp yeniden açın (daha garantili)"
     echo ""
-    echo -e "${GREEN}> ADIM 2: Kurulumları Test Edin${NC}"
-    echo -e "   ${CYAN}•${NC} Python: ${GREEN}python3 --version${NC}"
-    echo -e "   ${CYAN}•${NC} Node.js: ${GREEN}node --version${NC}"
-    echo -e "   ${CYAN}•${NC} NVM: ${GREEN}nvm --version${NC}"
-    echo -e "   ${CYAN}•${NC} Modern CLI: ${GREEN}bat --version${NC}, ${GREEN}eza --version${NC}"
+    gum_style --foreground "$COLOR_GOLD_FG" "> ADIM 2: Kurulumları Test Edin"
+    gum_info "Bilgi" "• Python: ${GREEN}python3 --version"
+    gum_info "Bilgi" "• Node.js: ${GREEN}node --version"
+    gum_info "Bilgi" "• NVM: ${GREEN}nvm --version"
+    gum_info "Bilgi" "• Modern CLI: ${GREEN}bat --version, ${GREEN}eza --version"
     echo ""
-    echo -e "${GREEN}> ADIM 3: Kodlamaya Başlayın!${NC}"
-    echo -e "   ${CYAN}•${NC} Proje oluşturun: ${GREEN}mkdir my-project && cd my-project${NC}"
-    echo -e "   ${CYAN}•${NC} Python venv: ${GREEN}python3 -m venv venv${NC}"
-    echo -e "   ${CYAN}•${NC} Node proje: ${GREEN}npm init -y${NC}"
+    gum_style --foreground "$COLOR_GOLD_FG" "> ADIM 3: Kodlamaya Başlayın!"
+    gum_info "Bilgi" "• Proje oluşturun: ${GREEN}mkdir my-project && cd my-project"
+    gum_info "Bilgi" "• Python venv: ${GREEN}python3 -m venv venv"
+    gum_info "Bilgi" "• Node proje: ${GREEN}npm init -y"
     echo ""
-    echo -e "${YELLOW}[SETUP]  İleri düzey araçlar için:${NC}"
-    echo -e "   Scripti tekrar çalıştırıp ${GREEN}'Advanced Mode'${NC} seçin"
+    gum_info "Bilgi" "[SETUP]  İleri düzey araçlar için:"
+    gum_style --foreground "$COLOR_TEXT_FG" "Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
     echo ""
 }
 
@@ -510,8 +517,8 @@ execute_installation_plan() {
 run_quickstart_mode() {
     # Install Gum first for modern TUI (silently if possible)
     if ! has_gum; then
-        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum)..."
-        install_gum || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum)..."
+        install_gum || gum_info "Uyarı" "Gum kurulamadı, klasik TUI kullanılacak"
     fi
 
     # Show welcome
@@ -523,7 +530,7 @@ run_quickstart_mode() {
     show_presets
     local preset="$QUICKSTART_PRESET_CHOICE"
 
-    echo -e "\n${CYAN}⚡ Bir saniye, başlıyorum...${NC}"
+    gum_info "Bilgi" "\n⚡ Bir saniye, başlıyorum..."
     sleep 1
 
     # Generate and show plan

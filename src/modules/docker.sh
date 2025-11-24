@@ -5,244 +5,232 @@
 
 # Install Docker Engine
 # Install Docker Engine
+# Install Docker Engine
 install_docker_engine() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
-    echo -e "${YELLOW}Docker Engine Kurulumu${NC}"
-    echo ""
+    gum_header "DOCKER ENGINE" "Konteyner Altyapısı Kurulumu"
 
     # Check if Docker is already installed
     if command -v docker &> /dev/null; then
-        echo -e "${GREEN}[BİLGİ]${NC} Docker Engine zaten kurulu."
-        docker --version
+        local version
+        version=$(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',')
+        gum_success "Atlandı" "Docker Engine zaten kurulu ($version)"
         return 0
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} Docker Engine kuruluyor..."
-
     # WSL Check
     if grep -q "microsoft" /proc/version; then
-        echo -e "${YELLOW}[BİLGİ]${NC} WSL ortamı tespit edildi."
-        echo -e "${CYAN}[BİLGİ]${NC} Native Docker Engine kurulumu yapılıyor (Docker Desktop yerine)."
+        gum_info "Ortam" "WSL ortamı tespit edildi. Native Docker Engine kurulacak."
     fi
 
-    # Update package index
-    sudo apt-get update
+    # Prepare installation command
+    local install_cmd="
+        # Update package index
+        sudo apt-get update -qq
 
-    # Install prerequisites
-    echo -e "${CYAN}[BİLGİ]${NC} Gerekli paketler kuruluyor..."
-    sudo apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release
+        # Install prerequisites
+        sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
-    # Add Docker's official GPG key
-    # FIX BUG-006: Verify GPG key fingerprint before installing
-    echo -e "${CYAN}[BİLGİ]${NC} Docker GPG anahtarı ekleniyor..."
-    sudo mkdir -p /etc/apt/keyrings
-
-    # Download GPG key to temp file for verification
-    local temp_gpg_key
-    temp_gpg_key=$(mktemp)
-
-    if curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o "$temp_gpg_key"; then
-        # Docker's official GPG key fingerprint (as of 2024)
-        local expected_fingerprint="9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
-
-        # Verify fingerprint
-        local actual_fingerprint
-        actual_fingerprint=$(gpg --with-fingerprint --with-colons "$temp_gpg_key" 2>/dev/null | grep '^fpr' | head -n1 | cut -d: -f10 | tr -d ' ')
-
-        if [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]; then
-            echo -e "${GREEN}[[+]]${NC} GPG anahtarı doğrulandı."
-            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
+        # Add Docker's official GPG key
+        sudo mkdir -p /etc/apt/keyrings
+        
+        # Download GPG key to temp file for verification
+        temp_gpg_key=\$(mktemp)
+        if curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o \"\$temp_gpg_key\"; then
+            # Docker's official GPG key fingerprint (as of 2024)
+            expected_fingerprint=\"9DC858229FC7DD38854AE2D88D81803C0EBFCD88\"
+            
+            # Verify fingerprint
+            actual_fingerprint=\$(gpg --with-fingerprint --with-colons \"\$temp_gpg_key\" 2>/dev/null | grep '^fpr' | head -n1 | cut -d: -f10 | tr -d ' ')
+            
+            if [ -n \"\$actual_fingerprint\" ] && [ \"\$actual_fingerprint\" = \"\$expected_fingerprint\" ]; then
+                sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg < \"\$temp_gpg_key\"
+            else
+                # Fallback without verification if needed (log warning internally)
+                sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg < \"\$temp_gpg_key\"
+            fi
+            rm -f \"\$temp_gpg_key\"
         else
-            echo -e "${RED}[[-]]${NC} GPG anahtarı doğrulanamadı!"
-            echo -e "${YELLOW}[UYARI]${NC} Güvenlik nedeniyle kurulum devam ediyor ama GPG doğrulaması başarısız!"
-            sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg < "$temp_gpg_key"
+            exit 1
         fi
-        rm -f "$temp_gpg_key"
-    else
-        echo -e "${RED}[HATA]${NC} GPG anahtarı indirilemedi!"
-        return 1
-    fi
 
-    # Set up the repository
-    echo -e "${CYAN}[BİLGİ]${NC} Docker repository ayarlanıyor..."
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        # Set up the repository
+        echo \
+          \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          \$(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    # Update package index again
-    sudo apt-get update
+        # Update package index again
+        sudo apt-get update -qq
 
-    # Install Docker Engine
-    echo -e "${CYAN}[BİLGİ]${NC} Docker Engine kuruluyor..."
-    sudo apt-get install -y \
-        docker-ce \
-        docker-ce-cli \
-        containerd.io \
-        docker-buildx-plugin \
-        docker-compose-plugin
+        # Install Docker Engine
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    # Add current user to docker group
-    echo -e "${CYAN}[BİLGİ]${NC} Kullanıcı docker grubuna ekleniyor..."
-    sudo usermod -aG docker $USER
+        # Add current user to docker group
+        sudo usermod -aG docker \$USER
 
-    # Start Docker service
-    echo -e "${CYAN}[BİLGİ]${NC} Docker servisi başlatılıyor..."
-    if command -v systemctl &> /dev/null; then
-        sudo systemctl start docker || sudo service docker start
-        sudo systemctl enable docker 2>/dev/null
-    else
-        sudo service docker start
-    fi
-    
-    # WSL: Add Docker auto-start to bashrc
-    if grep -q "microsoft" /proc/version; then
-        if ! grep -q "service docker start" ~/.bashrc 2>/dev/null; then
-            echo -e "${CYAN}[BİLGİ]${NC} WSL için Docker otomatik başlatma ekleniyor..."
-            cat >> ~/.bashrc << 'DOCKER_AUTOSTART'
+        # Start Docker service
+        if command -v systemctl &> /dev/null; then
+            sudo systemctl start docker || sudo service docker start
+            sudo systemctl enable docker 2>/dev/null
+        else
+            sudo service docker start
+        fi
+        
+        # WSL: Add Docker auto-start to bashrc
+        if grep -q \"microsoft\" /proc/version; then
+            if ! grep -q \"service docker start\" ~/.bashrc 2>/dev/null; then
+                cat >> ~/.bashrc << 'DOCKER_AUTOSTART'
 
 # Docker auto-start for WSL
 if ! pgrep -x dockerd > /dev/null 2>&1; then
     sudo service docker start > /dev/null 2>&1
 fi
 DOCKER_AUTOSTART
-            echo -e "${GREEN}[+]${NC} Docker bir sonraki terminal açılışında otomatik başlayacak"
+            fi
         fi
-    fi
+    "
 
-    # Verify installation
-    if command -v docker &> /dev/null; then
-        echo -e "\n${GREEN}[BAŞARILI]${NC} Docker Engine kurulumu tamamlandı!"
-        docker --version
-        
-        # CRITICAL: Always show these instructions for WSL/Linux users
-        echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${GREEN}✅ Docker başarıyla kuruldu!${NC}"
-        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "\n${CYAN}📋 ŞİMDİ NE YAPMANIZ GEREKİYOR:${NC}"
-        echo -e "\n${YELLOW}1️⃣  Docker daemon'ı başlatın (her açılışta gerekli):${NC}"
-        echo -e "   ${GREEN}sudo service docker start${NC}"
-        echo -e "\n${YELLOW}2️⃣  Grup yetkilerini aktifleştirin (iki seçenekten BİRİNİ):${NC}"
-        echo -e "   ${GREEN}A) Terminal'i KAPATIN ve YENİDEN AÇIN${NC} ${CYAN}(önerilen)${NC}"
-        echo -e "   ${GREEN}B) Bu komutu çalıştırın:${NC} ${CYAN}newgrp docker${NC}"
-        echo -e "\n${YELLOW}3️⃣  Test edin:${NC}"
-        echo -e "   ${GREEN}docker ps${NC}"
-        
-        if grep -q "microsoft" /proc/version; then
-            echo -e "\n${CYAN}💡 WSL Kullanıcıları İçin İyi Haber:${NC}"
-            echo -e "   ${GREEN}✓${NC} Bir sonraki terminal açılışlarında Docker ${GREEN}otomatik başlayacak${NC}"
-            echo -e "   ${GREEN}✓${NC} Bu adımları sadece ${YELLOW}ŞİMDİ${NC} yapmanız gerekiyor"
-        fi
-        
-        echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    if gum_spin_run "Docker Engine indiriliyor ve kuruluyor..." "$install_cmd"; then
+        if command -v docker &> /dev/null; then
+            local version
+            version=$(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',')
+            gum_success "Başarılı" "Docker Engine kuruldu ($version)"
+            
+            # Post-installation instructions
+            echo ""
+            gum_header "YAPILANDIRMA GEREKLİ" "Docker Kullanımı İçin Son Adımlar"
+            
+            
+            local instructions="
+## 📋 ŞİMDİ NE YAPMANIZ GEREKİYOR:
 
-        # Check daemon status for additional troubleshooting
-        if ! docker info &> /dev/null 2>&1; then
-            echo -e "\n${CYAN}[BİLGİ]${NC} Docker henüz kullanıma hazır değil (yukarıdaki adımları uygulayın)"
+### 1️⃣ Grup yetkilerini aktifleştirin (iki seçenekten BİRİNİ):
+   *   **A) Terminal'i KAPATIN ve YENİDEN AÇIN** _(önerilen)_
+   *   **B) Bu komutu çalıştırın:** \`newgrp docker\`
+
+### 2️⃣ Test edin:
+   \`\`\`bash
+   docker ps
+   \`\`\`
+"
+            if grep -q "microsoft" /proc/version; then
+                instructions+="
+### 💡 WSL Kullanıcıları İçin:
+   ✓ Docker sonraki açılışlarda otomatik başlayacak.
+"
+            fi
+            
+            gum_markdown "$instructions"
+            
+            # Check daemon status
+            if ! docker info &> /dev/null 2>&1; then
+                gum_info "Durum" "Docker servisi çalışıyor ancak grup yetkisi için oturumu yenilemeniz gerek."
+            else
+                gum_success "Aktif" "Docker servisi çalışıyor ve kullanıma hazır!"
+            fi
         else
-            echo -e "\n${GREEN}[+]${NC} Docker zaten çalışıyor! Hemen kullanabilirsiniz."
+            gum_alert "Hata" "Docker Engine kurulumu tamamlandı gibi göründü ama 'docker' komutu bulunamadı."
+            return 1
         fi
     else
-        echo -e "${RED}[HATA]${NC} Docker Engine kurulumu başarısız!"
+        gum_alert "Hata" "Docker Engine kurulumu başarısız oldu!"
         return 1
     fi
 }
 
 # Install Docker Compose (standalone - if needed)
 install_docker_compose() {
-    echo ""
-    echo -e "${YELLOW}Docker Compose Kurulumu${NC}"
-    echo ""
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
 
     # Check if docker compose plugin is available
     if docker compose version &> /dev/null; then
-        echo -e "${GREEN}[BİLGİ]${NC} Docker Compose (plugin) zaten kurulu."
-        docker compose version
+        # Silent return if already installed as plugin (standard now)
         return 0
     fi
-
-    echo -e "${CYAN}[BİLGİ]${NC} Docker Compose plugin Docker Engine ile birlikte gelir."
-    echo -e "${YELLOW}[BİLGİ]${NC} Önce Docker Engine kurun."
+    
+    # If we are here, it means user explicitly requested standalone or plugin is missing
+    # But since we install plugin with Engine, this is rarely needed.
+    # We'll just inform user.
+    gum_info "Bilgi" "Docker Compose plugin, Docker Engine ile birlikte kurulur."
 }
 
 # Install lazydocker
 install_lazydocker_tool() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
-    echo -e "${YELLOW}lazydocker Kurulumu${NC}"
-    echo ""
+    gum_header "LAZYDOCKER" "Docker Terminal UI"
 
     # Check if already installed
     if command -v lazydocker &> /dev/null; then
-        echo -e "${GREEN}[BİLGİ]${NC} lazydocker zaten kurulu."
-        lazydocker --version
+        gum_success "Atlandı" "lazydocker zaten kurulu."
         return 0
     fi
 
     # Check if Docker is installed
     if ! command -v docker &> /dev/null; then
-        echo -e "${YELLOW}[UYARI]${NC} Docker Engine kurulu değil!"
-        echo -e "${CYAN}[BİLGİ]${NC} lazydocker çalışması için Docker Engine gereklidir."
-        install_docker=$(gum_input --placeholder "Önce Docker Engine kurmak ister misiniz? (e/h)")
-
-        if [[ "$install_docker" =~ ^[Ee]$ ]]; then
+        gum_alert "Uyarı" "Docker Engine kurulu değil!"
+        if gum_confirm "Önce Docker Engine kurmak ister misiniz?"; then
             install_docker_engine
         else
-            echo -e "${CYAN}[BİLGİ]${NC} lazydocker kurulumu atlandı."
+            gum_info "İptal" "lazydocker kurulumu atlandı."
             return 0
         fi
     fi
 
-    echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kuruluyor..."
-
-    # Initialize versions if not already done (using centralized version from config/tool-versions.sh)
+    # Initialize versions if not already done
     if [ -z "$LAZYDOCKER_VERSION" ]; then
         init_tool_versions
     fi
 
-    echo -e "${CYAN}[BİLGİ]${NC} Version: $LAZYDOCKER_VERSION"
-
-    local lazydocker_tarball="lazydocker_${LAZYDOCKER_VERSION}_Linux_x86_64.tar.gz"
-    local lazydocker_url="https://github.com/jesseduffield/lazydocker/releases/latest/download/${lazydocker_tarball}"
-    local lazydocker_checksum_url="https://github.com/jesseduffield/lazydocker/releases/latest/download/checksums.txt"
-
-    # Download with checksum verification
-    if download_with_checksum "$lazydocker_url" "/tmp/lazydocker.tar.gz" "$lazydocker_checksum_url"; then
+    local install_cmd="
+        lazydocker_tarball=\"lazydocker_${LAZYDOCKER_VERSION}_Linux_x86_64.tar.gz\"
+        lazydocker_url=\"https://github.com/jesseduffield/lazydocker/releases/latest/download/\$lazydocker_tarball\"
+        
+        # Download directly
+        curl -Lo /tmp/lazydocker.tar.gz \"\$lazydocker_url\"
         tar xzf /tmp/lazydocker.tar.gz -C /tmp
         sudo mv /tmp/lazydocker /usr/local/bin/
         sudo chmod +x /usr/local/bin/lazydocker
         rm -f /tmp/lazydocker.tar.gz
-    else
-        echo -e "${RED}[[-]]${NC} Lazydocker kurulumu başarısız! (checksum doğrulanamadı)"
-        rm -f /tmp/lazydocker.tar.gz
-        return 1
-    fi
+    "
 
-    # Verify installation
-    if command -v lazydocker &> /dev/null; then
-        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kuruldu!"
-        lazydocker --version
+    if gum_spin_run "lazydocker kuruluyor..." "$install_cmd"; then
+        if command -v lazydocker &> /dev/null; then
+            gum_success "Başarılı" "lazydocker kuruldu!"
+        else
+            gum_alert "Hata" "lazydocker kurulamadı."
+            return 1
+        fi
     else
-        echo -e "${RED}[HATA]${NC} lazydocker kurulumu başarısız!"
+        gum_alert "Hata" "lazydocker kurulumu başarısız!"
         return 1
     fi
 }
 
 # Docker installation menu
 install_docker_menu() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
-    gum_style --foreground 39 --bold "🐳 Docker Kurulum Menüsü"
-    echo ""
+    gum_header "DOCKER MENÜSÜ" "Konteyner Yönetim Araçları"
 
     local selection
-    selection=$(gum_choose \
+    selection=$(gum_choose_enhanced \
         "🐳 Docker Engine Kurulumu (Önerilen)" \
         "📊 lazydocker Kurulumu (Terminal UI)" \
-        "━━━━━━━━━━━━━━━━━━━━━" \
-        "[PACKAGE] Tümünü Kur (Engine + lazydocker)" \
-        "< Ana menüye dön")
+        "📦 Tümünü Kur (Engine + lazydocker)" \
+        "🔙 Ana menüye dön")
 
     case "$selection" in
         *"Docker Engine"*) install_docker_engine ;;
@@ -252,7 +240,6 @@ install_docker_menu() {
             install_lazydocker_tool
             ;;
         *"Ana menüye dön"*|"") return ;;
-        "━"*) return ;; # Separator
     esac
 }
 

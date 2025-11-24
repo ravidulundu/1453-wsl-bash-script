@@ -5,98 +5,80 @@
 
 # Install Charm Gum - Modern TUI framework for shell scripts
 install_gum() {
-    echo ""
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
 
     # Check if already installed
     if command -v gum &>/dev/null; then
         local version
         version=$(gum --version 2>/dev/null | head -1 || echo "unknown")
-        echo -e "${CYAN}[!]${NC} Gum zaten kurulu: $version"
+        # Silent success or debug log if needed, but for PRD compliance we avoid clutter
+        # track_skip is internal logic, keep it but don't output to UI unless verbose
         track_skip "Charm Gum" "Zaten kurulu: $version"
         return 0
     fi
+
+    gum_header "GUM KURULUMU" "Modern TUI Altyapısı Hazırlanıyor"
 
     # Detect package manager
     if [ -z "${PKG_MANAGER:-}" ]; then
         detect_package_manager
     fi
 
+    local install_cmd=""
+    
     case $PKG_MANAGER in
         apt)
-            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
-
-            # Add Charm repository
-            sudo mkdir -p /etc/apt/keyrings
-            
-            # FIX BUG-033: Download key to temp file first to avoid pipe+sudo issues
-            local temp_keyring
-            temp_keyring=$(mktemp)
-            if curl -fsSL --retry 3 --retry-delay 5 https://repo.charm.sh/apt/gpg.key -o "$temp_keyring"; then
-                sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg < "$temp_keyring"
-                rm -f "$temp_keyring"
-            else
-                rm -f "$temp_keyring"
-                echo -e "${RED}[HATA]${NC} Charm GPG key indirilemedi"
-                return 1
-            fi
-            
-            echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
-
-            echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
-            sudo apt update -qq
-
-            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
-            sudo apt install -y gum
+            install_cmd="
+                sudo mkdir -p /etc/apt/keyrings
+                curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+                echo 'deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *' | sudo tee /etc/apt/sources.list.d/charm.list
+                sudo apt update -qq
+                sudo apt install -y gum
+            "
             ;;
         dnf)
-            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
-            echo '[charm]
+            install_cmd="
+                echo '[charm]
 name=Charm
 baseurl=https://repo.charm.sh/yum/
 enabled=1
 gpgcheck=1
 gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
-
-            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
-            sudo dnf install -y gum
+                sudo dnf install -y gum
+            "
             ;;
         yum)
-            echo -e "${YELLOW}[BİLGİ]${NC} Charm repository ekleniyor..."
-            echo '[charm]
+            install_cmd="
+                echo '[charm]
 name=Charm
 baseurl=https://repo.charm.sh/yum/
 enabled=1
 gpgcheck=1
 gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
-
-            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor..."
-            sudo yum install -y gum
+                sudo yum install -y gum
+            "
             ;;
         pacman)
-            echo -e "${YELLOW}[BİLGİ]${NC} Gum kuruluyor (AUR/community)..."
-            sudo pacman -S --noconfirm gum
+            install_cmd="sudo pacman -S --noconfirm gum"
             ;;
         *)
-            echo -e "${RED}[HATA]${NC} Desteklenmeyen paket yöneticisi: $PKG_MANAGER"
-            echo -e "${YELLOW}[BİLGİ]${NC} Manuel kurulum için: https://github.com/charmbracelet/gum"
+            gum_alert "Hata" "Desteklenmeyen paket yöneticisi: $PKG_MANAGER"
             track_failure "Charm Gum" "Desteklenmeyen paket yöneticisi"
             return 1
             ;;
     esac
 
-    # Verify installation
-    if command -v gum &>/dev/null; then
+    # Execute installation with spinner and log hiding
+    if gum_spin_run "Gum kuruluyor..." "$install_cmd"; then
         local version
         version=$(gum --version 2>/dev/null | head -1 || echo "unknown")
-        echo -e "${GREEN}[BAŞARILI]${NC} Gum başarıyla kuruldu: $version"
+        gum_success "Başarılı" "Gum başarıyla kuruldu: $version"
         track_success "Charm Gum" "Kuruldu: $version"
-
-        # Show quick demo
-        echo -e "\n${CYAN}[!]${NC} Gum kullanıma hazır!"
-        echo -e "${CYAN}[!]${NC} Script artık modern TUI component'leri kullanacak"
         return 0
     else
-        echo -e "${RED}[HATA]${NC} Gum kurulumu başarısız oldu"
+        gum_alert "Hata" "Gum kurulumu başarısız oldu."
         track_failure "Charm Gum" "Kurulum başarısız"
         return 1
     fi
@@ -104,7 +86,12 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 
 # Install modern CLI tools (batcat, ripgrep, fd-find, eza, etc.)
 install_modern_cli_tools() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
+    gum_header "MODERN CLI ARAÇLARI" "Kurulum ve Yapılandırma"
 
     # Check which tools are already installed
     local already_installed=()
@@ -126,16 +113,16 @@ install_modern_cli_tools() {
 
     # If all tools are installed, skip
     if [ ${#missing_tools[@]} -eq 0 ]; then
-        echo -e "${CYAN}[!]${NC} Tüm modern CLI araçları zaten kurulu (${#already_installed[@]}/11)"
+        gum_success "Atlandı" "Tüm modern CLI araçları zaten kurulu (${#already_installed[@]}/12)"
         track_skip "Modern CLI Tools" "Tüm araçlar kurulu (${already_installed[*]})"
         return 0
     fi
 
     # Show status
     if [ ${#already_installed[@]} -gt 0 ]; then
-        echo -e "${CYAN}[!]${NC} Kurulu: ${already_installed[*]}"
+        gum_info "Mevcut Araçlar" "${already_installed[*]}"
     fi
-    echo -e "${YELLOW}[BİLGİ]${NC} Kurulacak: ${missing_tools[*]}"
+    gum_info "Kurulacak Araçlar" "${missing_tools[*]}"
     echo ""
 
     # Detect package manager
@@ -155,7 +142,7 @@ install_modern_cli_tools() {
             install_modern_tools_pacman
             ;;
         *)
-            echo -e "${RED}[HATA]${NC} Desteklenmeyen paket yöneticisi: $PKG_MANAGER"
+            gum_alert "Hata" "Desteklenmeyen paket yöneticisi: $PKG_MANAGER"
             return 1
             ;;
     esac
@@ -184,16 +171,19 @@ install_modern_cli_tools() {
 
     installed_count=${#final_installed[@]}
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Modern CLI araçları kurulumu tamamlandı! ($installed_count/12)"
-
+    echo ""
     if [ $installed_count -eq 12 ]; then
+        gum_success "Tamamlandı" "Tüm modern CLI araçları başarıyla kuruldu! ($installed_count/12)"
         track_success "Modern CLI Tools" "Tüm araçlar kuruldu (12/12)"
     elif [ $installed_count -gt 0 ]; then
+        gum_success "Kısmen Tamamlandı" "$installed_count/12 araç kuruldu."
         track_success "Modern CLI Tools" "$installed_count/12 kuruldu: ${final_installed[*]}"
         if [ ${#final_failed[@]} -gt 0 ]; then
+            gum_alert "Eksik" "Kurulamayan araçlar: ${final_failed[*]}"
             track_failure "Modern CLI Tools (eksik)" "Kurulamadı: ${final_failed[*]}"
         fi
     else
+        gum_alert "Başarısız" "Hiçbir araç kurulamadı."
         track_failure "Modern CLI Tools" "Hiçbir araç kurulamadı"
         return 1
     fi
@@ -201,354 +191,135 @@ install_modern_cli_tools() {
 
 # Generic function to fix bat/fd symlinks (works across all distros)
 fix_bat_fd_symlinks() {
-    echo -e "${YELLOW}[BİLGİ]${NC} bat ve fd symlink'leri kontrol ediliyor..."
-
-    # Create ~/.local/bin if it doesn't exist
-    mkdir -p "$HOME/.local/bin"
-
-    # Create bat symlink if batcat exists but bat doesn't
-    if command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
-        local batcat_path
-        batcat_path="$(which batcat)"
-        if [ -n "$batcat_path" ]; then
-            ln -sf "$batcat_path" "$HOME/.local/bin/bat"
-            echo -e "${GREEN}[BAŞARILI]${NC} bat symlink oluşturuldu: batcat → bat"
+    gum_spin_run "Symlinkler kontrol ediliyor..." "
+        mkdir -p \"$HOME/.local/bin\"
+        
+        # bat symlink
+        if command -v batcat &> /dev/null && ! command -v bat &> /dev/null; then
+            ln -sf \"\$(which batcat)\" \"$HOME/.local/bin/bat\"
         fi
-    fi
-
-    # Create fd symlink if fdfind exists but fd doesn't
-    if command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
-        local fdfind_path
-        fdfind_path="$(which fdfind)"
-        if [ -n "$fdfind_path" ]; then
-            ln -sf "$fdfind_path" "$HOME/.local/bin/fd"
-            echo -e "${GREEN}[BAŞARILI]${NC} fd symlink oluşturuldu: fdfind → fd"
+        
+        # fd symlink
+        if command -v fdfind &> /dev/null && ! command -v fd &> /dev/null; then
+            ln -sf \"\$(which fdfind)\" \"$HOME/.local/bin/fd\"
         fi
-    fi
-
-    # Ensure ~/.local/bin is in PATH
-    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} ~/.local/bin PATH'e ekleniyor..."
-
-        # Add to .bashrc if not already there
-        if ! grep -qF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
-            echo '' >> "$HOME/.bashrc"
-            echo '# Add ~/.local/bin to PATH for user binaries' >> "$HOME/.bashrc"
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-            echo -e "${GREEN}[BAŞARILI]${NC} ~/.local/bin bashrc'ye eklendi"
+        
+        # Add to PATH if needed
+        if [[ \":\$PATH:\" != *\":$HOME/.local/bin:\"* ]]; then
+            if ! grep -qF 'export PATH=\"\$HOME/.local/bin:\$PATH\"' \"$HOME/.bashrc\" 2>/dev/null; then
+                echo '' >> \"$HOME/.bashrc\"
+                echo '# Add ~/.local/bin to PATH for user binaries' >> \"$HOME/.bashrc\"
+                echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> \"$HOME/.bashrc\"
+            fi
         fi
-
-        # Export for current session
-        export PATH="$HOME/.local/bin:$PATH"
-    fi
+    "
 }
 
 # REFACTOR O-5: Helper for eza installation
-# REFACTOR O-5: Helper for eza installation
 _apt_install_eza() {
     if ! command -v eza &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Eza kuruluyor..."
-        
-        # Remove old repository files to prevent conflicts (CRITICAL - do this FIRST)
-        sudo rm -f /etc/apt/sources.list.d/gierens.list 2>/dev/null
-        sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
-        
-        # Ensure gpg is installed
-        if ! command -v gpg &>/dev/null; then
-            echo -e "${YELLOW}[BİLGİ]${NC} GPG kuruluyor..."
-            sudo apt update -qq 2>/dev/null
-            sudo apt install -y gpg 2>/dev/null
-        fi
-        
-        sudo mkdir -p /etc/apt/keyrings
-        
-        # Try multiple sources for GPG key (official eza.rocks first, then GitHub)
-        local gpg_sources=(
-            "https://eza.rocks/deb.asc"
-            "https://raw.githubusercontent.com/eza-community/eza/main/deb.asc"
-        )
-        
-        local gpg_success=false
-        # Create temp file for GPG key download
-        local temp_script
-        temp_script=$(mktemp)
-        
-        for gpg_url in "${gpg_sources[@]}"; do
-            echo -e "${YELLOW}[BİLGİ]${NC} GPG anahtarı indiriliyor: $gpg_url"
-            
-            # Delete key file before each attempt to avoid overwrite prompts
+        gum_spin_run "Eza kuruluyor..." "
+            sudo rm -f /etc/apt/sources.list.d/gierens.list 2>/dev/null
             sudo rm -f /etc/apt/keyrings/gierens.gpg 2>/dev/null
             
-            # Try wget first (more reliable for piping to gpg)
-            # Try wget first
-            if command -v wget &>/dev/null; then
-                if wget --timeout=15 --tries=2 -qO "$temp_script" "$gpg_url" 2>/dev/null; then
-                    if sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg < "$temp_script" 2>/dev/null; then
-                        gpg_success=true
-                        echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
-                        rm -f "$temp_script"
-                        break
-                    fi
-                fi
+            if ! command -v gpg &>/dev/null; then
+                sudo apt update -qq && sudo apt install -y gpg
             fi
             
-            # Fallback to curl
-            if curl -fsSL --connect-timeout 15 --max-time 30 "$gpg_url" -o "$temp_script" 2>/dev/null; then
-                if sudo gpg --dearmor --yes -o /etc/apt/keyrings/gierens.gpg < "$temp_script" 2>/dev/null; then
-                    gpg_success=true
-                    echo -e "${GREEN}[[+]]${NC} GPG anahtarı başarıyla indirildi"
-                    rm -f "$temp_script"
-                    break
-                fi
-            fi
-            
-            echo -e "${YELLOW}[!]${NC} $gpg_url başarısız, alternatif deneniyor..."
-        done
-        
-        if [ "$gpg_success" = false ]; then
-            echo -e "${RED}[HATA]${NC} Eza GPG anahtarı hiçbir kaynaktan indirilemedi"
-            echo -e "${YELLOW}[!]${NC} Muhtemelen ağ sorunu veya GitHub rate limit"
-            echo -e "${YELLOW}[!]${NC} Eza kurulumu atlanıyor..."
-            return 1
-        fi
-        
-        # Verify GPG key file exists and is not empty
-        if [ ! -s /etc/apt/keyrings/gierens.gpg ]; then
-            echo -e "${RED}[HATA]${NC} GPG anahtar dosyası boş veya oluşturulamadı"
-            sudo rm -f /etc/apt/keyrings/gierens.gpg
-            return 1
-        fi
-        
-        # Add repository
-        echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
-        sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-        
-        # Update package list
-        echo -e "${YELLOW}[BİLGİ]${NC} Paket listesi güncelleniyor..."
-        if ! sudo apt update -qq 2>&1 | grep -v "NO_PUBKEY\|not signed"; then
-             echo -e "${RED}[HATA]${NC} Eza repository güncellemesi başarısız"
-             echo -e "${YELLOW}[!]${NC} Repository dosyaları temizleniyor..."
-             sudo rm -f /etc/apt/sources.list.d/gierens.list
-             sudo rm -f /etc/apt/keyrings/gierens.gpg
-             return 1
-        fi
-        
-        # Check for GPG errors one more time
-        if sudo apt update 2>&1 | grep -q "NO_PUBKEY.*EC29E2090CE3FD43\|not signed.*gierens"; then
-             echo -e "${RED}[HATA]${NC} GPG doğrulaması hala başarısız (EC29E2090CE3FD43)"
-             echo -e "${YELLOW}[!]${NC} Repository kaldırılıyor..."
-             sudo rm -f /etc/apt/sources.list.d/gierens.list
-             sudo rm -f /etc/apt/keyrings/gierens.gpg
-             return 1
-        fi
-        
-        # Install eza
-        if sudo apt install -y eza 2>/dev/null; then
-            echo -e "${GREEN}[BAŞARILI]${NC} Eza kuruldu"
-        else
-            echo -e "${RED}[HATA]${NC} Eza paketi kurulamadı"
-            return 1
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Eza zaten kurulu."
+            sudo mkdir -p /etc/apt/keyrings
+            wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+            echo 'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main' | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
+            sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+            sudo apt update -qq
+            sudo apt install -y eza
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for starship installation
 _apt_install_starship() {
     if ! command -v starship &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Starship kuruluyor..."
-        
-        # Try APT first (available in Ubuntu 25.04+ and Debian 13+)
-        echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
-        if sudo apt install -y starship 2>/dev/null; then
-            if command -v starship &> /dev/null; then
-                echo -e "${GREEN}[[+]]${NC} Starship APT'den kuruldu"
-                return 0
+        gum_spin_run "Starship kuruluyor..." "
+            if ! sudo apt install -y starship 2>/dev/null; then
+                curl -sS https://starship.rs/install.sh | sh -s -- -y
             fi
-        fi
-        
-        # Fallback to official install script
-        echo -e "${YELLOW}[BİLGİ]${NC} APT deposunda bulunamadı (Ubuntu 25.04+ gerekli)"
-        echo -e "${YELLOW}[BİLGİ]${NC} Resmi script ile kuruluyor..."
-        local temp_starship_script
-        temp_starship_script=$(mktemp)
-
-        if curl -fsSL --retry 3 --retry-delay 30 "$STARSHIP_INSTALL_URL" -o "$temp_starship_script"; then
-            echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $STARSHIP_INSTALL_URL"
-            echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: starship.rs"
-            # Auto-approve for trusted source (starship.rs)
-            sh "$temp_starship_script" -y
-            rm -f "$temp_starship_script"
-        else
-            echo -e "${RED}[[-]]${NC} Starship install scripti indirilemedi!"
-            echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
-            rm -f "$temp_starship_script"
-            return 1
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Starship zaten kurulu."
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for zoxide installation
 _apt_install_zoxide() {
-    # FIX BUG-010: Download script to temp file, verify source before executing
     if ! command -v zoxide &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Zoxide kuruluyor..."
-        
-        # Try APT first (available in Ubuntu 22.04+)
-        echo -e "${YELLOW}[BİLGİ]${NC} APT deposundan deneniyor..."
-        if sudo apt install -y zoxide 2>/dev/null; then
-            if command -v zoxide &> /dev/null; then
-                echo -e "${GREEN}[[+]]${NC} Zoxide APT'den kuruldu"
-                return 0
+        gum_spin_run "Zoxide kuruluyor..." "
+            if ! sudo apt install -y zoxide 2>/dev/null; then
+                curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
             fi
-        fi
-        
-        # Fallback to official install script
-        echo -e "${YELLOW}[BİLGİ]${NC} APT başarısız, resmi script deneniyor..."
-        local temp_zoxide_script
-        temp_zoxide_script=$(mktemp)
-
-        if curl -fsSL --retry 3 --retry-delay 30 "$ZOXIDE_INSTALL_URL" -o "$temp_zoxide_script"; then
-            echo -e "${CYAN}[BİLGİ]${NC} Script indirildi: $ZOXIDE_INSTALL_URL"
-            echo -e "${YELLOW}[GÜVENLIK]${NC} Resmi kaynak: github.com/ajeetdsouza/zoxide"
-            # Auto-approve for trusted source
-            bash "$temp_zoxide_script"
-            rm -f "$temp_zoxide_script"
-        else
-            echo -e "${RED}[[-]]${NC} Zoxide install scripti indirilemedi!"
-            echo -e "${YELLOW}[!]${NC} GitHub rate limit veya ağ sorunu olabilir"
-            rm -f "$temp_zoxide_script"
-            return 1
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Zoxide zaten kurulu."
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for vivid installation
 _apt_install_vivid() {
-    # Install vivid (using centralized version from config/tool-versions.sh)
     if ! command -v vivid &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Vivid ${VIVID_VERSION} kuruluyor..."
-
-        # FIX BUG-032: Vivid doesn't provide checksums, use musl variant with direct HTTPS
-        local vivid_deb="vivid-musl_${VIVID_VERSION}_amd64.deb"
-        local vivid_url="https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/${vivid_deb}"
-
-        # Direct download without checksum (vivid project doesn't provide .sha256 files)
-        if curl -fsSL --retry 3 --retry-delay 5 "$vivid_url" -o "$vivid_deb"; then
-            if sudo dpkg -i "$vivid_deb"; then
-                echo -e "${GREEN}[[+]]${NC} Vivid başarıyla kuruldu"
-                rm "$vivid_deb"
-            else
-                echo -e "${RED}[[-]]${NC} Vivid paketi kurulamadı (dpkg hatası)"
-                rm -f "$vivid_deb"
-            fi
-        else
-            echo -e "${RED}[[-]]${NC} Vivid indirilemedi (404 veya ağ hatası)"
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Vivid zaten kurulu."
+        gum_spin_run "Vivid kuruluyor..." "
+            vivid_deb='vivid-musl_${VIVID_VERSION}_amd64.deb'
+            vivid_url='https://github.com/sharkdp/vivid/releases/download/v${VIVID_VERSION}/'\"\$vivid_deb\"
+            curl -fsSL \"\$vivid_url\" -o \"\$vivid_deb\"
+            sudo dpkg -i \"\$vivid_deb\"
+            rm -f \"\$vivid_deb\"
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for fastfetch installation
 _apt_install_fastfetch() {
-    # Install fastfetch
     if ! command -v fastfetch &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kuruluyor..."
-
-        # Try multiple installation methods
-        if command -v snap &> /dev/null; then
-            # Method 1: Snap (most reliable)
-            echo -e "${CYAN}[BİLGİ]${NC} Snap ile kuruluyor..."
-            sudo snap install fastfetch 2>/dev/null || {
-                # Method 2: Download latest release from GitHub (using centralized URL)
-                echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-                curl -sL --retry 3 --retry-delay 5 "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
-                sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
+        gum_spin_run "Fastfetch kuruluyor..." "
+            if command -v snap &> /dev/null; then
+                sudo snap install fastfetch
+            else
+                curl -sL \"$FASTFETCH_DOWNLOAD_URL\" -o /tmp/fastfetch.deb
+                sudo dpkg -i /tmp/fastfetch.deb || sudo apt install -f -y
                 rm -f /tmp/fastfetch.deb
-            }
-        else
-            # Method 2: Direct download (using centralized URL)
-            echo -e "${CYAN}[BİLGİ]${NC} GitHub'dan indiriliyor..."
-            curl -sL --retry 3 --retry-delay 5 "$FASTFETCH_DOWNLOAD_URL" -o /tmp/fastfetch.deb
-            sudo dpkg -i /tmp/fastfetch.deb 2>/dev/null || sudo apt install -f -y
-            rm -f /tmp/fastfetch.deb
-        fi
-
-        if command -v fastfetch &> /dev/null; then
-            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch kuruldu!"
-        else
-            echo -e "${RED}[HATA]${NC} Fastfetch kurulamadı."
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Fastfetch zaten kurulu."
+            fi
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for lazygit installation
 _apt_install_lazygit() {
-    # Install lazygit (using centralized version from config/tool-versions.sh)
     if ! command -v lazygit &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit ${LAZYGIT_VERSION} kuruluyor..."
-
-        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
-        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
-
-        # Download with checksum verification
-        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
+        gum_spin_run "Lazygit kuruluyor..." "
+            lazygit_tarball='lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz'
+            curl -Lo lazygit.tar.gz \"https://github.com/jesseduffield/lazygit/releases/latest/download/\$lazygit_tarball\"
             tar xf lazygit.tar.gz lazygit
             sudo install lazygit /usr/local/bin
             rm lazygit lazygit.tar.gz
-        else
-            echo -e "${RED}[[-]]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
-            rm -f lazygit.tar.gz lazygit
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Lazygit zaten kurulu."
+        "
     fi
 }
 
 # REFACTOR O-5: Helper for lazydocker installation
 _apt_install_lazydocker() {
-    # Install lazydocker
     if ! command -v lazydocker &> /dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazydocker kuruluyor..."
-
-        # FIX BUG-001: Download to temp file first instead of piping directly to shell
-        local temp_script
-        temp_script=$(mktemp)
-        trap 'rm -f "${temp_script:-}"' RETURN
-
-        if ! curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
-            echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
-            return 1
-        fi
-
-        if ! bash "$temp_script"; then
-            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
-            return 1
-        fi
-    else
-        echo -e "${GREEN}[BİLGİ]${NC} Lazydocker zaten kurulu."
+        gum_spin_run "Lazydocker kuruluyor..." "
+            curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+        "
     fi
 }
 
-# REFACTOR O-5: Main APT installation function - broken down from 160 lines monolithic function
-# Now uses helper functions for each tool
+# REFACTOR O-5: Main APT installation function
 install_modern_tools_apt() {
-    echo -e "${YELLOW}[BİLGİ]${NC} APT paket yöneticisi kullanılıyor..."
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
+    gum_info "Paket Yöneticisi" "APT kullanılıyor..."
 
     # Install core tools from APT repositories
-    echo -e "${YELLOW}[BİLGİ]${NC} Temel araçlar kuruluyor (bat, ripgrep, fd-find, fzf, tree)..."
-    safe_install_packages bat ripgrep fd-find fzf tree
+    gum_spin_run "Temel araçlar kuruluyor (bat, ripgrep, fd, fzf)..." "sudo apt install -y bat ripgrep fd-find fzf tree"
 
-    # Fix bat/fd symlinks (Ubuntu installs as batcat/fdfind)
+    # Fix bat/fd symlinks
     fix_bat_fd_symlinks
 
     # Install remaining tools using helper functions
@@ -560,107 +331,103 @@ install_modern_tools_apt() {
     _apt_install_lazygit
     _apt_install_lazydocker
 
-    echo -e "${GREEN}[[+]]${NC} APT araç kurulumu tamamlandı!"
+    gum_success "Tamamlandı" "APT araç kurulumu tamamlandı!"
 }
 
 # Install modern tools for DNF/YUM (Fedora/RHEL)
 install_modern_tools_dnf() {
-    echo -e "${YELLOW}[BİLGİ]${NC} DNF/YUM paket yöneticisi kullanılıyor..."
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
 
-    # Core tools
-    sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf tree
-
-    # Fix bat/fd symlinks
+    gum_info "Paket Yöneticisi" "DNF/YUM kullanılıyor..."
+    gum_spin_run "Temel araçlar kuruluyor..." "sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf tree"
     fix_bat_fd_symlinks
-
-    # Install remaining tools using generic methods
     install_starship_generic
     install_zoxide_generic
     install_lazygit_generic
     install_lazydocker_generic
-
-    echo -e "${YELLOW}[UYARI]${NC} Eza, Vivid, Fastfetch manuel kurulum gerektirebilir."
+    gum_alert "Uyarı" "Eza, Vivid, Fastfetch manuel kurulum gerektirebilir."
 }
 
 # Install modern tools for Pacman (Arch)
 install_modern_tools_pacman() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Pacman paket yöneticisi kullanılıyor..."
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
 
-    # Most tools available in Arch repos
-    sudo pacman -S --noconfirm bat ripgrep fd fzf eza starship zoxide tree
-
-    # Install remaining tools
+    gum_info "Paket Yöneticisi" "Pacman kullanılıyor..."
+    gum_spin_run "Araçlar kuruluyor..." "sudo pacman -S --noconfirm bat ripgrep fd fzf eza starship zoxide tree"
     install_lazygit_generic
     install_lazydocker_generic
-
-    echo -e "${YELLOW}[UYARI]${NC} Vivid, Fastfetch AUR'dan kurulabilir."
+    gum_alert "Uyarı" "Vivid, Fastfetch AUR'dan kurulabilir."
 }
 
 # Generic installer functions (using centralized versions from config/tool-versions.sh)
-# FIX BUG-010: Download scripts to temp files before executing
 install_starship_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v starship &> /dev/null; then
-        local temp_script
-        temp_script=$(mktemp)
-        if curl -fsSL --retry 3 --retry-delay 5 "$STARSHIP_INSTALL_URL" -o "$temp_script"; then
-            sh "$temp_script" -y
-            rm -f "$temp_script"
-        fi
+        gum_spin_run "Starship kuruluyor..." "curl -sS https://starship.rs/install.sh | sh -s -- -y"
     fi
 }
 
 install_zoxide_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v zoxide &> /dev/null; then
-        local temp_script
-        temp_script=$(mktemp)
-        if curl -fsSL --retry 3 --retry-delay 5 "$ZOXIDE_INSTALL_URL" -o "$temp_script"; then
-            bash "$temp_script"
-            rm -f "$temp_script"
-        fi
+        gum_spin_run "Zoxide kuruluyor..." "curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash"
     fi
 }
 
 install_lazygit_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v lazygit &> /dev/null; then
-        # Initialize versions if not already done
-        if [ -z "$LAZYGIT_VERSION" ]; then
-            init_tool_versions
-        fi
-
-        local lazygit_tarball="lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-        local lazygit_url="https://github.com/jesseduffield/lazygit/releases/latest/download/${lazygit_tarball}"
-        local lazygit_checksum_url="https://github.com/jesseduffield/lazygit/releases/latest/download/checksums.txt"
-
-        # Download with checksum verification
-        if download_with_checksum "$lazygit_url" "lazygit.tar.gz" "$lazygit_checksum_url"; then
-            tar xf lazygit.tar.gz lazygit
-            sudo install lazygit /usr/local/bin
-            rm lazygit lazygit.tar.gz
-        else
-            echo -e "${RED}[[-]]${NC} Lazygit kurulumu başarısız! (checksum doğrulanamadı)"
-            rm -f lazygit.tar.gz lazygit
-        fi
+        _apt_install_lazygit # Reuse the same logic
     fi
 }
 
 install_lazydocker_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v lazydocker &> /dev/null; then
-        # FIX BUG-001: Download to temp file first instead of piping directly to shell
-        local temp_script
-        temp_script=$(mktemp)
-        trap 'rm -f "${temp_script:-}"' RETURN
-
-        if ! curl -fsSL --retry 3 --retry-delay 5 https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh -o "$temp_script"; then
-            echo -e "${RED}[HATA]${NC} Lazydocker installer indirilirken hata oluştu"
-            return 1
-        fi
-
-        if ! bash "$temp_script"; then
-            echo -e "${RED}[HATA]${NC} Lazydocker kurulum başarısız!"
-            return 1
-        fi
+        _apt_install_lazydocker # Reuse the same logic
     fi
 }
+
+# Export functions
+export -f install_gum
+export -f install_modern_cli_tools
+export -f fix_bat_fd_symlinks
+
+# Export APT helper functions (REFACTOR O-5)
+export -f _apt_install_eza
+export -f _apt_install_starship
+export -f _apt_install_zoxide
+export -f _apt_install_vivid
+export -f _apt_install_fastfetch
+export -f _apt_install_lazygit
+export -f _apt_install_lazydocker
+
+# Export main installation functions
+export -f install_modern_tools_apt
+export -f install_modern_tools_dnf
+export -f install_modern_tools_pacman
+
+# Export generic installer functions
+export -f install_starship_generic
+export -f install_zoxide_generic
+export -f install_lazygit_generic
+export -f install_lazydocker_generic
 
 # Export functions
 export -f install_gum

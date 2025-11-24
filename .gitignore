@@ -90,6 +90,7 @@ typings/
 
 # Bash/Project Specific
 *.tmp
+*.temp
 *.bak
 *.swp
 *~
@@ -97,6 +98,7 @@ typings/
 Thumbs.db
 analysis-results/
 backup-*/
+.1453-backups/
 test-*.sh
 !test-setup.sh
 !src/test-*.sh
@@ -107,3 +109,16 @@ REPOSITORY_ANALYSIS_REPORT.md
 CLEANUP_FEATURE_PLAN.md
 TEST_WSL_RESET.md
 ANALYSIS_QUICK_START.md
+
+# Editor/IDE
+.vscode/
+.idea/
+*.kate-swp
+.*.swo
+
+# AI Assistant Artifacts
+.gemini/
+.cursor/
+
+# Archive
+docs/archive/

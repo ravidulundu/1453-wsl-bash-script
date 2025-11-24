@@ -6,12 +6,12 @@
 # Main shell setup function
 setup_custom_shell() {
     echo ""
+    gum_header "SHELL YAPILANDIRMASI" "Özel Alias'lar ve Fonksiyonlar"
     
     # Check if shell is already configured
     if [ -f ~/.bash_aliases ] && grep -q "1453 WSL Setup" ~/.bash_aliases 2>/dev/null; then
         if grep -q "BASHRC_MARKER_CONFIG_START" ~/.bashrc 2>/dev/null; then
-            echo -e "${CYAN}[!]${NC} Shell ortamı zaten yapılandırılmış"
-            echo -e "${YELLOW}[BİLGİ]${NC} Yeniden yapılandırmak ister misiniz?"
+            gum_info "Kurulu" "Shell ortamı zaten yapılandırılmış"
             if ! gum_confirm "Shell yapılandırmasını yenile?"; then
                 track_skip "Shell Configuration" "Zaten yapılandırılmış"
                 return 0
@@ -40,22 +40,20 @@ setup_custom_shell() {
         return 1
     fi
 
-    track_success "Shell Configuration" "(75+ aliases, GitHub automation, starship)"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell ortamı yapılandırması tamamlandı!"
-    echo -e "${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için: ${GREEN}source ~/.bashrc${NC}"
+    track_success "Shell Configuration" "75+ aliases, GitHub automation, starship"
+    gum_success "Tamamlandı" "Shell ortamı yapılandırıldı!"
+    gum_info "Bilgi" "Değişikliklerin aktif olması için: source ~/.bashrc"
     return 0
 }
 
 # Setup custom aliases
 setup_bash_aliases() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Özel alias'lar yapılandırılıyor..."
-
     local ALIASES_FILE="$HOME/.bash_aliases"
 
     # Create backup if file exists
     if [ -f "$ALIASES_FILE" ]; then
         cp "$ALIASES_FILE" "${ALIASES_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-        echo -e "${CYAN}[BİLGİ]${NC} Mevcut .bash_aliases yedeklendi."
+        gum_info "Yedek" "Mevcut .bash_aliases yedeklendi"
     fi
 
     # Write aliases to file
@@ -213,20 +211,18 @@ EOF
         echo "[ -f ~/.bash_aliases ] && . ~/.bash_aliases" >> "$HOME/.bashrc"
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Alias'lar yapılandırıldı: $ALIASES_FILE"
+    gum_success "Alias'lar" "75+ alias yapılandırıldı"
     return 0
 }
 
 # Setup custom functions
 setup_custom_functions() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Özel fonksiyonlar ekleniyor..."
-
     local BASHRC="$HOME/.bashrc"
 
     # FIX: Idempotent install - Remove old block if exists, then add fresh one
     # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_FUNCTIONS_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[!]${NC} Mevcut özel fonksiyonlar bulundu, güncelleniyor..."
+        gum_info "Güncelleme" "Mevcut fonksiyonlar bulundu, güncelleniyor"
         # Remove old block completely (from START marker to END marker)
         sed -i "/$BASHRC_MARKER_FUNCTIONS_START/,/$BASHRC_MARKER_FUNCTIONS_END/d" "$BASHRC"
     fi
@@ -256,22 +252,22 @@ ghnew() {
     
     # Check if gh is installed
     if ! command -v gh &>/dev/null; then
-        echo "❌ GitHub CLI (gh) kurulu değil!"
-        echo "Kurulum için: gh auth login"
+        gum_alert "Hata" "GitHub CLI (gh) kurulu değil!"
+        gum_info "Bilgi" "Kurulum için: gh auth login"
         return 1
     fi
     
     # Check if authenticated
     if ! gh auth status &>/dev/null; then
-        echo "❌ GitHub'a giriş yapılmamış!"
-        echo "Önce giriş yapın: gh auth login"
+        gum_alert "Hata" "GitHub'a giriş yapılmamış!"
+        gum_info "Bilgi" "Önce giriş yapın: gh auth login"
         return 1
     fi
     
     # Validate project name
     if [ -z "$project_name" ]; then
-        echo "❌ Proje adı gerekli!"
-        echo "Kullanım: ghnew <proje-adı> [--private|--public]"
+        gum_alert "Hata" "Proje adı gerekli!"
+        gum_info "Kullanım" "ghnew <proje-adı> [--private|--public]"
         return 1
     fi
     
@@ -284,37 +280,35 @@ ghnew() {
     
     # Check if directory already exists
     if [ -d "$project_name" ]; then
-        echo "⚠️  Klasör zaten mevcut: $project_name"
-        echo "Devam etmek istiyor musunuz? (y/N)"
-        read -r response
-        if [[ ! "$response" =~ ^[yY]$ ]]; then
-            echo "İptal edildi."
+        gum_warning "Klasör Mevcut" "$project_name klasörü zaten mevcut"
+        if ! gum_confirm "Devam etmek istiyor musunuz?"; then
+            gum_info "İptal" "İşlem iptal edildi"
             return 1
         fi
         cd "$project_name" || return 1
     else
         # Create project directory
         mkdir -p "$project_name" || {
-            echo "❌ Klasör oluşturulamadı!"
+            gum_alert "Hata" "Klasör oluşturulamadı!"
             return 1
         }
         cd "$project_name" || return 1
     fi
     
-    echo "📁 Proje klasörü: $(pwd)"
+    gum_info "Bilgi" "Proje klasörü: $(pwd)"
     
     # Initialize git if not already initialized
     if [ ! -d .git ]; then
-        echo "🔧 Git başlatılıyor..."
+        gum_info "Git" "Git başlatılıyor..."
         git init || {
-            echo "❌ Git init başarısız!"
+            gum_alert "Hata" "Git init başarısız!"
             return 1
         }
     fi
     
     # Create README if doesn't exist
     if [ ! -f README.md ]; then
-        echo "📝 README.md oluşturuluyor..."
+        gum_info "Dosya" "README.md oluşturuluyor..."
         cat > README.md << READMEEOF
 # $project_name
 
@@ -338,7 +332,7 @@ READMEEOF
     
     # Create .gitignore if doesn't exist
     if [ ! -f .gitignore ]; then
-        echo "🚫 .gitignore oluşturuluyor..."
+        gum_info "Dosya" ".gitignore oluşturuluyor..."
         cat > .gitignore << GITIGNOREEOF
 # Dependencies
 node_modules/
@@ -367,35 +361,35 @@ GITIGNOREEOF
     fi
     
     # Add and commit
-    echo "💾 İlk commit yapılıyor..."
+    gum_info "Git" "İlk commit yapılıyor..."
     git add . || {
-        echo "❌ Git add başarısız!"
+        gum_alert "Hata" "Git add başarısız!"
         return 1
     }
     
     git commit -m "Initial commit: Setup $project_name" || {
-        echo "❌ Git commit başarısız!"
+        gum_alert "Hata" "Git commit başarısız!"
         return 1
     }
     
     # Create GitHub repo
-    echo "🌐 GitHub'da repo oluşturuluyor ($visibility)..."
+    gum_info "GitHub" "GitHub'da repo oluşturuluyor ($visibility)..."
     if [ "$visibility" = "private" ]; then
         gh repo create "$project_name" --private --source=. --push || {
-            echo "❌ GitHub repo oluşturma başarısız!"
+            gum_alert "Hata" "GitHub repo oluşturma başarısız!"
             return 1
         }
     else
         gh repo create "$project_name" --public --source=. --push || {
-            echo "❌ GitHub repo oluşturma başarısız!"
+            gum_alert "Hata" "GitHub repo oluşturma başarısız!"
             return 1
         }
     fi
     
     echo ""
-    echo "✅ Proje başarıyla oluşturuldu ve GitHub'a gönderildi!"
-    echo "📦 Repo: https://github.com/$(gh api user --jq '.login')/$project_name"
-    echo "📁 Yerel: $(pwd)"
+    gum_success "Başarılı" "Proje başarıyla oluşturuldu ve GitHub'a gönderildi!"
+    gum_info "Repo" "https://github.com/$(gh api user --jq '.login')/$project_name"
+    gum_info "Yerel" "$(pwd)"
 }
 
 # GitHub: Quick commit and push
@@ -405,37 +399,37 @@ ghpush() {
     
     # Check if we're in a git repo
     if [ ! -d .git ]; then
-        echo "❌ Bu bir git repository değil!"
+        gum_alert "Hata" "Bu bir git repository değil!"
         return 1
     fi
     
-    echo "💾 Değişiklikler commit ediliyor..."
+    gum_info "Git" "Değişiklikler commit ediliyor..."
     git add .
     git commit -m "$commit_msg" || {
-        echo "⚠️  Commit başarısız (değişiklik yok olabilir)"
+        gum_warning "Uyarı" "Commit başarısız (değişiklik yok olabilir)"
         return 1
     }
     
-    echo "📤 GitHub'a gönderiliyor..."
+    gum_info "Git" "GitHub'a gönderiliyor..."
     git push || {
-        echo "❌ Push başarısız!"
+        gum_alert "Hata" "Push başarısız!"
         return 1
     }
     
-    echo "✅ Başarıyla gönderildi!"
+    gum_success "Başarılı" "Başarıyla gönderildi!"
 }
 
 # GitHub: Quick clone with cd
 # Usage: ghclone <repo-url-or-username/repo>
 ghclone() {
     if [ -z "$1" ]; then
-        echo "❌ Repo adresi gerekli!"
-        echo "Kullanım: ghclone <username/repo> veya ghclone <url>"
+        gum_alert "Hata" "Repo adresi gerekli!"
+        gum_info "Kullanım" "ghclone <username/repo> veya ghclone <url>"
         return 1
     fi
     
     gh repo clone "$1" || {
-        echo "❌ Clone başarısız!"
+        gum_alert "Hata" "Clone başarısız!"
         return 1
     }
     
@@ -444,27 +438,25 @@ ghclone() {
     repo_name=$(basename "$1" .git)
     if [ -d "$repo_name" ]; then
         cd "$repo_name" || return 1
-        echo "✅ Clone başarılı! Dizin: $(pwd)"
+        gum_success "Başarılı" "Clone başarılı! Dizin: $(pwd)"
     fi
 }
 # $BASHRC_MARKER_FUNCTIONS_END
 
 EOF
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Özel fonksiyonlar eklendi."
+    gum_success "Fonksiyonlar" "GitHub otomasyonu ve yardımcı fonksiyonlar eklendi"
     return 0
 }
 
 # Setup enhanced bashrc configuration
 setup_bashrc_enhancements() {
-    echo -e "${YELLOW}[BİLGİ]${NC} Bash yapılandırması geliştiriliyor..."
-
     local BASHRC="$HOME/.bashrc"
 
     # FIX: Idempotent install - Remove old block if exists, then add fresh one
     # This prevents duplicate blocks from repeated installations
     if grep -q "$BASHRC_MARKER_CONFIG_START" "$BASHRC" 2>/dev/null; then
-        echo -e "${CYAN}[!]${NC} Mevcut Bash yapılandırması bulundu, güncelleniyor..."
+        gum_info "Güncelleme" "Mevcut Bash yapılandırması bulundu, güncelleniyor"
         # Remove old block completely (from START marker to END marker)
         sed -i "/$BASHRC_MARKER_CONFIG_START/,/$BASHRC_MARKER_CONFIG_END/d" "$BASHRC"
     fi
@@ -506,7 +498,7 @@ if command -v zoxide &>/dev/null; then
 fi
 
 if command -v vivid &>/dev/null; then
-    export LS_COLORS="\$(vivid generate catppuccin-mocha)"
+    export LS_COLORS="$(vivid generate snazzy)"
 fi
 
 # FZF configuration
@@ -518,9 +510,9 @@ if [ -f /usr/share/doc/fzf/examples/completion.bash ]; then
     source /usr/share/doc/fzf/examples/completion.bash
 fi
 
-# FZF default options (modern theme)
+# FZF default options (Architect 1453 theme)
 if command -v fzf &> /dev/null; then
-    export FZF_DEFAULT_OPTS='--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 --border=rounded --height=80% --layout=reverse'
+    export FZF_DEFAULT_OPTS='--color=bg+:#313244,bg:#1e1e2e,spinner:#FFD700,hl:#DC143C --color=fg:#F5F5F5,header:#DC143C,info:#9370DB,pointer:#FFD700 --color=marker:#008080,fg+:#F5F5F5,prompt:#FFD700,hl+:#DC143C --border=rounded --height=80% --layout=reverse'
 fi
 
 # Add ~/.local/bin to PATH
@@ -533,37 +525,35 @@ export BROWSER=wslview
 
 EOF
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Bash yapılandırması geliştirildi."
+    gum_success "Bashrc" "History, modern tools ve PATH yapılandırıldı"
     return 0
 }
 
 # Setup Starship configuration
 setup_starship_config() {
     if ! command -v starship &> /dev/null; then
-        echo -e "${CYAN}[BİLGİ]${NC} Starship kurulu değil, config atlanıyor."
+        gum_info "Atlandı" "Starship kurulu değil, config atlanıyor"
         return 0
     fi
-
-    echo -e "${YELLOW}[BİLGİ]${NC} Starship yapılandırması oluşturuluyor..."
 
     local STARSHIP_CONFIG="$HOME/.config/starship.toml"
     local TEMPLATE_FILE="${SCRIPT_DIR}/templates/starship.toml"
 
     # Backup existing config
     if [ -f "$STARSHIP_CONFIG" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Mevcut Starship config yedekleniyor..."
         cp "$STARSHIP_CONFIG" "${STARSHIP_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
+        gum_info "Yedek" "Mevcut Starship config yedeklendi"
     fi
 
     mkdir -p "$HOME/.config"
 
     # REFACTOR O-2: Load from template instead of 412-line heredoc
     if [ -f "$TEMPLATE_FILE" ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Template'den yükleniyor: $TEMPLATE_FILE"
         cp "$TEMPLATE_FILE" "$STARSHIP_CONFIG"
+        gum_success "Starship" "Architect 1453 teması uygulandı"
     else
         # Fallback: Use embedded heredoc if template missing
-        echo -e "${YELLOW}[UYARI]${NC} Template bulunamadı, embedded config kullanılıyor"
+        gum_alert "Uyarı" "Template bulunamadı, embedded config kullanılıyor"
         cat > "$STARSHIP_CONFIG" << 'EOF'
 # Starship Configuration - 1453 WSL Setup
 # Theme: Catppuccin Mocha + Nerd Fonts
@@ -978,8 +968,7 @@ format = "[$symbol($version )]($style)"
 EOF
     fi
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Starship yapılandırıldı: $STARSHIP_CONFIG"
-    echo -e "${CYAN}[BİLGİ]${NC} JetBrainsMono Nerd Font Mono ile kullanın"
+    gum_info "Font" "JetBrainsMono Nerd Font Mono ile kullanın"
     return 0
 }
 

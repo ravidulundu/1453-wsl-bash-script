@@ -20,6 +20,9 @@ source "${SCRIPT_DIR}/lib/init.sh"
 # shellcheck source=config/colors.sh
 source "${SCRIPT_DIR}/config/colors.sh"
 
+# shellcheck source=config/theme.sh
+source "${SCRIPT_DIR}/config/theme.sh"
+
 # shellcheck source=config/constants.sh
 source "${SCRIPT_DIR}/config/constants.sh"
 
@@ -35,6 +38,13 @@ source "${SCRIPT_DIR}/config/banner.sh"
 # Phase 3: Load core libraries
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh"
+
+# shellcheck source=lib/gum-init.sh
+source "${SCRIPT_DIR}/lib/gum-init.sh"
+
+# PRD: Load AI text effects library for streaming text and thinking states
+# shellcheck source=lib/ai-text.sh
+source "${SCRIPT_DIR}/lib/ai-text.sh"
 
 # shellcheck source=lib/package-manager.sh
 source "${SCRIPT_DIR}/lib/package-manager.sh"
@@ -104,18 +114,73 @@ fi
 # fi
 
 # Phase 6: Initialize tool versions (must be called before any installations)
-echo -e "${YELLOW}[BİLGİ]${NC} Araç versiyonları hazırlanıyor..."
+# PRD: Use AI thinking state instead of raw echo
+if command -v gum &>/dev/null; then
+    show_ai_thinking "init" 1
+else
+    echo "Araç versiyonları hazırlanıyor..."
+fi
+
 init_tool_versions
-echo -e "${GREEN}[[+]]${NC} Araç versiyonları hazır"
 
-# Phase 7: Sudo authentication and keep-alive
+if command -v gum &>/dev/null; then
+    gum_success "Hazırlık Tamamlandı" "Araç versiyonları yüklendi"
+else
+    echo -e "${GREEN}[[+]]${NC} Araç versiyonları hazır"
+fi
+
+# Phase 7: Ensure Gum is installed for modern TUI (critical dependency)
+# PRD Requirement: Modern UI framework must be available
+# Moved before sudo auth to allow using gum for password input
+if ! command -v gum &>/dev/null; then
+    echo "🎨 Modern TUI (Gum) kuruluyor..."
+    if command -v ensure_gum_installed &>/dev/null; then
+        if ensure_gum_installed 2>/dev/null; then
+            echo "✅ Gum başarıyla kuruldu"
+        else
+            echo "⚠️  Gum kurulamadı, klasik TUI kullanılacak"
+        fi
+    fi
+fi
+
+# Phase 8: Sudo authentication and keep-alive
+# PRD Requirement: Use gum for password input (FR-2.3)
 # Request sudo password once at the start
-echo -e "${YELLOW}[BİLGİ]${NC} Script bazı işlemler için sudo yetkisi gerektirir."
-echo -e "${YELLOW}[BİLGİ]${NC} Lütfen bir kez sudo şifrenizi girin..."
+if command -v gum &>/dev/null; then
+    gum_info "Yetkilendirme" "Script bazı işlemler için sudo yetkisi gerektirir"
+else
+    echo "Script bazı işlemler için sudo yetkisi gerektirir."
+fi
 
-if sudo -v; then
-    echo -e "${GREEN}[[+]]${NC} Sudo yetkisi alındı"
-    echo -e "${YELLOW}[DEBUG]${NC} Trap kuruluyor..." >&2
+echo ""
+
+# Authenticate with sudo (using Gum if available)
+sudo_success=0
+if command -v gum &>/dev/null; then
+    # Use Gum for password input (masked) - PRD FR-2.3
+    # Loop up to 3 times for incorrect password
+    for i in {1..3}; do
+        if gum_password "🔑 Sudo şifresi (Gerekli)" | sudo -S -v 2>/dev/null; then
+            sudo_success=1
+            break
+        fi
+        gum_alert "Yanlış Şifre" "Lütfen tekrar deneyin ($i/3)"
+    done
+else
+    # Fallback to standard sudo prompt
+    echo "Lütfen bir kez sudo şifrenizi girin..."
+    if sudo -v; then
+        sudo_success=1
+    fi
+fi
+
+if [ $sudo_success -eq 1 ]; then
+    if command -v gum &>/dev/null; then
+        gum_success "Yetkilendirme Başarılı" "Sudo yetkisi alındı"
+    else
+        echo -e "${GREEN}[[+]]${NC} Sudo yetkisi alındı"
+    fi
+    # DEBUG: Trap kuruluyor...
 
     # FIX BUG-012: Set trap BEFORE starting background process to prevent race condition
     # Cleanup function to kill background process on exit
@@ -125,9 +190,9 @@ if sudo -v; then
         fi
     }
     trap cleanup_sudo EXIT INT TERM
-    echo -e "${YELLOW}[DEBUG]${NC} Trap kuruldu" >&2
+    # DEBUG: Trap kuruldu
 
-    echo -e "${YELLOW}[DEBUG]${NC} Background process başlatılıyor..." >&2
+    # DEBUG: Background process başlatılıyor...
     # Keep-alive: update sudo timestamp in background every 60 seconds
     # This prevents repeated password prompts during long installations
     # CRITICAL: Close stdin/stdout/stderr to prevent blocking
@@ -138,27 +203,34 @@ if sudo -v; then
         done
     ) </dev/null >/dev/null 2>&1 &
     SUDO_KEEPALIVE_PID=$!
-    echo -e "${YELLOW}[DEBUG]${NC} Background PID: $SUDO_KEEPALIVE_PID" >&2
+    # DEBUG: Background PID: $SUDO_KEEPALIVE_PID
 else
-    echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
-fi
-
-
-echo ""
-echo -e "${YELLOW}[DEBUG]${NC} init_tui çağrılıyor..." >&2
-
-# Phase 7: Ensure Gum is installed for modern TUI (critical dependency)
-if ! command -v gum &>/dev/null; then
-    echo -e "${YELLOW}[BİLGİ]${NC} Modern TUI (Gum) kuruluyor..."
-    if command -v install_gum &>/dev/null; then
-        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulamadı, klasik TUI kullanılacak"
+    if command -v gum &>/dev/null; then
+        gum_warning "Yetki Yok" "Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir"
+    else
+        echo -e "${YELLOW}[!]${NC} Sudo yetkisi verilmedi, bazı işlemler başarısız olabilir."
     fi
+    # Optional: Exit if sudo is strictly required
+    # exit 1
 fi
 
-# Phase 8: Initialize TUI and run main program
+# Phase 9: Initialize TUI and run main program
+# PRD: Show AI-like welcome before main execution
 init_tui
-echo -e "${YELLOW}[DEBUG]${NC} init_tui tamamlandı" >&2
-echo -e "${YELLOW}[DEBUG]${NC} main çağrılıyor..." >&2
-# NOTE: show_banner() will be called by show_mode_selection() inside main()
-# Don't call it here to prevent double banner display
+# DEBUG: init_tui tamamlandı
+
+# PRD FR-1.2: Show banner with double border gold theme
+if command -v show_banner &>/dev/null; then
+    show_banner
+fi
+
+# DEBUG: main çağrılıyor...
+
+# PRD: AI-like initialization message
+if command -v gum &>/dev/null; then
+    echo ""
+    show_ai_thinking "analyzing" 2
+    echo ""
+fi
+
 main "$@"

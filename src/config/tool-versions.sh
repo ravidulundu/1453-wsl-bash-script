@@ -63,16 +63,56 @@ UV_INSTALL_URL="https://astral.sh/uv/install.sh"
 fetch_github_version() {
     local repo="$1"
     local fallback="$2"
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
+    local cache_dir="/tmp/1453-version-cache"
+    local cache_file="${cache_dir}/${repo//\//_}.version"
+    local cache_ttl=3600 # 1 hour cache
 
-    # Try to fetch latest version
-    # FIX BUG-013: Use portable sed instead of GNU grep -P
-    local version
-    version=$(curl -s "$api_url" 2>/dev/null | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -n1)
+    # Create cache directory if it doesn't exist
+    if [ ! -d "$cache_dir" ]; then
+        mkdir -p "$cache_dir" 2>/dev/null
+    fi
 
+    # Check cache (if file exists and is younger than TTL)
+    if [ -f "$cache_file" ]; then
+        # Use find to check if file was modified less than 60 minutes ago (portable way)
+        if [ -n "$(find "$cache_file" -mmin -60 2>/dev/null)" ]; then
+            cat "$cache_file"
+            return
+        fi
+    fi
+
+    local version=""
+
+    # Strategy 1: Try GitHub CLI (gh) if available and authenticated
+    # This has a much higher rate limit (5000/hr)
+    if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+        version=$(gh api "repos/${repo}/releases/latest" --jq .tag_name 2>/dev/null | sed 's/^v//')
+    fi
+
+    # Strategy 2: Fallback to curl (with token if available)
+    if [ -z "$version" ]; then
+        local api_url="https://api.github.com/repos/${repo}/releases/latest"
+        local auth_header=""
+        
+        # Use GITHUB_TOKEN if available
+        if [ -n "${GITHUB_TOKEN:-}" ]; then
+            auth_header="Authorization: token $GITHUB_TOKEN"
+        fi
+
+        if [ -n "$auth_header" ]; then
+            version=$(curl -s -H "$auth_header" "$api_url" 2>/dev/null | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -n1)
+        else
+            version=$(curl -s "$api_url" 2>/dev/null | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p' | head -n1)
+        fi
+    fi
+
+    # Result handling
     if [ -n "$version" ]; then
+        # Success: Cache it and return
+        echo "$version" > "$cache_file"
         echo "$version"
     else
+        # Failure: Return fallback (do not cache failure)
         echo "$fallback"
     fi
 }

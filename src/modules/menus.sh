@@ -6,7 +6,7 @@
 # Configure Git
 configure_git() {
     echo ""
-    echo -e "${YELLOW}[BİLGİ]${NC} Git yapılandırması başlatılıyor..."
+    gum_info "Bilgi" "Git yapılandırması başlatılıyor..."
 
     # Check existing git configuration
     local current_user
@@ -15,14 +15,14 @@ configure_git() {
     current_email=$(git config --global user.email 2>/dev/null || echo "")
 
     if [ -n "$current_user" ] && [ -n "$current_email" ]; then
-        echo -e "${CYAN}[!]${NC} Mevcut Git yapılandırması:"
-        echo -e "  Kullanıcı: ${GREEN}$current_user${NC}"
-        echo -e "  E-posta: ${GREEN}$current_email${NC}"
+        gum_info "Bilgi" "Mevcut Git yapılandırması:"
+    gum_style --foreground "$COLOR_TEXT_FG" "Kullanıcı: $current_user"
+    gum_style --foreground "$COLOR_TEXT_FG" "E-posta: $current_email"
         echo ""
 
         # Use Gum confirm if available
         if ! gum_confirm "Yeni yapılandırma yapmak istiyor musunuz?"; then
-            echo -e "${CYAN}[!]${NC} Git yapılandırması değiştirilmedi"
+            gum_info "Bilgi" "Git yapılandırması değiştirilmedi"
             track_skip "Git Yapılandırması" "Mevcut yapılandırma korundu"
             return 0
         fi
@@ -36,7 +36,7 @@ configure_git() {
     git_email=$(gum_input --placeholder "Git e-posta adresinizi girin" --value "$current_email")
 
     if [ -z "$git_user" ] || [ -z "$git_email" ]; then
-        echo -e "${RED}[HATA]${NC} Kullanıcı adı ve e-posta gereklidir!"
+        gum_alert "Hata" "Kullanıcı adı ve e-posta gereklidir!"
         track_failure "Git Yapılandırması" "Eksik bilgi"
         return 1
     fi
@@ -44,9 +44,9 @@ configure_git() {
     git config --global user.name "$git_user"
     git config --global user.email "$git_email"
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Git yapılandırması tamamlandı!"
-    echo -e "  Kullanıcı: $git_user"
-    echo -e "  E-posta: $git_email"
+    gum_success "Başarılı" "Git yapılandırması tamamlandı!"
+    gum_style --foreground "$COLOR_TEXT_FG" "Kullanıcı: $git_user"
+    gum_style --foreground "$COLOR_TEXT_FG" "E-posta: $git_email"
     track_success "Git Yapılandırması" "$git_user <$git_email>"
 }
 
@@ -93,11 +93,10 @@ show_mode_selection() {
         echo ""
 
         # Show mode selection question
-        gum_style --foreground 212 --bold "[TARGET] Hangi kurulum modunu tercih edersiniz?"
-        echo ""
+        gum_header "KURULUM MODU SEÇİMİ" "Nasıl devam etmek istersiniz?"
 
         local selection
-        selection=$(gum_choose \
+        selection=$(gum_choose_enhanced "Bir mod seçin:" \
             "🚀 Hızlı Başlangıç (Önerilen)" \
             "🛠️  Gelişmiş Mod" \
             "🚪 Çıkış")
@@ -114,7 +113,7 @@ show_mode_selection() {
                 break
                 ;;
             "🚪 Çıkış")
-                echo -e "\n${GREEN}[BİLGİ]${NC} Kurulum scripti sonlandırılıyor..."
+    gum_style --foreground "$COLOR_TEXT_FG" "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
             *)
@@ -136,31 +135,27 @@ show_advanced_menu() {
 _advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
-        echo -e "\n${CYAN}[!]${NC} Modern TUI kuruluyor (Gum - opsiyonel)..."
-        install_gum 2>/dev/null || echo -e "${YELLOW}[!]${NC} Gum kurulumunu atlandı"
+    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum - opsiyonel)..."
+        install_gum 2>/dev/null || gum_info "Uyarı" "Gum kurulumunu atlandı"
         sleep 1
     fi
 
     # Run pre-flight checks with TUI
     echo ""
-    gum_style --foreground 212 --bold "🔍 ADVANCED MODE - Sistem Kontrolü"
-    echo ""
+    gum_header "SİSTEM KONTROLÜ" "Advanced Mode Başlatılıyor"
 
     if ! run_preflight_checks; then
-        echo ""
-        gum_style --foreground 196 --bold "❌ Sistem gereksinimleri karşılanamadı!"
-        gum_style --foreground 226 "Bazı kurulumlar başarısız olabilir."
+        gum_alert "Hata" "Sistem gereksinimleri karşılanamadı! Bazı kurulumlar başarısız olabilir."
         sleep 2
     else
-        echo ""
-        gum_style --foreground 82 "✅ Sistem kontrolleri başarılı!"
+        gum_success "Başarılı" "Sistem kontrolleri tamamlandı."
         sleep 1
     fi
 
     # Detect package manager
     echo ""
     detect_package_manager
-    gum_style --foreground 82 "📦 Paket yöneticisi: $PKG_MANAGER"
+    gum_info "Paket Yöneticisi" "$PKG_MANAGER tespit edildi."
     sleep 1
 }
 
@@ -178,12 +173,11 @@ run_advanced_mode() {
         echo ""
 
         # Menu header
-        gum_style --foreground 212 --bold "⚙️  ADVANCED SETUP MODE"
-        echo ""
+        gum_header "GELİŞMİŞ KURULUM MENÜSÜ" "Yapmak istediğiniz işlemi seçin"
 
         # Modern Gum menu
         local selection
-        selection=$(gum_choose \
+        selection=$(gum_choose_enhanced "Kategoriler:" \
             "📦 Tam Kurulum (Tüm Araçlar)" \
             "🔧 Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
@@ -211,7 +205,7 @@ run_advanced_mode() {
         case "$selection" in
             "📦 Tam Kurulum"*)
                 echo ""
-                gum_style --foreground 226 "=== Tam kurulum başlatılıyor..."
+                gum_info "Bilgi" "Tam kurulum başlatılıyor..."
                 sleep 1
                 update_system
                 configure_git
@@ -226,7 +220,7 @@ run_advanced_mode() {
                 install_github_cli
                 install_go
                 echo ""
-                gum_style --foreground 82 --border rounded --padding "1 3" "✅ Tam kurulum tamamlandı!"
+                gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
                 sleep 2
                 ;;
             "🔧 Sistem Hazırlığı"*)
@@ -279,7 +273,7 @@ run_advanced_mode() {
                 ;;
             *"Çıkış"*)
                 echo ""
-                gum_style --foreground 82 " Görüşürüz!"
+                gum_success "Hoşçakalın" "Görüşmek üzere!"
                 exit 0
                 ;;
             "━"*)
@@ -290,16 +284,11 @@ run_advanced_mode() {
 
         # Check if critical tools were installed
         if [ "$NVM_INSTALLED" = true ] || [ "$PYTHON_INSTALLED" = true ]; then
-            echo ""
-            gum_style --foreground 226 --border rounded --padding "1 2" \
-                "[WARNING]  Yeni kurulumlar tespit edildi!" \
-                "Değişikliklerin aktif olması için:" \
-                "  • source ~/.bashrc (veya ~/.zshrc)" \
-                "  • Ya da terminali yeniden başlatın"
+            gum_alert "Dikkat" "Yeni kurulumlar tespit edildi! Değişikliklerin aktif olması için terminali yeniden başlatın."
         fi
 
         echo ""
-        gum_confirm "Menüye dön?" || exit 0
+        gum_confirm_enhanced "Menüye dönmek istiyor musunuz?" || exit 0
     done
 }
 

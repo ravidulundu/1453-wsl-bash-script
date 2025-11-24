@@ -13,7 +13,7 @@ backup_configs() {
     mkdir -p "$backup_root"
     mkdir -p "$backup_dir"
 
-    echo -e "${CYAN}[BİLGİ]${NC} Yedek oluşturuluyor: $backup_dir"
+    gum_info "Yedekleme" "Konfigürasyon dosyaları yedekleniyor..."
 
     # Backup config files
     [ -f ~/.bashrc ] && cp ~/.bashrc "$backup_dir/"
@@ -24,7 +24,7 @@ backup_configs() {
     # Backup installation directory
     [ -d ~/.1453-wsl-setup ] && cp -r ~/.1453-wsl-setup "$backup_dir/"
 
-    echo -e "${GREEN}[BAŞARILI]${NC} Yedek oluşturuldu: $backup_dir"
+    gum_success "Yedek" "Konfigürasyonlar yedeklendi: $(basename $backup_dir)"
 
     # Cleanup old backups (keep only last 3)
     cleanup_old_backups "$backup_root"
@@ -38,7 +38,7 @@ cleanup_old_backups() {
     local backup_count=$(find "$backup_root" -maxdepth 1 -type d -name "backup-*" 2>/dev/null | wc -l)
 
     if [ "$backup_count" -gt 3 ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Eski yedekler temizleniyor (son 3 korunuyor)..."
+        gum_info "Temizlik" "Eski yedekler temizleniyor (son 3 korunacak)..."
 
         # List backups sorted by date (oldest first), skip last 3, delete rest
         find "$backup_root" -maxdepth 1 -type d -name "backup-*" -printf "%T@ %p\n" 2>/dev/null | \
@@ -46,12 +46,11 @@ cleanup_old_backups() {
             head -n -3 | \
             cut -d' ' -f2- | \
             while IFS= read -r old_backup; do
-                echo -e "${CYAN}[SİLİNİYOR]${NC} $(basename "$old_backup")"
-
+                gum_info "Siliniyor" "$(basename "$old_backup")"
                 safe_rm "$old_backup"
             done
 
-        echo -e "${GREEN}[BAŞARILI]${NC} Eski yedekler temizlendi (son 3 korundu)"
+        gum_success "Temizlendi" "Eski yedekler kaldırıldı (son 3 korundu)"
     fi
 }
 
@@ -59,39 +58,20 @@ cleanup_old_backups() {
 confirm_cleanup() {
     local item="$1"
 
-    if has_gum; then
-        echo ""
-        gum_style --foreground 196 --bold "⚠️  UYARI: Bu işlem GERİ ALINAMAZ!"
-        gum_style --foreground 226 "Şunlar silinecek: $item"
-        echo ""
-        
-        if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
-            backup_configs
-        fi
-        
-        echo ""
-        gum_style --foreground 196 "Silme işlemini onaylamak için 'evet' yazın:"
-        confirm=$(gum input --placeholder "evet")
-    else
-        echo ""
-        echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}"
-        echo -e "${YELLOW}Şunlar silinecek: $item${NC}"
-        echo ""
-
-        # Backup option
-        echo -ne "${YELLOW}Devam etmeden önce yedek oluşturulsun mu? (e/h): ${NC}"
-        read -r backup
-        if [[ "$backup" =~ ^[Ee]$ ]]; then
-            backup_configs
-        fi
-
-        echo ""
-        echo -ne "${RED}Silme işlemine devam edilsin mi? (evet yazın): ${NC}"
-        read -r confirm
+    echo ""
+    gum_warning "UYARI: Bu işlem GERİ ALINAMAZ!" "Şunlar silinecek: $item"
+    echo ""
+    
+    if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
+        backup_configs
     fi
+    
+    echo ""
+    gum_info "Onay" "Silme işlemini onaylamak için 'evet' yazın:"
+    confirm=$(gum_input --placeholder "evet")
 
     if [[ "$confirm" != "evet" ]]; then
-        echo -e "${CYAN}[BİLGİ]${NC} İptal edildi."
+        gum_info "Bilgi" "İptal edildi."
         return 1
     fi
 
@@ -99,151 +79,173 @@ confirm_cleanup() {
 }
 
 # Show installed items
+# Show installed items
 show_installed_items() {
     echo ""
-    echo ""
+    gum_header "SİSTEM DURUMU" "Kurulu Araçlar ve Konfigürasyonlar"
+    
+    local report_file=$(mktemp)
+    
+    cat > "$report_file" << EOF
+# 📊 Sistem Durumu
 
-    echo -e "${CYAN}[Python Ekosistemi]${NC}"
-    if command -v python3 &>/dev/null; then
-        echo -e "  ${GREEN}✅ Python: $(python3 --version 2>&1 | cut -d' ' -f2)${NC}"
-    else
-        echo -e "  ${RED}❌ Python: Kurulu değil${NC}"
+## 🐍 Python Ekosistemi
+EOF
+
+    if command -v python3 &>/dev/null; then 
+        echo "- ✅ **Python**: $(python3 --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ Python" >> "$report_file"
     fi
 
-    if command -v pip &>/dev/null; then
-        echo -e "  ${GREEN}✅ pip: $(pip --version 2>&1 | cut -d' ' -f2)${NC}"
-    else
-        echo -e "  ${RED}❌ pip: Kurulu değil${NC}"
+    if command -v pip &>/dev/null; then 
+        echo "- ✅ **pip**: $(pip --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ pip" >> "$report_file"
     fi
 
-    if command -v pipx &>/dev/null; then
-        echo -e "  ${GREEN}✅ pipx: Kurulu${NC}"
-    else
-        echo -e "  ${RED}❌ pipx: Kurulu değil${NC}"
+    if command -v pipx &>/dev/null; then 
+        echo "- ✅ **pipx**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ pipx" >> "$report_file"
     fi
 
-    if command -v uv &>/dev/null; then
-        echo -e "  ${GREEN}✅ UV: $(uv --version 2>&1 | cut -d' ' -f2)${NC}"
-    else
-        echo -e "  ${RED}❌ UV: Kurulu değil${NC}"
+    if command -v uv &>/dev/null; then 
+        echo "- ✅ **UV**: $(uv --version 2>&1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ UV" >> "$report_file"
     fi
 
-    echo ""
-    echo -e "${CYAN}[JavaScript Ekosistemi]${NC}"
-    if command -v node &>/dev/null; then
-        echo -e "  ${GREEN}✅ Node.js: $(node --version)${NC}"
-        echo -e "  ${GREEN}✅ npm: $(npm --version)${NC}"
-    else
-        echo -e "  ${RED}❌ Node.js: Kurulu değil${NC}"
+    cat >> "$report_file" << EOF
+
+## 📜 JavaScript Ekosistemi
+EOF
+    if command -v node &>/dev/null; then 
+        echo "- ✅ **Node.js**: $(node --version)" >> "$report_file"
+    else 
+        echo "- ❌ Node.js" >> "$report_file"
     fi
 
-    if [ -d "$HOME/.nvm" ]; then
-        echo -e "  ${GREEN}✅ NVM: Kurulu${NC}"
-    else
-        echo -e "  ${RED}❌ NVM: Kurulu değil${NC}"
+    if command -v npm &>/dev/null; then 
+        echo "- ✅ **npm**: $(npm --version)" >> "$report_file"
+    else 
+        echo "- ❌ npm" >> "$report_file"
     fi
 
-    if command -v bun &>/dev/null; then
-        echo -e "  ${GREEN}✅ Bun: $(bun --version)${NC}"
-    else
-        echo -e "  ${RED}❌ Bun: Kurulu değil${NC}"
+    if [ -d "$HOME/.nvm" ]; then 
+        echo "- ✅ **NVM**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ NVM" >> "$report_file"
     fi
 
-    echo ""
-    echo -e "${CYAN}[PHP Ekosistemi]${NC}"
-    if command -v php &>/dev/null; then
-        echo -e "  ${GREEN}✅ PHP: $(php --version 2>&1 | head -1 | cut -d' ' -f2)${NC}"
-    else
-        echo -e "  ${RED}❌ PHP: Kurulu değil${NC}"
+    if command -v bun &>/dev/null; then 
+        echo "- ✅ **Bun**: $(bun --version)" >> "$report_file"
+    else 
+        echo "- ❌ Bun" >> "$report_file"
     fi
 
-    if command -v composer &>/dev/null; then
-        echo -e "  ${GREEN}✅ Composer: Kurulu${NC}"
-    else
-        echo -e "  ${RED}❌ Composer: Kurulu değil${NC}"
+    cat >> "$report_file" << EOF
+
+## 🐘 PHP & Go
+EOF
+    if command -v php &>/dev/null; then 
+        echo "- ✅ **PHP**: $(php --version 2>&1 | head -1 | cut -d' ' -f2)" >> "$report_file"
+    else 
+        echo "- ❌ PHP" >> "$report_file"
     fi
 
-    echo ""
-    echo -e "${CYAN}[Go]${NC}"
-    if command -v go &>/dev/null; then
-        echo -e "  ${GREEN}✅ Go: $(go version | cut -d' ' -f3)${NC}"
-    else
-        echo -e "  ${RED}❌ Go: Kurulu değil${NC}"
+    if command -v composer &>/dev/null; then 
+        echo "- ✅ **Composer**: Kurulu" >> "$report_file"
+    else 
+        echo "- ❌ Composer" >> "$report_file"
     fi
 
-    echo ""
-    echo -e "${CYAN}[Docker]${NC}"
-    if command -v docker &>/dev/null; then
-        echo -e "  ${GREEN}✅ Docker Engine: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)${NC}"
-    else
-        echo -e "  ${RED}❌ Docker Engine: Kurulu değil${NC}"
-    fi
-    if command -v lazydocker &>/dev/null; then
-        echo -e "  ${GREEN}✅ lazydocker${NC}"
-    else
-        echo -e "  ${RED}❌ lazydocker${NC}"
+    if command -v go &>/dev/null; then 
+        echo "- ✅ **Go**: $(go version | cut -d' ' -f3)" >> "$report_file"
+    else 
+        echo "- ❌ Go" >> "$report_file"
     fi
 
-    echo ""
-    echo -e "${CYAN}[Modern CLI Tools]${NC}"
+    cat >> "$report_file" << EOF
+
+## 🐳 Docker
+EOF
+    if command -v docker &>/dev/null; then 
+        echo "- ✅ **Docker**: $(docker --version 2>&1 | cut -d' ' -f3 | cut -d',' -f1)" >> "$report_file"
+    else 
+        echo "- ❌ Docker" >> "$report_file"
+    fi
+
+    if command -v lazydocker &>/dev/null; then 
+        echo "- ✅ **lazydocker**" >> "$report_file"
+    else 
+        echo "- ❌ lazydocker" >> "$report_file"
+    fi
+
+    cat >> "$report_file" << EOF
+
+## 🛠️ Modern CLI Tools
+EOF
     local tools=("bat" "eza" "starship" "zoxide" "vivid" "fastfetch" "lazygit")
     for tool in "${tools[@]}"; do
-        if command -v "$tool" &>/dev/null; then
-            echo -e "  ${GREEN}✅ $tool${NC}"
-        else
-            echo -e "  ${RED}❌ $tool${NC}"
+        if command -v "$tool" &>/dev/null; then 
+            echo "- ✅ **$tool**" >> "$report_file"
+        else 
+            echo "- ❌ $tool" >> "$report_file"
         fi
     done
 
-    echo ""
-    echo -e "${CYAN}[Config Dosyaları]${NC}"
-    [ -f ~/.bash_aliases ] && echo -e "  ${GREEN}✅ .bash_aliases${NC}" || echo -e "  ${RED}❌ .bash_aliases${NC}"
-    [ -f ~/.config/starship.toml ] && echo -e "  ${GREEN}✅ starship.toml${NC}" || echo -e "  ${RED}❌ starship.toml${NC}"
+    cat >> "$report_file" << EOF
 
-    echo ""
-    echo -e "${CYAN}[Kurulum Dizini]${NC}"
-    [ -d ~/.1453-wsl-setup ] && echo -e "  ${GREEN}✅ ~/.1453-wsl-setup${NC}" || echo -e "  ${RED}❌ ~/.1453-wsl-setup${NC}"
+## ⚙️ Konfigürasyonlar
+EOF
+    if [ -f ~/.bash_aliases ]; then echo "- ✅ **.bash_aliases**" >> "$report_file"; else echo "- ❌ .bash_aliases" >> "$report_file"; fi
+    if [ -f ~/.config/starship.toml ]; then echo "- ✅ **starship.toml**" >> "$report_file"; else echo "- ❌ starship.toml" >> "$report_file"; fi
+    if [ -d ~/.1453-wsl-setup ]; then echo "- ✅ **~/.1453-wsl-setup**" >> "$report_file"; else echo "- ❌ ~/.1453-wsl-setup" >> "$report_file"; fi
 
+    gum format < "$report_file"
+    rm -f "$report_file"
     echo ""
+    gum_input --placeholder "Devam etmek için Enter'a basın..." --password > /dev/null
 }
 
 # Cleanup System Packages (installed by update_system())
 cleanup_system_packages() {
     echo ""
 
-    echo -e "${CYAN}[BİLGİ]${NC} update_system() tarafından kurulan paketler kaldırılıyor..."
+    gum_info "Bilgi" "update_system() tarafından kurulan paketler kaldırılıyor..."
     echo ""
 
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor (jq, zip, unzip, p7zip-full)..."
+        gum_info "Bilgi" "Temel paketler kaldırılıyor (jq, zip, unzip, p7zip-full)..."
         sudo apt remove -y jq zip unzip p7zip-full 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Temel paketler kaldırıldı"
+        gum_success "Başarılı" "Temel paketler kaldırıldı"
 
-        echo -e "${YELLOW}[BİLGİ]${NC} Build tools kaldırılıyor (build-essential)..."
+        gum_info "Bilgi" "Build tools kaldırılıyor (build-essential)..."
         sudo apt remove -y build-essential 2>/dev/null
         sudo apt autoremove -y 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Build tools kaldırıldı"
+        gum_success "Başarılı" "Build tools kaldırıldı"
 
     elif [ "$PKG_MANAGER" = "dnf" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        gum_info "Bilgi" "Temel paketler kaldırılıyor..."
         sudo dnf remove -y jq zip unzip p7zip 2>/dev/null
         sudo dnf groupremove "Development Tools" -y 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+        gum_success "Başarılı" "Paketler kaldırıldı"
 
     elif [ "$PKG_MANAGER" = "yum" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        gum_info "Bilgi" "Temel paketler kaldırılıyor..."
         sudo yum remove -y jq zip unzip p7zip 2>/dev/null
         sudo yum groupremove "Development Tools" -y 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+        gum_success "Başarılı" "Paketler kaldırıldı"
 
     elif [ "$PKG_MANAGER" = "pacman" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Temel paketler kaldırılıyor..."
+        gum_info "Bilgi" "Temel paketler kaldırılıyor..."
         sudo pacman -R --noconfirm jq zip unzip p7zip base-devel 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Paketler kaldırıldı"
+        gum_success "Başarılı" "Paketler kaldırıldı"
     fi
 
-    echo -e "${CYAN}[BİLGİ]${NC} curl, wget, git korundu (sistem için kritik olabilir)"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Sistem paketleri temizlendi"
+    gum_info "Bilgi" "curl, wget, git korundu (sistem için kritik olabilir)"
+    gum_success "Başarılı" "\n Sistem paketleri temizlendi"
 }
 
 # Cleanup Python ecosystem
@@ -252,7 +254,7 @@ cleanup_python() {
 
     # pipx packages and executable
     if command -v pipx &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} pipx paketleri kaldırılıyor..."
+        gum_info "Bilgi" "pipx paketleri kaldırılıyor..."
         pipx uninstall-all 2>/dev/null
 
         safe_rm ~/.local/pipx
@@ -261,34 +263,34 @@ cleanup_python() {
         if [ "$PKG_MANAGER" = "apt" ]; then
             sudo apt remove -y pipx 2>/dev/null
         fi
-        echo -e "${GREEN}[BAŞARILI]${NC} pipx kaldırıldı"
+        gum_success "Başarılı" "pipx kaldırıldı"
     fi
 
     # UV
     if command -v uv &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} UV kaldırılıyor..."
+        gum_info "Bilgi" "UV kaldırılıyor..."
         rm -f ~/.local/bin/uv
 
         safe_rm ~/.local/share/uv
-        echo -e "${GREEN}[BAŞARILI]${NC} UV kaldırıldı"
+        gum_success "Başarılı" "UV kaldırıldı"
     fi
 
     # pip cache
     if command -v pip &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} pip cache temizleniyor..."
+        gum_info "Bilgi" "pip cache temizleniyor..."
         pip cache purge 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} pip cache temizlendi"
+        gum_success "Başarılı" "pip cache temizlendi"
     fi
 
     # Python APT packages installed by script
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Python APT paketleri kaldırılıyor..."
+        gum_info "Bilgi" "Python APT paketleri kaldırılıyor..."
         sudo apt remove -y python3-pip python3-venv 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Python APT paketleri kaldırıldı"
-        echo -e "${CYAN}[BİLGİ]${NC} python3 korundu (sistem paketi olabilir)"
+        gum_success "Başarılı" "Python APT paketleri kaldırıldı"
+        gum_info "Bilgi" "python3 korundu (sistem paketi olabilir)"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Python ekosistemi temizlendi"
+    gum_success "Başarılı" "\n Python ekosistemi temizlendi"
 }
 
 # Cleanup Node.js and NVM
@@ -297,7 +299,7 @@ cleanup_nodejs() {
 
     # NVM
     if [ -d "$HOME/.nvm" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} NVM kaldırılıyor..."
+        gum_info "Bilgi" "NVM kaldırılıyor..."
 
         safe_rm ~/.nvm
 
@@ -306,20 +308,20 @@ cleanup_nodejs() {
         # Note: We no longer use sed here to avoid deleting unrelated lines (BUG-030).
         # cleanup_shell_configs handles .bashrc cleanup more safely.
 
-        echo -e "${GREEN}[BAŞARILI]${NC} NVM kaldırıldı"
+        gum_success "Başarılı" "NVM kaldırıldı"
     fi
 
     # Bun
     if command -v bun &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Bun kaldırılıyor..."
+        gum_info "Bilgi" "Bun kaldırılıyor..."
 
         safe_rm ~/.bun
         # FIX BUG-014: Use portable temp file approach instead of sed -i
         sed '/BUN_INSTALL/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
-        echo -e "${GREEN}[BAŞARILI]${NC} Bun kaldırıldı"
+        gum_success "Başarılı" "Bun kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Node.js ekosistemi temizlendi"
+    gum_success "Başarılı" "\n Node.js ekosistemi temizlendi"
 }
 
 # Cleanup PHP and Composer
@@ -328,16 +330,16 @@ cleanup_php() {
 
     # Composer
     if command -v composer &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Composer kaldırılıyor..."
+        gum_info "Bilgi" "Composer kaldırılıyor..."
         sudo rm -f /usr/local/bin/composer
 
         safe_rm ~/.composer
-        echo -e "${GREEN}[BAŞARILI]${NC} Composer kaldırıldı"
+        gum_success "Başarılı" "Composer kaldırıldı"
     fi
 
     # Remove PHP packages installed via APT
     if [ "$PKG_MANAGER" = "apt" ] && command -v php &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} PHP paketleri kaldırılıyor..."
+        gum_info "Bilgi" "PHP paketleri kaldırılıyor..."
         # FIX BUG-005: Properly quote package list to prevent word splitting issues
         # Get list of installed PHP packages safely using dpkg
         local php_packages
@@ -352,13 +354,13 @@ cleanup_php() {
 
         # Remove Ondřej Surý PPA
         if grep -R "ondrej/php" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null | grep -q ondrej; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Ondřej Surý PPA kaldırılıyor..."
+            gum_info "Bilgi" "Ondřej Surý PPA kaldırılıyor..."
             sudo add-apt-repository --remove -y ppa:ondrej/php 2>/dev/null
         fi
-        echo -e "${GREEN}[BAŞARILI]${NC} PHP paketleri kaldırıldı"
+        gum_success "Başarılı" "PHP paketleri kaldırıldı"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} PHP ekosistemi temizlendi"
+    gum_success "Başarılı" "\n PHP ekosistemi temizlendi"
 }
 
 # Cleanup Go
@@ -366,7 +368,7 @@ cleanup_go() {
     echo ""
 
     if [ -d "/usr/local/go" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Go kaldırılıyor..."
+        gum_info "Bilgi" "Go kaldırılıyor..."
         sudo rm -rf /usr/local/go
 
         # FIX BUG-014: Use portable temp file approach instead of sed -i
@@ -374,9 +376,9 @@ cleanup_go() {
         sed '/\/usr\/local\/go\/bin/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
         sed '/GOPATH/d' ~/.bashrc > ~/.bashrc.tmp 2>/dev/null && mv ~/.bashrc.tmp ~/.bashrc
 
-        echo -e "${GREEN}[BAŞARILI]${NC} Go kaldırıldı"
+        gum_success "Başarılı" "Go kaldırıldı"
     else
-        echo -e "${CYAN}[BİLGİ]${NC} Go kurulu değil"
+        gum_info "Bilgi" "Go kurulu değil"
     fi
 }
 
@@ -384,102 +386,102 @@ cleanup_go() {
 cleanup_modern_tools() {
     echo ""
 
-    echo -e "${CYAN}[BİLGİ]${NC} 1453 WSL Setup'ın kurduğu modern CLI tools kaldırılıyor..."
+    gum_info "Bilgi" "1453 WSL Setup'ın kurduğu modern CLI tools kaldırılıyor..."
     echo ""
 
     # APT packages installed by this script
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} APT paketleri kaldırılıyor (bat, ripgrep, fd-find, fzf)..."
+        gum_info "Bilgi" "APT paketleri kaldırılıyor (bat, ripgrep, fd-find, fzf)..."
         sudo apt remove -y bat ripgrep fd-find fzf 2>/dev/null && \
-            echo -e "${GREEN}[BAŞARILI]${NC} APT paketleri kaldırıldı"
+            gum_success "Başarılı" "APT paketleri kaldırıldı"
         
         # Starship from APT (Ubuntu 25.04+)
         if command -v starship &>/dev/null; then
             if dpkg -l | grep -q "^ii.*starship"; then
-                echo -e "${YELLOW}[BİLGİ]${NC} Starship (APT) kaldırılıyor..."
+                gum_info "Bilgi" "Starship (APT) kaldırılıyor..."
                 sudo apt remove -y starship 2>/dev/null
-                echo -e "${GREEN}[BAŞARILI]${NC} Starship (APT) kaldırıldı"
+                gum_success "Başarılı" "Starship (APT) kaldırıldı"
             fi
         fi
         
         # Zoxide from APT (Ubuntu 22.04+)
         if command -v zoxide &>/dev/null; then
             if dpkg -l | grep -q "^ii.*zoxide"; then
-                echo -e "${YELLOW}[BİLGİ]${NC} Zoxide (APT) kaldırılıyor..."
+                gum_info "Bilgi" "Zoxide (APT) kaldırılıyor..."
                 sudo apt remove -y zoxide 2>/dev/null
-                echo -e "${GREEN}[BAŞARILI]${NC} Zoxide (APT) kaldırıldı"
+                gum_success "Başarılı" "Zoxide (APT) kaldırıldı"
             fi
         fi
     fi
 
     # Starship (manual install via curl to /usr/local/bin)
     if command -v starship &>/dev/null && [ -f /usr/local/bin/starship ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Starship (script) kaldırılıyor..."
+        gum_info "Bilgi" "Starship (script) kaldırılıyor..."
         sudo rm -f /usr/local/bin/starship
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship (script) kaldırıldı"
+        gum_success "Başarılı" "Starship (script) kaldırıldı"
     fi
     
     # Starship config (remove regardless of installation method)
     if [ -f ~/.config/starship.toml ]; then
         rm -f ~/.config/starship.toml
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship config kaldırıldı"
+        gum_success "Başarılı" "Starship config kaldırıldı"
     fi
 
     # Zoxide (manual install via curl)
     if [ -f ~/.local/bin/zoxide ] || [ -f /usr/local/bin/zoxide ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Zoxide (script) kaldırılıyor..."
+        gum_info "Bilgi" "Zoxide (script) kaldırılıyor..."
         rm -f ~/.local/bin/zoxide
         sudo rm -f /usr/local/bin/zoxide
-        echo -e "${GREEN}[BAŞARILI]${NC} Zoxide (script) kaldırıldı"
+        gum_success "Başarılı" "Zoxide (script) kaldırıldı"
     fi
 
     # Eza repository cleanup (remove gierens repo even if eza isn't installed)
     if [ -f /etc/apt/sources.list.d/gierens.list ] || [ -f /etc/apt/keyrings/gierens.gpg ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Eza repository dosyaları temizleniyor..."
+        gum_info "Bilgi" "Eza repository dosyaları temizleniyor..."
         if command -v eza &>/dev/null; then
             sudo apt remove -y eza 2>/dev/null
         fi
         sudo rm -f /etc/apt/sources.list.d/gierens.list
         sudo rm -f /etc/apt/keyrings/gierens.gpg
         sudo apt update -qq 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Eza repository temizlendi"
+        gum_success "Başarılı" "Eza repository temizlendi"
     fi
 
     # Vivid (manual .deb install)
     if command -v vivid &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Vivid kaldırılıyor..."
+        gum_info "Bilgi" "Vivid kaldırılıyor..."
         sudo apt remove -y vivid 2>/dev/null || sudo rm -f /usr/bin/vivid
-        echo -e "${GREEN}[BAŞARILI]${NC} Vivid kaldırıldı"
+        gum_success "Başarılı" "Vivid kaldırıldı"
     fi
 
     # Fastfetch (manual install via snap or GitHub)
     if command -v fastfetch &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Fastfetch kaldırılıyor..."
+        gum_info "Bilgi" "Fastfetch kaldırılıyor..."
         if snap list | grep -q fastfetch 2>/dev/null; then
             sudo snap remove fastfetch
-            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch (snap) kaldırıldı"
+            gum_success "Başarılı" "Fastfetch (snap) kaldırıldı"
         else
             sudo apt remove -y fastfetch 2>/dev/null
-            echo -e "${GREEN}[BAŞARILI]${NC} Fastfetch kaldırıldı"
+            gum_success "Başarılı" "Fastfetch kaldırıldı"
         fi
     fi
 
     # Lazygit (manual install via GitHub)
     if [ -f /usr/local/bin/lazygit ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Lazygit kaldırılıyor..."
+        gum_info "Bilgi" "Lazygit kaldırılıyor..."
         sudo rm -f /usr/local/bin/lazygit
-        echo -e "${GREEN}[BAŞARILI]${NC} Lazygit kaldırıldı"
+        gum_success "Başarılı" "Lazygit kaldırıldı"
     fi
 
     # Note: lazydocker is cleaned up in cleanup_docker()
 
     # Clean up symlinks created by this script
-    echo -e "${YELLOW}[BİLGİ]${NC} Script symlink'leri temizleniyor..."
+    gum_info "Bilgi" "Script symlink'leri temizleniyor..."
     rm -f ~/.local/bin/bat ~/.local/bin/fd
-    echo -e "${GREEN}[BAŞARILI]${NC} Symlink'ler temizlendi"
+    gum_success "Başarılı" "Symlink'ler temizlendi"
 
     echo ""
-    echo -e "${GREEN}[BAŞARILI]${NC} Modern CLI tools tamamen kaldırıldı"
+    gum_success "Başarılı" "Modern CLI tools tamamen kaldırıldı"
 }
 
 # Cleanup Shell Configs
@@ -489,18 +491,18 @@ cleanup_shell_configs() {
     # Backup first
     if [ -f ~/.bashrc ]; then
         cp ~/.bashrc ~/.bashrc.backup.$(date +%Y%m%d_%H%M%S)
-        echo -e "${GREEN}[BAŞARILI]${NC} .bashrc yedeklendi"
+        gum_success "Başarılı" ".bashrc yedeklendi"
     fi
 
     if [ -f ~/.bash_aliases ]; then
         cp ~/.bash_aliases ~/.bash_aliases.backup.$(date +%Y%m%d_%H%M%S)
-        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases yedeklendi"
+        gum_success "Başarılı" ".bash_aliases yedeklendi"
     fi
 
     # Remove .bash_aliases completely (script creates this entire file)
     if [ -f ~/.bash_aliases ]; then
         rm -f ~/.bash_aliases
-        echo -e "${GREEN}[BAŞARILI]${NC} .bash_aliases silindi"
+        gum_success "Başarılı" ".bash_aliases silindi"
     fi
 
     # FIX BUG-008: Validate marker integrity before cleanup
@@ -510,10 +512,10 @@ cleanup_shell_configs() {
         local end_count=$(grep -c "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0")
 
         if [ "$start_count" -ne "$end_count" ]; then
-            echo -e "${RED}[UYARI]${NC} .bashrc'de eşleşmeyen START/END marker'ları bulundu!"
-            echo -e "${YELLOW}[BİLGİ]${NC} START marker'ları: $start_count, END marker'ları: $end_count"
-            echo -e "${YELLOW}[BİLGİ]${NC} Elle kontrol etmeniz önerilir: ~/.bashrc"
-            echo -e "${YELLOW}[!]${NC} Temizleme atlanıyor (güvenlik için)."
+    gum_alert "Uyarı" ".bashrc'de eşleşmeyen START/END marker'ları bulundu!"
+            gum_info "Bilgi" "START marker'ları: $start_count, END marker'ları: $end_count"
+            gum_info "Bilgi" "Elle kontrol etmeniz önerilir: ~/.bashrc"
+            gum_info "Dikkat" "Temizleme atlanıyor (güvenlik için)."
             return 1
         fi
     fi
@@ -522,7 +524,7 @@ cleanup_shell_configs() {
     if [ -f ~/.bashrc ]; then
         # Create a backup before modification
         cp ~/.bashrc "$HOME/.bashrc.bak.$(date +%Y%m%d_%H%M%S)"
-        echo -e "${CYAN}[BİLGİ]${NC} .bashrc yedeği alındı: .bashrc.bak.$(date +%Y%m%d_%H%M%S)"
+        gum_info "Bilgi" ".bashrc yedeği alındı: .bashrc.bak.$(date +%Y%m%d_%H%M%S)"
 
         # Create a temp file for safe editing
         local temp_bashrc=$(mktemp)
@@ -572,30 +574,30 @@ cleanup_shell_configs() {
 
         # Replace bashrc with cleaned version
         mv "$temp_bashrc" ~/.bashrc
-        echo -e "${GREEN}[BAŞARILI]${NC} .bashrc güvenli bir şekilde temizlendi"
+        gum_success "Başarılı" ".bashrc güvenli bir şekilde temizlendi"
     fi
 
     # Remove starship config
     if [ -f ~/.config/starship.toml ]; then
         rm -f ~/.config/starship.toml
-        echo -e "${GREEN}[BAŞARILI]${NC} Starship config silindi"
+        gum_success "Başarılı" "Starship config silindi"
     fi
 
     # Remove fzf
     if [ -d ~/.fzf ]; then
         safe_rm ~/.fzf
-        echo -e "${GREEN}[BAŞARILI]${NC} FZF dizini silindi"
+        gum_success "Başarılı" "FZF dizini silindi"
     fi
 
     if [ -f ~/.fzf.bash ]; then
         rm -f ~/.fzf.bash
-        echo -e "${GREEN}[BAŞARILI]${NC} FZF bash config silindi"
+        gum_success "Başarılı" "FZF bash config silindi"
     fi
 
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Değişikliklerin aktif olması için:"
-    echo -e "  ${CYAN}source ~/.bashrc${NC}"
-    echo -e "  ${YELLOW}veya terminali yeniden başlatın${NC}"
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Shell config tamamen temizlendi"
+    gum_info "Bilgi" "\n Değişikliklerin aktif olması için:"
+    gum_style --foreground 251 "  source ~/.bashrc"
+    gum_info "Bilgi" "veya terminali yeniden başlatın"
+    gum_success "Başarılı" "\n Shell config tamamen temizlendi"
 }
 
 # Cleanup AI CLI Tools
@@ -610,9 +612,9 @@ cleanup_ai_tools() {
         if command -v "$tool" &>/dev/null; then
             local tool_path
             tool_path=$(command -v "$tool")
-            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor (native installer)..."
+            gum_info "Bilgi" "$tool kaldırılıyor (native installer)..."
             sudo rm -f "$tool_path" 2>/dev/null
-            echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı: $tool_path"
+            gum_success "Başarılı" "$tool kaldırıldı: $tool_path"
         fi
     done
 
@@ -622,35 +624,35 @@ cleanup_ai_tools() {
 
     for tool in "${pipx_tools[@]}"; do
         if command -v pipx &>/dev/null && pipx list 2>/dev/null | grep -q "$tool"; then
-            echo -e "${YELLOW}[BİLGİ]${NC} $tool kaldırılıyor (pipx)..."
+            gum_info "Bilgi" "$tool kaldırılıyor (pipx)..."
             pipx uninstall "$tool" 2>/dev/null
-            echo -e "${GREEN}[BAŞARILI]${NC} $tool kaldırıldı"
+            gum_success "Başarılı" "$tool kaldırıldı"
         fi
     done
 
     # GitHub Copilot CLI (installed via npm)
     if command -v copilot &>/dev/null || command -v github-copilot-cli &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} GitHub Copilot CLI kaldırılıyor (npm)..."
+        gum_info "Bilgi" "GitHub Copilot CLI kaldırılıyor (npm)..."
         npm uninstall -g @githubnext/github-copilot-cli 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} GitHub Copilot CLI kaldırıldı"
+        gum_success "Başarılı" "GitHub Copilot CLI kaldırıldı"
     fi
 
     # GitHub CLI (installed via APT)
     if command -v gh &>/dev/null; then
-        echo -e "${YELLOW}[BİLGİ]${NC} GitHub CLI kaldırılıyor..."
+        gum_info "Bilgi" "GitHub CLI kaldırılıyor..."
         if [ "$PKG_MANAGER" = "apt" ]; then
             sudo apt remove -y gh 2>/dev/null
             # Remove GitHub CLI repository
             sudo rm -f /etc/apt/sources.list.d/github-cli.list
             sudo rm -f /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI kaldırıldı"
+            gum_success "Başarılı" "GitHub CLI kaldırıldı"
         else
             sudo rm -f /usr/local/bin/gh
-            echo -e "${GREEN}[BAŞARILI]${NC} GitHub CLI binary kaldırıldı"
+            gum_success "Başarılı" "GitHub CLI binary kaldırıldı"
         fi
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} AI CLI tools temizlendi"
+    gum_success "Başarılı" "\n AI CLI tools temizlendi"
 }
 
 # Cleanup AI Frameworks
@@ -670,7 +672,7 @@ cleanup_ai_frameworks() {
         remove_superclaude
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} AI frameworks temizlendi"
+    gum_success "Başarılı" "\n AI frameworks temizlendi"
 }
 
 # Cleanup Docker
@@ -679,13 +681,13 @@ cleanup_docker() {
 
     # Check if Docker is installed
     if ! command -v docker &>/dev/null && [ ! -f /etc/apt/sources.list.d/docker.list ]; then
-        echo -e "${CYAN}[BİLGİ]${NC} Docker kurulu değil, temizleme atlanıyor..."
+        gum_info "Bilgi" "Docker kurulu değil, temizleme atlanıyor..."
         return 0
     fi
 
     # Remove Docker APT packages
     if [ "$PKG_MANAGER" = "apt" ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Docker paketleri kaldırılıyor..."
+        gum_info "Bilgi" "Docker paketleri kaldırılıyor..."
         sudo apt remove -y \
             docker-ce \
             docker-ce-cli \
@@ -694,42 +696,42 @@ cleanup_docker() {
             docker-compose-plugin \
             docker-compose 2>/dev/null
         sudo apt autoremove -y 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Docker paketleri kaldırıldı"
+        gum_success "Başarılı" "Docker paketleri kaldırıldı"
     fi
 
     # Remove Docker repository
     if [ -f /etc/apt/sources.list.d/docker.list ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Docker repository kaldırılıyor..."
+        gum_info "Bilgi" "Docker repository kaldırılıyor..."
         sudo rm -f /etc/apt/sources.list.d/docker.list
-        echo -e "${GREEN}[BAŞARILI]${NC} Docker repository kaldırıldı"
+        gum_success "Başarılı" "Docker repository kaldırıldı"
     fi
 
     # Remove Docker GPG key
     if [ -f /etc/apt/keyrings/docker.gpg ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Docker GPG anahtarı kaldırılıyor..."
+        gum_info "Bilgi" "Docker GPG anahtarı kaldırılıyor..."
         sudo rm -f /etc/apt/keyrings/docker.gpg
-        echo -e "${GREEN}[BAŞARILI]${NC} Docker GPG anahtarı kaldırıldı"
+        gum_success "Başarılı" "Docker GPG anahtarı kaldırıldı"
     fi
 
     # Remove user from docker group
     if id -nG "$USER" | grep -qw docker; then
-        echo -e "${YELLOW}[BİLGİ]${NC} Kullanıcı docker grubundan çıkarılıyor..."
+        gum_info "Bilgi" "Kullanıcı docker grubundan çıkarılıyor..."
         sudo deluser "$USER" docker 2>/dev/null
-        echo -e "${GREEN}[BAŞARILI]${NC} Docker grup üyeliği kaldırıldı"
+        gum_success "Başarılı" "Docker grup üyeliği kaldırıldı"
     fi
 
     # Remove lazydocker
     if [ -f /usr/local/bin/lazydocker ]; then
-        echo -e "${YELLOW}[BİLGİ]${NC} lazydocker kaldırılıyor..."
+        gum_info "Bilgi" "lazydocker kaldırılıyor..."
         sudo rm -f /usr/local/bin/lazydocker
-        echo -e "${GREEN}[BAŞARILI]${NC} lazydocker kaldırıldı"
+        gum_success "Başarılı" "lazydocker kaldırıldı"
     fi
 
     # Ask about Docker data
     echo ""
-    echo -e "${YELLOW}[!]${NC} Docker imajları ve volume'leri de silinsin mi?"
-    echo -e "${YELLOW}[!]${NC} Bu işlem GERİ ALINAMAZ! Tüm container, image, volume, network silinecek."
-    echo -ne "${YELLOW}Docker verilerini de sil? (e/h): ${NC}"
+    gum_info "Dikkat" "Docker imajları ve volume'leri de silinsin mi?"
+    gum_info "Dikkat" "Bu işlem GERİ ALINAMAZ! Tüm container, image, volume, network silinecek."
+    gum_info "Soru" "Docker verilerini de sil? (e/h): "
 
     # Check if running in interactive mode
     if [ -t 0 ]; then
@@ -737,26 +739,26 @@ cleanup_docker() {
     else
         # Default to 'no' in non-interactive mode (CI/CD, scripts)
         delete_data="h"
-        echo -e "\n${CYAN}[BİLGİ]${NC} Non-interactive mod: Docker verileri korunuyor"
+    gum_info "Bilgi" "\n Non-interactive mod: Docker verileri korunuyor"
     fi
 
     if [[ "$delete_data" =~ ^[Ee]$ ]]; then
-        echo -e "${RED}[UYARI]${NC} Docker verileri siliniyor..."
+    gum_alert "Uyarı" "Docker verileri siliniyor..."
         sudo rm -rf /var/lib/docker
         sudo rm -rf /var/lib/containerd
-        echo -e "${GREEN}[BAŞARILI]${NC} Docker verileri silindi"
+        gum_success "Başarılı" "Docker verileri silindi"
     else
-        echo -e "${CYAN}[BİLGİ]${NC} Docker verileri korundu (/var/lib/docker)"
+        gum_info "Bilgi" "Docker verileri korundu (/var/lib/docker)"
     fi
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Docker temizlendi"
-    echo -e "${YELLOW}[!]${NC} Değişikliklerin tam aktif olması için terminali yeniden başlatın"
+    gum_success "Başarılı" "\n Docker temizlendi"
+    gum_info "Dikkat" "Değişikliklerin tam aktif olması için terminali yeniden başlatın"
 }
 
 # Cleanup all installations (keep configs)
 cleanup_installations() {
     echo ""
-    echo -e "${RED}[DELETE]  TÜM KURULUMLAR TEMİZLENİYOR${NC}"
+    gum_alert "Uyarı" "TÜM KURULUMLAR TEMİZLENİYOR"
     echo ""
 
     if ! confirm_cleanup "Tüm kurulumlar (Sistem paketleri, Python, Node, PHP, Go, Docker, Modern Tools, AI Tools)"; then
@@ -773,26 +775,26 @@ cleanup_installations() {
     cleanup_ai_tools
     cleanup_ai_frameworks
 
-    echo -e "\n${GREEN}[BAŞARILI]${NC} Tüm kurulumlar temizlendi (Config dosyaları korundu)"
+    gum_success "Başarılı" "\n Tüm kurulumlar temizlendi (Config dosyaları korundu)"
 }
 
 # Full reset (white flag)
 cleanup_full_reset() {
     echo ""
-    echo -e "${RED}[RED] TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR${NC}"
+    gum_alert "Uyarı" "TAM SIFIRLAMA - WSL'i İLK HALİNE GETİR"
     echo ""
 
-    echo -e "${RED}[WARNING]  UYARI: Bu işlem GERİ ALINAMAZ!${NC}\n"
-    echo -e "${YELLOW}Silinecekler:${NC}"
-    echo -e "  • ${RED}Tüm kurulumlar${NC} (Python, Node, PHP, Go, Docker, etc.)"
-    echo -e "  • ${RED}Tüm modern CLI tools${NC} (bat, eza, starship, zoxide, fzf, etc.)"
-    echo -e "  • ${RED}Shell config değişiklikleri${NC} (.bashrc, .bash_aliases)"
-    echo -e "  • ${RED}AI tools ve frameworks${NC}"
-    echo -e "  • ${RED}Kurulum dizini${NC} (~/.1453-wsl-setup)"
-    echo -e "  • ${RED}Kaynak kod dizini${NC} (~/1453-wsl-bash-script - eğer varsa)"
-    echo -e "  • ${RED}Config dosyaları${NC} (starship, fzf, zoxide)"
+    gum_alert "Uyarı" "UYARI: Bu işlem GERİ ALINAMAZ!\n"
+    gum_info "Bilgi" "Silinecekler:"
+    gum_style --foreground 251 "• Tüm kurulumlar (Python, Node, PHP, Go, Docker, etc.)"
+    gum_style --foreground 251 "• Tüm modern CLI tools (bat, eza, starship, zoxide, fzf, etc.)"
+    gum_style --foreground 251 "• Shell config değişiklikleri (.bashrc, .bash_aliases)"
+    gum_style --foreground 251 "• AI tools ve frameworks"
+    gum_style --foreground 251 "• Kurulum dizini (~/.1453-wsl-setup)"
+    gum_style --foreground 251 "• Kaynak kod dizini (~/1453-wsl-bash-script - eğer varsa)"
+    gum_style --foreground 251 "• Config dosyaları (starship, fzf, zoxide)"
     echo ""
-    echo -e "${YELLOW}WSL ilk kurulduğu haline gelecek!${NC}"
+    gum_info "Bilgi" "WSL ilk kurulduğu haline gelecek!"
     echo ""
 
     if ! confirm_cleanup "HER ŞEY (WSL İLK HALİNE GELECEK)"; then
@@ -813,13 +815,13 @@ cleanup_full_reset() {
 
     # Remove installation directory
     if [ -d ~/.1453-wsl-setup ]; then
-        echo -e "\n${YELLOW}[BİLGİ]${NC} Kurulum dizini kaldırılıyor..."
+    gum_info "Bilgi" "\n Kurulum dizini kaldırılıyor..."
         safe_rm ~/.1453-wsl-setup
-        echo -e "${GREEN}[BAŞARILI]${NC} Kurulum dizini kaldırıldı"
+        gum_success "Başarılı" "Kurulum dizini kaldırıldı"
     fi
 
     # Remove source code directory if exists
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Kaynak kod dizini kontrol ediliyor..."
+    gum_info "Bilgi" "\n Kaynak kod dizini kontrol ediliyor..."
     local source_dirs=(
         "$HOME/1453-wsl-bash-script"
         "$HOME/Downloads/1453-wsl-bash-script"
@@ -828,26 +830,26 @@ cleanup_full_reset() {
 
     for dir in "${source_dirs[@]}"; do
         if [ -d "$dir" ]; then
-            echo -e "${YELLOW}[BİLGİ]${NC} Kaynak kod dizini bulundu: $dir"
+            gum_info "Bilgi" "Kaynak kod dizini bulundu: $dir"
             remove_source=$(gum_input --placeholder "Bu dizini de silmek ister misiniz? (e/h)")
             if [[ "$remove_source" =~ ^[Ee]$ ]]; then
                 rm -rf "$dir"
-                echo -e "${GREEN}[BAŞARILI]${NC} Kaynak kod dizini silindi: $dir"
+                gum_success "Başarılı" "Kaynak kod dizini silindi: $dir"
             else
-                echo -e "${CYAN}[BİLGİ]${NC} Kaynak kod dizini korundu: $dir"
+                gum_info "Bilgi" "Kaynak kod dizini korundu: $dir"
             fi
         fi
     done
 
     # Force reload shell to default state
-    echo -e "\n${YELLOW}[BİLGİ]${NC} Shell sıfırlanıyor..."
+    gum_info "Bilgi" "\n Shell sıfırlanıyor..."
     
     # Factory Reset .bashrc from /etc/skel (User Suggestion)
     if [ -f /etc/skel/.bashrc ]; then
         echo ""
-        echo -e "${YELLOW}[ÖNERİ]${NC} .bashrc dosyasını Ubuntu varsayılan ayarlarına döndürmek ister misiniz?"
-        echo -e "${CYAN}[BİLGİ]${NC} Bu işlem, .bashrc dosyasını tamamen silip /etc/skel/.bashrc ile değiştirir."
-        echo -e "${RED}[UYARI]${NC} Script dışındaki özel ayarlarınız da silinecektir!"
+    gum_info "Bilgi" ".bashrc dosyasını Ubuntu varsayılan ayarlarına döndürmek ister misiniz?"
+        gum_info "Bilgi" "Bu işlem, .bashrc dosyasını tamamen silip /etc/skel/.bashrc ile değiştirir."
+    gum_alert "Uyarı" "Script dışındaki özel ayarlarınız da silinecektir!"
         
         if gum_confirm "Ubuntu varsayılan .bashrc dosyasına dön?"; then
             # Backup current one last time
@@ -855,7 +857,7 @@ cleanup_full_reset() {
             
             # Restore from skeleton
             cp /etc/skel/.bashrc ~/.bashrc
-            echo -e "${GREEN}[BAŞARILI]${NC} .bashrc, Ubuntu varsayılan ayarlarına döndürüldü (/etc/skel)."
+            gum_success "Başarılı" ".bashrc, Ubuntu varsayılan ayarlarına döndürüldü (/etc/skel)."
         fi
     fi
 
@@ -865,21 +867,21 @@ cleanup_full_reset() {
     fi
 
     echo ""
-    echo -e "${GREEN}✅ TAM SIFIRLAMA TAMAMLANDI${NC}"
+    gum_success "Başarılı" "✅ TAM SIFIRLAMA TAMAMLANDI"
     echo ""
-    echo -e "${CYAN}[BİLGİ]${NC} WSL ilk kurulum haline getirildi."
-    echo -e "${YELLOW}[ÖNEMLİ]${NC} Değişikliklerin tam aktif olması için:"
-    echo -e "  ${RED}1. Tüm terminal pencerelerini kapatın${NC}"
-    echo -e "  ${RED}2. WSL'i yeniden başlatın: ${CYAN}wsl --shutdown${NC}"
-    echo -e "  ${RED}3. Yeni terminal açın${NC}"
+    gum_info "Bilgi" "WSL ilk kurulum haline getirildi."
+    gum_info "Bilgi" "Değişikliklerin tam aktif olması için:"
+    gum_style --foreground 251 "1. Tüm terminal pencerelerini kapatın"
+    gum_info "Bilgi" "${RED}2. WSL'i yeniden başlatın: wsl --shutdown"
+    gum_style --foreground 251 "3. Yeni terminal açın"
     echo ""
-    echo -e "${CYAN}[BİLGİ]${NC} Script'i tekrar çalıştırarak yeniden kurulum yapabilirsiniz."
+    gum_info "Bilgi" "Script'i tekrar çalıştırarak yeniden kurulum yapabilirsiniz."
 }
 
 # Individual cleanup menu
 show_individual_cleanup_menu() {
     echo ""
-    gum_style --foreground 226 --bold "[PACKAGE] Tek Tek Temizleme Menüsü"
+    gum_style --foreground "$COLOR_GOLD_FG" --bold "[PACKAGE] Tek Tek Temizleme Menüsü"
     echo ""
 
     local selection
@@ -954,7 +956,7 @@ show_individual_cleanup_menu() {
 # Main cleanup menu
 show_cleanup_menu() {
     echo ""
-    gum_style --foreground 196 --bold "[DELETE]  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
+    gum_style --foreground "$COLOR_ERROR_FG" --bold "[DELETE]  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
     echo ""
 
     local selection
@@ -970,7 +972,7 @@ show_cleanup_menu() {
     case "$selection" in
         *"TAM SIFIRLAMA"*)
             echo ""
-            gum_style --foreground 196 --border rounded --padding "1 2" \
+            gum_style --foreground "$COLOR_ERROR_FG" --border rounded --padding "1 2" \
                 "[WARNING]  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
                 "Bu işlem geri alınamaz!"
             echo ""

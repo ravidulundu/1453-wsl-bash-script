@@ -97,18 +97,32 @@ mask_secret() {
 
 # Check internet connection
 check_internet_connection() {
-    echo -e "${CYAN}[[+]]${NC} İnternet bağlantısı kontrol ediliyor..."
+    # PRD: Use AI-like thinking state instead of raw echo
+    if command -v gum &>/dev/null; then
+        gum_thinking "🔍 İnternet bağlantısı kontrol ediliyor..." 1
+    else
+        echo "İnternet bağlantısı kontrol ediliyor..."
+    fi
 
     # FIX BUG-015: Use configurable DNS servers instead of hardcoded values
     # Try multiple methods: primary DNS, secondary DNS, and fallback URL
     if ping -c 1 -W 2 "$PRIMARY_DNS_SERVER" &>/dev/null || \
        ping -c 1 -W 2 "$SECONDARY_DNS_SERVER" &>/dev/null || \
        curl -s --connect-timeout "$NETWORK_TIMEOUT_SECONDS" --retry 3 --retry-delay 5 "$DNS_TEST_URL" &>/dev/null; then
-        echo -e "${GREEN}[[+]]${NC} İnternet bağlantısı: OK"
+        
+        if command -v gum &>/dev/null; then
+            gum_success "İnternet Bağlantısı" "Bağlantı aktif ve çalışıyor"
+        else
+            echo -e "${GREEN}[[+]]${NC} İnternet bağlantısı: OK"
+        fi
         return 0
     else
-        echo -e "${RED}[[-]]${NC} İnternet bağlantısı yok!"
-        echo -e "${YELLOW}[!]${NC} Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin."
+        if command -v gum &>/dev/null; then
+            gum_alert "Bağlantı Hatası" "İnternet bağlantısı yok! Lütfen ağ ayarlarınızı kontrol edin."
+        else
+            echo -e "${RED}[[-]]${NC} İnternet bağlantısı yok!"
+            echo -e "${YELLOW}[!]${NC} Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin."
+        fi
         return 1
     fi
 }
@@ -145,23 +159,49 @@ start_sudo_keepalive() {
 
 # Check sudo access
 check_sudo_access() {
-    echo -e "${CYAN}[[+]]${NC} Sudo yetkisi kontrol ediliyor..."
+    if command -v gum &>/dev/null; then
+        gum_thinking "🔑 Sudo yetkisi kontrol ediliyor..." 1
+    else
+        echo "Sudo yetkisi kontrol ediliyor..."
+    fi
 
     if sudo -n true 2>/dev/null; then
-        echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
+        if command -v gum &>/dev/null; then
+            gum_success "Sudo Yetkisi" "Yetki mevcut ve aktif"
+        else
+            echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
+        fi
         return 0
     else
-        echo -e "${YELLOW}[!]${NC} Sudo şifresi gerekiyor..."
+        if command -v gum &>/dev/null; then
+            gum_warning "Yetki Gerekli" "Sudo şifresi girilmesi gerekiyor..."
+        else
+            echo -e "${YELLOW}[!]${NC} Sudo şifresi gerekiyor..."
+        fi
+        
         if sudo true; then
-            echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
+            if command -v gum &>/dev/null; then
+                gum_success "Sudo Yetkisi" "Yetki başarıyla alındı"
+            else
+                echo -e "${GREEN}[[+]]${NC} Sudo yetkisi: OK"
+            fi
 
             # Start background sudo keepalive
             start_sudo_keepalive
-            echo -e "${CYAN}[ℹ]${NC} Sudo cache aktif tutulacak (script boyunca şifre sormayacak)"
+            
+            if command -v gum &>/dev/null; then
+                gum_info "Sudo Cache" "Şifre script boyunca geçerli olacak"
+            else
+                echo -e "${CYAN}[ℹ]${NC} Sudo cache aktif tutulacak (script boyunca şifre sormayacak)"
+            fi
 
             return 0
         else
-            echo -e "${RED}[[-]]${NC} Sudo yetkisi alınamadı!"
+            if command -v gum &>/dev/null; then
+                gum_alert "Yetki Hatası" "Sudo yetkisi alınamadı!"
+            else
+                echo -e "${RED}[[-]]${NC} Sudo yetkisi alınamadı!"
+            fi
             return 1
         fi
     fi
@@ -169,21 +209,37 @@ check_sudo_access() {
 
 # Check disk space (minimum 2GB recommended)
 check_disk_space() {
-    echo -e "${CYAN}[[+]]${NC} Disk alanı kontrol ediliyor..."
+    if command -v gum &>/dev/null; then
+        gum_thinking "💾 Disk alanı kontrol ediliyor..." 1
+    else
+        echo "Disk alanı kontrol ediliyor..."
+    fi
 
     local available_mb
     available_mb=$(df -m "$HOME" | awk 'NR==2 {print $4}')
 
     if [ "$available_mb" -ge "$RECOMMENDED_DISK_SPACE_MB" ]; then
-        echo -e "${GREEN}[[+]]${NC} Disk alanı: ${available_mb} MB mevcut"
+        if command -v gum &>/dev/null; then
+            gum_success "Disk Alanı" "${available_mb} MB mevcut (yeterli)"
+        else
+            echo -e "${GREEN}[[+]]${NC} Disk alanı: ${available_mb} MB mevcut"
+        fi
         return 0
     elif [ "$available_mb" -ge "$WARNING_DISK_SPACE_MB" ]; then
-        echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az ${RECOMMENDED_DISK_SPACE_MB}MB önerilir)"
-        echo -e "${YELLOW}[!]${NC} Devam ediliyor ama bazı kurulumlar başarısız olabilir..."
+        if command -v gum &>/dev/null; then
+            gum_warning "Disk Alanı Düşük" "${available_mb} MB mevcut (${RECOMMENDED_DISK_SPACE_MB}MB önerilir). Devam ediliyor ancak bazı kurulumlar başarısız olabilir."
+        else
+            echo -e "${YELLOW}[!]${NC} Disk alanı: ${available_mb} MB (düşük, en az ${RECOMMENDED_DISK_SPACE_MB}MB önerilir)"
+            echo -e "${YELLOW}[!]${NC} Devam ediliyor ama bazı kurulumlar başarısız olabilir..."
+        fi
         return 0
     else
-        echo -e "${RED}[[-]]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
-        echo -e "${YELLOW}[!]${NC} En az ${WARNING_DISK_SPACE_MB}MB boş alan gerekiyor!"
+        if command -v gum &>/dev/null; then
+            gum_alert "Disk Alanı Yetersiz" "${available_mb} MB mevcut. En az ${WARNING_DISK_SPACE_MB}MB boş alan gerekiyor!"
+        else
+            echo -e "${RED}[[-]]${NC} Disk alanı: ${available_mb} MB (yetersiz!)"
+            echo -e "${YELLOW}[!]${NC} En az ${WARNING_DISK_SPACE_MB}MB boş alan gerekiyor!"
+        fi
         return 1
     fi
 }
@@ -194,32 +250,60 @@ check_apt_repositories() {
         return 0  # Skip for non-APT systems
     fi
 
-    echo -e "${CYAN}[[+]]${NC} APT repository erişimi kontrol ediliyor..."
+    if command -v gum &>/dev/null; then
+        gum_thinking "📦 APT repository erişimi kontrol ediliyor..." 1
+    else
+        echo "APT repository erişimi kontrol ediliyor..."
+    fi
 
     # Check if timeout command is available
     if command -v timeout &>/dev/null; then
         if timeout "$APT_UPDATE_TIMEOUT_SECONDS" sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
-            echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            if command -v gum &>/dev/null; then
+                gum_warning "APT Uyarısı" "Repository uyarıları var (yine de devam edilebilir)"
+            else
+                echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            fi
             return 0
         elif timeout "$APT_UPDATE_TIMEOUT_SECONDS" sudo apt-get update -qq &>/dev/null; then
-            echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
+            if command -v gum &>/dev/null; then
+                gum_success "APT Repository" "Erişim başarılı"
+            else
+                echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
+            fi
             return 0
         else
-            echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
-            echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            if command -v gum &>/dev/null; then
+                gum_alert "APT Hatası" "'sudo apt update' komutu çalıştırılamadı"
+            else
+                echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
+                echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            fi
             return 1
         fi
     else
         # Fallback without timeout command
         if sudo apt-get update -qq 2>&1 | grep -q "Err:" ; then
-            echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            if command -v gum &>/dev/null; then
+                gum_warning "APT Uyarısı" "Repository uyarıları var (yine de devam edilebilir)"
+            else
+                echo -e "${YELLOW}[!]${NC} APT repository uyarıları var (yine de devam edilebilir)"
+            fi
             return 0
         elif sudo apt-get update -qq &>/dev/null; then
-            echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
+            if command -v gum &>/dev/null; then
+                gum_success "APT Repository" "Erişim başarılı"
+            else
+                echo -e "${GREEN}[[+]]${NC} APT repository erişimi: OK"
+            fi
             return 0
         else
-            echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
-            echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            if command -v gum &>/dev/null; then
+                gum_alert "APT Hatası" "'sudo apt update' komutu çalıştırılamadı"
+            else
+                echo -e "${RED}[[-]]${NC} APT repository erişim sorunu!"
+                echo -e "${YELLOW}[!]${NC} 'sudo apt update' komutu çalıştırılamadı"
+            fi
             return 1
         fi
     fi
@@ -229,7 +313,13 @@ check_apt_repositories() {
 # Returns 0 if all critical checks pass, 1 otherwise
 run_preflight_checks() {
     echo ""
-    echo -e "${CYAN}🔍 SİSTEM GEREKSİNİMLERİ KONTROL EDİLİYOR${NC}"
+    
+    if command -v gum &>/dev/null; then
+        show_phase "Sistem Gereksinimleri Kontrol Ediliyor" "1/4"
+    else
+        echo -e "${CYAN}🔍 SİSTEM GEREKSİNİMLERİ KONTROL EDİLİYOR${NC}"
+    fi
+    
     echo ""
 
     local all_passed=true
@@ -249,12 +339,20 @@ run_preflight_checks() {
 
     echo ""
     if [ "$all_passed" = true ]; then
-        echo -e "${GREEN}[[+]]${NC} Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
+        if command -v gum &>/dev/null; then
+            gum_success "Kontroller Tamamlandı" "Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
+        else
+            echo -e "${GREEN}[[+]]${NC} Tüm kritik kontroller başarılı! Kuruluma başlanıyor..."
+        fi
         echo ""
         return 0
     else
-        echo -e "${RED}[[-]]${NC} Bazı kritik kontroller başarısız!"
-        echo -e "${YELLOW}[!]${NC} Yukarıdaki hataları düzeltin ve tekrar deneyin."
+        if command -v gum &>/dev/null; then
+            gum_alert "Kontrol Başarısız" "Bazı kritik kontroller başarısız! Yukarıdaki hataları düzeltin ve tekrar deneyin."
+        else
+            echo -e "${RED}[[-]]${NC} Bazı kritik kontroller başarısız!"
+            echo -e "${YELLOW}[!]${NC} Yukarıdaki hataları düzeltin ve tekrar deneyin."
+        fi
         echo ""
         return 1
     fi
