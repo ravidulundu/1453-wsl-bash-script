@@ -2,6 +2,16 @@
 
 # 1453.AI WSL Kurulum Betiği Yükleyici
 # Bu betik modüler WSL kurulum betiğini indirir ve kurar
+#
+# USAGE:
+#   Basic (rate limit: 60 req/hour):
+#     bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+#
+#   With GitHub token (rate limit: 5000 req/hour):
+#     export GITHUB_TOKEN="ghp_xxxxx"
+#     bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+#
+#   Get token: https://github.com/settings/tokens (select 'repo' scope)
 
 # FIX BUG-002: Add safety flags for robust error handling
 set -euo pipefail
@@ -34,6 +44,13 @@ REPO_OWNER="ravidulundu"
 REPO_NAME="1453-wsl-bash-script"
 BRANCH="master"
 BASE_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}"
+
+# GitHub Token Support (Optional - prevents rate limiting)
+# Rate Limit: Without token = 60 requests/hour
+#             With token    = 5000 requests/hour
+# Usage: export GITHUB_TOKEN="ghp_xxxxx" before running this script
+# Get token: https://github.com/settings/tokens (repo scope needed)
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 
 # Kurulum dizini
 INSTALL_DIR="$HOME/.1453-wsl-setup"
@@ -148,7 +165,13 @@ show_banner() {
 download_file_silent() {
     local url="$1"
     local dest="$2"
-    curl -fsSL "$url" -o "$dest" 2>/dev/null
+
+    # Add GitHub token if available (prevents rate limiting)
+    if [ -n "$GITHUB_TOKEN" ]; then
+        curl -fsSL -H "Authorization: token $GITHUB_TOKEN" "$url" -o "$dest" 2>/dev/null
+    else
+        curl -fsSL "$url" -o "$dest" 2>/dev/null
+    fi
 }
 
 # Dosya indirme fonksiyonu (verbose mod)
@@ -157,8 +180,14 @@ download_file() {
     local dest="$2"
     local desc="$3"
 
+    # Prepare curl command with optional GitHub token
+    local curl_cmd="curl -fsSL"
+    if [ -n "$GITHUB_TOKEN" ]; then
+        curl_cmd="curl -fsSL -H \"Authorization: token $GITHUB_TOKEN\""
+    fi
+
     if has_gum; then
-        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+        if eval "$curl_cmd \"$url\" -o \"$dest\"" 2>/dev/null; then
             return 0
         else
             gum style --foreground 196 "[✗] İndirilemedi: $desc"
@@ -166,7 +195,7 @@ download_file() {
         fi
     else
         echo -ne "  ${YELLOW}[İNDİRİLİYOR]${NC} $desc\r"
-        if curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+        if eval "$curl_cmd \"$url\" -o \"$dest\"" 2>/dev/null; then
             echo -e "  ${GREEN}[✓]${NC} $desc        "
             return 0
         else
@@ -431,10 +460,17 @@ main() {
         done
         printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
 
-        # Download file silently
-        if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
-            failed=$((failed + 1))
-            failed_files+=("$description")
+        # Download file silently (with GitHub token if available)
+        if [ -n "$GITHUB_TOKEN" ]; then
+            if ! curl -fsSL -H "Authorization: token $GITHUB_TOKEN" "$url" -o "$dest" 2>/dev/null; then
+                failed=$((failed + 1))
+                failed_files+=("$description")
+            fi
+        else
+            if ! curl -fsSL "$url" -o "$dest" 2>/dev/null; then
+                failed=$((failed + 1))
+                failed_files+=("$description")
+            fi
         fi
     done
 
