@@ -97,12 +97,12 @@ show_mode_selection() {
 
         local selection
         selection=$(gum_choose_enhanced "Bir mod seçin:" \
-            "🚀 Hızlı Başlangıç (Önerilen)" \
-            "🛠️  Gelişmiş Mod" \
-            "🚪 Çıkış")
+            "$ICON_ROCKET Hızlı Başlangıç (Önerilen)" \
+            "$ICON_GEAR Gelişmiş Mod" \
+            "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "🚀 Hızlı Başlangıç (Önerilen)")
+            "*Hızlı Başlangıç"*)
                 echo ""
                 run_quickstart_mode
                 continue
@@ -112,7 +112,7 @@ show_mode_selection() {
                 run_advanced_mode
                 break
                 ;;
-            "🚪 Çıkış")
+            *"Çıkış"*)
     gum_style --foreground "$COLOR_TEXT_FG" "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
@@ -135,8 +135,13 @@ show_advanced_menu() {
 _advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
-    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum - opsiyonel)..."
-        install_gum 2>/dev/null || gum_info "Uyarı" "Gum kurulumunu atlandı"
+        echo ""
+        echo "  Modern TUI kuruluyor (Gum - opsiyonel)..."
+        if install_gum 2>/dev/null; then
+            gum_info "Başarılı" "Modern TUI kuruldu!"
+        else
+            echo "  Gum kurulumu atlandı (klasik UI kullanılacak)"
+        fi
         sleep 1
     fi
 
@@ -178,32 +183,33 @@ run_advanced_mode() {
         # Modern Gum menu
         local selection
         selection=$(gum_choose_enhanced "Kategoriler:" \
-            "📦 Tam Kurulum (Tüm Araçlar)" \
-            "🔧 Sistem Hazırlığı (Update + Git)" \
+            "$ICON_PACKAGE Tam Kurulum (Tüm Araçlar)" \
+            "$ICON_TARGET Çoklu Bileşen Seçimi (Multi-Select)" \
+            "$ICON_TOOLS Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
-            "🐍 Python Ekosistemi (pip, pipx, uv)" \
-            "🟢 Node.js (NVM)" \
-            "⚡ Bun.js Runtime" \
+            "$ICON_PYTHON Python Ekosistemi (pip, pipx, uv)" \
+            "$ICON_NODE Node.js (NVM)" \
+            "$ICON_BUN Bun.js Runtime" \
             "━━━ Backend & Languages ━━━" \
-            "🐘 PHP Kurulumu" \
-            "🎼 Composer" \
-            "🐹 Go Dili" \
+            "$ICON_PHP PHP Kurulumu" \
+            "$ICON_COMPOSER Composer" \
+            "$ICON_GO Go Dili" \
             "━━━ AI & Modern Tools ━━━" \
-            "🤖 AI CLI Araçları" \
-            "🧠 AI Frameworks" \
-            "🚀 Modern CLI Araçları" \
-            "🐚 Shell Yapılandırması" \
+            "$ICON_AI AI CLI Araçları" \
+            "$ICON_BRAIN AI Frameworks" \
+            "$ICON_ROCKET Modern CLI Araçları" \
+            "$ICON_SHELL Shell Yapılandırması" \
             "━━━ Docker & Utilities ━━━" \
-            "🐳 Docker Ortamı" \
+            "$ICON_DOCKER Docker Ortamı" \
             "━━━ Bakım & Onarım ━━━" \
-            "🗑️  AI Frameworks Kaldır" \
-            "⚠️  Temizleme ve Sıfırlama" \
+            "$ICON_TRASH AI Frameworks Kaldır" \
+            "$ICON_WARNING Temizleme ve Sıfırlama" \
             "━━━━━━━━━━━━━━━━━━━━━" \
-            "🔙 Ana Menüye Dön" \
-            "🚪 Çıkış")
+            "$ICON_BACK Ana Menüye Dön" \
+            "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "📦 Tam Kurulum"*)
+            "*Tam Kurulum"*)
                 echo ""
                 gum_info "Bilgi" "Tam kurulum başlatılıyor..."
                 sleep 1
@@ -223,7 +229,64 @@ run_advanced_mode() {
                 gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
                 sleep 2
                 ;;
-            "🔧 Sistem Hazırlığı"*)
+            "*Çoklu Bileşen"*)
+                # PRD FR-2.1: Multi-select installation
+                echo ""
+                gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
+                echo ""
+
+                local components
+                components=$(gum_multiselect "Kurulacak bileşenleri seçin:" \
+                    "$ICON_TOOLS Sistem Güncellemesi" \
+                    "$ICON_TOOLS Git Yapılandırması" \
+                    "$ICON_PYTHON Python Ekosistemi (Python + pip + pipx + uv)" \
+                    "$ICON_NODE Node.js (NVM)" \
+                    "$ICON_BUN Bun.js Runtime" \
+                    "$ICON_PHP PHP + Composer" \
+                    "$ICON_GO Go Dili" \
+                    "$ICON_AI AI CLI Araçları" \
+                    "$ICON_BRAIN AI Frameworks" \
+                    "$ICON_ROCKET Modern CLI Araçları" \
+                    "$ICON_SHELL Shell Yapılandırması" \
+                    "$ICON_DOCKER Docker Ortamı")
+
+                if [ -z "$components" ]; then
+                    gum_alert "Uyarı" "Hiçbir bileşen seçilmedi!"
+                    continue
+                fi
+
+                echo ""
+                gum_info "Bilgi" "Seçilen bileşenler kuruluyor..."
+                sleep 1
+
+                # Process selections
+                while IFS= read -r component; do
+                    case "$component" in
+                        *"Sistem Güncellemesi"*) update_system ;;
+                        *"Git Yapılandırması"*) configure_git ;;
+                        *"Python Ekosistemi"*)
+                            install_python && PYTHON_INSTALLED=true
+                            install_pip
+                            install_pipx
+                            install_uv
+                            ;;
+                        *"Node.js"*) install_nvm && NVM_INSTALLED=true ;;
+                        *"Bun.js"*) install_bun ;;
+                        *"PHP"*) install_php_version_menu; install_composer ;;
+                        *"Go Dili"*) install_go_menu ;;
+                        *"AI CLI"*) install_ai_cli_tools_menu ;;
+                        *"AI Frameworks"*) install_ai_frameworks_menu ;;
+                        *"Modern CLI"*) install_modern_cli_tools ;;
+                        *"Shell"*) setup_custom_shell ;;
+                        *"Docker"*) install_docker_menu ;;
+                    esac
+                done <<< "$components"
+
+                echo ""
+                gum_success "Tamamlandı" "Seçilen tüm bileşenler kuruldu!"
+                sleep 2
+                ;;
+            "*Sistem Hazırlığı"*)
                 prepare_and_configure_git
                 ;;
             *"Python Ekosistemi"*)

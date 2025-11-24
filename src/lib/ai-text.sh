@@ -92,7 +92,7 @@ show_ai_thinking() {
     local message=$(get_ai_message "$context")
     
     if command -v gum &>/dev/null; then
-        gum spin --spinner dots --title "$message" -- sleep "$duration"
+        gum spin --spinner dot --title "$message" -- sleep "$duration"
     else
         # Fallback: Simple spinner
         echo -n "$message "

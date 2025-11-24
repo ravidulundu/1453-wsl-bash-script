@@ -9,10 +9,10 @@ show_quickstart_welcome() {
     
     # PRD: Streaming Text - Welcome mesajı daktilo ile
     if command -v typewriter_effect &>/dev/null; then
-        typewriter_effect "🚀 1453 WSL Architect - Hızlı Başlangıç Modu" 0.04
+        typewriter_effect "$ICON_ROCKET 1453 WSL Architect - Hızlı Başlangıç Modu" 0.04
         echo ""
     else
-        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "🚀 HIZLI BAŞLANGIÇ MODU"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_ROCKET HIZLI BAŞLANGIÇ MODU"
         echo ""
     fi
     
@@ -20,13 +20,13 @@ show_quickstart_welcome() {
     gum_style --foreground "$COLOR_GOLD_FG" "Birkaç basit soru, gerisini otomatik kurulum!"
     echo ""
     
-    gum_style --foreground "$COLOR_TEXT_FG" "✨ Nasıl çalışır?"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_SPARKLES Nasıl çalışır?"
     gum_style --foreground "$COLOR_TEXT_FG" "  1. Ne yapmak istediğinizi seçin"
     gum_style --foreground "$COLOR_TEXT_FG" "  2. Önerilen araçları otomatik kurarım"
     gum_style --foreground "$COLOR_TEXT_FG" "  3. Hemen kod yazmaya başlayın!"
     echo ""
     
-    gum_style --foreground "$COLOR_TEXT_FG" "🎯 Sonunda elde edeceğiniz:"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_TARGET Sonunda elde edeceğiniz:"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Tüm geliştirici araçları"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Hazır ortam"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Modern CLI tools"
@@ -47,34 +47,46 @@ show_quickstart_welcome() {
 }
 
 # Show preset selection
+# PRD FR-2.1: Multi-select support - Kullanıcı birden fazla paket seçebilir
 show_presets() {
     echo ""
-    
-    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "📦 Kurulum Paketleri"
+
+    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_PACKAGE Kurulum Paketleri"
     echo ""
-    gum_style --foreground "$COLOR_MUTED_FG" "Ne yapmak istiyorsunuz?"
+    gum_style --foreground "$COLOR_MUTED_FG" "$ICON_TARGET Hangi paketleri kurmak istersiniz? (Birden fazla seçebilirsiniz)"
+    gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
     echo ""
 
-    local selection
-    selection=$(gum_choose \
-        "🌐 Web Geliştirme (Python + Node + PHP)" \
-        "🤖 AI Geliştirme (Python + AI Tools)" \
-        "⚙️  Backend Geliştirme (Python + Go + PHP)" \
-        "🚀 Her Şey (Full Stack + AI)" \
-        "📱 Mobil + Web (Flutter + Node + PHP)")
+    local selections
+    selections=$(gum_multiselect "Paket seçin:" \
+        "$ICON_WEB Web Geliştirme (Python + Node + PHP)" \
+        "$ICON_AI AI Geliştirme (Python + AI Tools)" \
+        "$ICON_GEAR Backend Geliştirme (Python + Go + PHP)" \
+        "$ICON_DOCKER Docker Ortamı" \
+        "$ICON_MOBILE Mobil + Web (Flutter + Node + PHP)")
 
-    case "$selection" in
-        *"Web Geliştirme"*) QUICKSTART_PRESET_CHOICE="web" ;;
-        *"AI Geliştirme"*) QUICKSTART_PRESET_CHOICE="ai" ;;
-        *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICE="backend" ;;
-        *"Her Şey"*) QUICKSTART_PRESET_CHOICE="everything" ;;
-        *"Mobil + Web"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
-        *)
-    gum_alert "Uyarı" "\n Geçersiz seçim!"
-            sleep 1
-            show_presets
-            ;;
-    esac
+    # Check if any selection made
+    if [ -z "$selections" ]; then
+        gum_alert "Uyarı" "En az bir paket seçmelisiniz!"
+        sleep 1
+        show_presets
+        return
+    fi
+
+    # Store multi-select results as array
+    QUICKSTART_PRESET_CHOICES=()
+    while IFS= read -r line; do
+        case "$line" in
+            *"Web Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("web") ;;
+            *"AI Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("ai") ;;
+            *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("backend") ;;
+            *"Docker Ortamı"*) QUICKSTART_PRESET_CHOICES+=("docker") ;;
+            *"Mobil + Web"*) QUICKSTART_PRESET_CHOICES+=("mobile") ;;
+        esac
+    done <<< "$selections"
+
+    # Legacy compat: Set first choice as main
+    QUICKSTART_PRESET_CHOICE="${QUICKSTART_PRESET_CHOICES[0]}"
 }
 
 # Generate installation plan based on preset
@@ -103,7 +115,7 @@ generate_installation_plan() {
 
     case $preset in
         "web")
-            gum_info "Bilgi" "🌐 Web Development paketi:"
+            gum_info "Bilgi" "$ICON_WEB Web Development paketi:"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js (NVM)"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Bun.js runtime"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
@@ -132,7 +144,7 @@ generate_installation_plan() {
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
-            gum_info "Bilgi" "📱 Mobile + Web paketi:"
+            gum_info "Bilgi" "$ICON_MOBILE Mobile + Web paketi:"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Flutter araçları"
@@ -177,9 +189,9 @@ _quickstart_preflight_checks() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_INFO_FG" --bold "🔍 SİSTEM KONTROL EDİLİYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "$ICON_SEARCH SİSTEM KONTROL EDİLİYOR"
     else
-    gum_info "Bilgi" "🔍 SİSTEM KONTROL EDİLİYOR"
+    gum_info "Bilgi" "$ICON_SEARCH SİSTEM KONTROL EDİLİYOR"
     fi
     echo ""
 
@@ -213,9 +225,9 @@ _quickstart_configure_git() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_GOLD_FG" --bold "🔧 GIT YAPILANDIRMASI"
+        gum_style --foreground "$COLOR_GOLD_FG" --bold "$ICON_TOOLS GIT YAPILANDIRMASI"
     else
-        gum_info "Bilgi" "🔧 GIT YAPILANDIRMASI"
+        gum_info "Bilgi" "$ICON_TOOLS GIT YAPILANDIRMASI"
     fi
     echo ""
     show_install_status "Git Configuration" "installing"
@@ -256,9 +268,9 @@ _quickstart_install_modern_tools() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_BUN MODERN CLI ARAÇLARI KURULUYOR"
     else
-        gum_info "Bilgi" "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+        gum_info "Bilgi" "$ICON_BUN MODERN CLI ARAÇLARI KURULUYOR"
     fi
     echo ""
     show_install_status "Modern CLI Tools" "installing"
@@ -271,9 +283,9 @@ _quickstart_setup_shell() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_INFO_FG" --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "$ICON_SHELL SHELL ORTAMI YAPILANDIRILIYOR"
     else
-    gum_info "Bilgi" "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+    gum_info "Bilgi" "$ICON_SHELL SHELL ORTAMI YAPILANDIRILIYOR"
     fi
     echo ""
     show_install_status "Shell Setup" "installing"
@@ -320,9 +332,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_SUCCESS_FG" --bold "🟢 NODE.JS KURULUYOR (NVM)"
+                    gum_style --foreground "$COLOR_SUCCESS_FG" --bold "$ICON_NODE NODE.JS KURULUYOR (NVM)"
                 else
-    gum_style --foreground "$COLOR_TEXT_FG" "🟢 NODE.JS KURULUYOR (NVM)"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_NODE NODE.JS KURULUYOR (NVM)"
                 fi
                 echo ""
                 show_install_status "NVM" "installing"
@@ -342,9 +354,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ BUN.JS KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_BUN BUN.JS KURULUYOR"
                 else
-                    gum_info "Bilgi" "⚡ BUN.JS KURULUYOR"
+                    gum_info "Bilgi" "$ICON_BUN BUN.JS KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Bun.js" "installing"
@@ -382,9 +394,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_GOLD_FG" --bold "🎼 COMPOSER KURULUYOR"
+                    gum_style --foreground "$COLOR_GOLD_FG" --bold "$ICON_COMPOSER COMPOSER KURULUYOR"
                 else
-                    gum_info "Bilgi" "🎼 COMPOSER KURULUYOR"
+                    gum_info "Bilgi" "$ICON_COMPOSER COMPOSER KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Composer" "installing"
@@ -471,9 +483,9 @@ execute_installation_plan() {
     # Installation complete (banner shown at script start, don't redraw)
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "✅ KURULUM TAMAMLANDI!"
+        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "$ICON_SUCCESS KURULUM TAMAMLANDI!"
     else
-    gum_success "Başarılı" "✅ KURULUM TAMAMLANDI!"
+    gum_success "Başarılı" "$ICON_SUCCESS KURULUM TAMAMLANDI!"
     fi
     echo ""
     gum_style --foreground "$COLOR_TEXT_FG" "Tüm araçlar başarıyla kuruldu!"
@@ -517,8 +529,13 @@ execute_installation_plan() {
 run_quickstart_mode() {
     # Install Gum first for modern TUI (silently if possible)
     if ! has_gum; then
-    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum)..."
-        install_gum || gum_info "Uyarı" "Gum kurulamadı, klasik TUI kullanılacak"
+        echo ""
+        echo "  Modern TUI kuruluyor (Gum)..."
+        if install_gum; then
+            gum_info "Başarılı" "Modern TUI kuruldu!"
+        else
+            echo "  Gum kurulamadı, klasik TUI kullanılacak"
+        fi
     fi
 
     # Show welcome
@@ -526,18 +543,31 @@ run_quickstart_mode() {
         return 1
     fi
 
-    # Show preset selection
+    # Show preset selection (multi-select enabled)
     show_presets
-    local preset="$QUICKSTART_PRESET_CHOICE"
 
-    gum_info "Bilgi" "\n⚡ Bir saniye, başlıyorum..."
+    # PRD FR-2.1: Handle multiple preset selections
+    local -a all_tools=()
+
+    gum_info "Bilgi" "\n⚡ Bir saniye, kurulum planınız hazırlanıyor..."
     sleep 1
 
-    # Generate and show plan
-    local -a tools=($(generate_installation_plan "$preset"))
+    # Generate combined installation plan from all selected presets
+    for preset in "${QUICKSTART_PRESET_CHOICES[@]}"; do
+        local -a preset_tools=($(generate_installation_plan "$preset"))
+        all_tools+=("${preset_tools[@]}")
+    done
 
-    # Execute installation immediately
-    execute_installation_plan "${tools[@]}"
+    # Remove duplicates while preserving order
+    local -a unique_tools=()
+    for tool in "${all_tools[@]}"; do
+        if [[ ! " ${unique_tools[*]} " =~ " ${tool} " ]]; then
+            unique_tools+=("$tool")
+        fi
+    done
+
+    # Execute combined installation plan
+    execute_installation_plan "${unique_tools[@]}"
 
     # Ask if user wants more (using Gum if available)
     if has_gum; then
