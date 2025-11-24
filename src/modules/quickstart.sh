@@ -20,7 +20,7 @@ show_quickstart_welcome() {
     gum_style --foreground "$COLOR_GOLD_FG" "Birkaç basit soru, gerisini otomatik kurulum!"
     echo ""
     
-    gum_style --foreground "$COLOR_TEXT_FG" "✨ Nasıl çalışır?"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_SPARKLES Nasıl çalışır?"
     gum_style --foreground "$COLOR_TEXT_FG" "  1. Ne yapmak istediğinizi seçin"
     gum_style --foreground "$COLOR_TEXT_FG" "  2. Önerilen araçları otomatik kurarım"
     gum_style --foreground "$COLOR_TEXT_FG" "  3. Hemen kod yazmaya başlayın!"
@@ -51,7 +51,7 @@ show_quickstart_welcome() {
 show_presets() {
     echo ""
 
-    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "📦 Kurulum Paketleri"
+    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_PACKAGE Kurulum Paketleri"
     echo ""
     gum_style --foreground "$COLOR_MUTED_FG" "$ICON_TARGET Hangi paketleri kurmak istersiniz? (Birden fazla seçebilirsiniz)"
     gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
@@ -189,9 +189,9 @@ _quickstart_preflight_checks() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_INFO_FG" --bold "🔍 SİSTEM KONTROL EDİLİYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "$ICON_SEARCH SİSTEM KONTROL EDİLİYOR"
     else
-    gum_info "Bilgi" "🔍 SİSTEM KONTROL EDİLİYOR"
+    gum_info "Bilgi" "$ICON_SEARCH SİSTEM KONTROL EDİLİYOR"
     fi
     echo ""
 
@@ -483,9 +483,9 @@ execute_installation_plan() {
     # Installation complete (banner shown at script start, don't redraw)
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "✅ KURULUM TAMAMLANDI!"
+        gum_style --foreground "$COLOR_SUCCESS_FG" --bold "$ICON_SUCCESS KURULUM TAMAMLANDI!"
     else
-    gum_success "Başarılı" "✅ KURULUM TAMAMLANDI!"
+    gum_success "Başarılı" "$ICON_SUCCESS KURULUM TAMAMLANDI!"
     fi
     echo ""
     gum_style --foreground "$COLOR_TEXT_FG" "Tüm araçlar başarıyla kuruldu!"

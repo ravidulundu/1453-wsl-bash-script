@@ -102,7 +102,7 @@ show_mode_selection() {
             "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "🚀 Hızlı Başlangıç (Önerilen)")
+            "*Hızlı Başlangıç"*)
                 echo ""
                 run_quickstart_mode
                 continue
@@ -112,7 +112,7 @@ show_mode_selection() {
                 run_advanced_mode
                 break
                 ;;
-            "🚪 Çıkış")
+            *"Çıkış"*)
     gum_style --foreground "$COLOR_TEXT_FG" "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
@@ -204,7 +204,7 @@ run_advanced_mode() {
             "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "📦 Tam Kurulum"*)
+            "*Tam Kurulum"*)
                 echo ""
                 gum_info "Bilgi" "Tam kurulum başlatılıyor..."
                 sleep 1
@@ -224,7 +224,7 @@ run_advanced_mode() {
                 gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
                 sleep 2
                 ;;
-            "🎯 Çoklu Bileşen Seçimi"*)
+            "*Çoklu Bileşen"*)
                 # PRD FR-2.1: Multi-select installation
                 echo ""
                 gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
@@ -281,7 +281,7 @@ run_advanced_mode() {
                 gum_success "Tamamlandı" "Seçilen tüm bileşenler kuruldu!"
                 sleep 2
                 ;;
-            "🔧 Sistem Hazırlığı"*)
+            "*Sistem Hazırlığı"*)
                 prepare_and_configure_git
                 ;;
             *"Python Ekosistemi"*)
