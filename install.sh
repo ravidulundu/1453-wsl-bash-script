@@ -196,7 +196,14 @@ download_file_silent() {
 
     # Add GitHub token if available (prevents rate limiting)
     # DRY: Prepare curl options dynamically
-    local curl_opts=(-fsSL)
+    local curl_opts=(
+        -fsSL
+        --connect-timeout 10
+        --max-time 30
+        --retry 3
+        --retry-delay 2
+        --retry-max-time 60
+    )
     if [ -n "$GITHUB_TOKEN" ]; then
         curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
     fi
@@ -569,8 +576,15 @@ main() {
         printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
 
         # Download file silently (with GitHub token if available)
-        # DRY: Prepare curl options dynamically
-        local curl_opts=(-fsSL)
+        # DRY: Prepare curl options dynamically with retry logic
+        local curl_opts=(
+            -fsSL
+            --connect-timeout 10
+            --max-time 30
+            --retry 3
+            --retry-delay 2
+            --retry-max-time 60
+        )
         if [ -n "$GITHUB_TOKEN" ]; then
             curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
         fi
