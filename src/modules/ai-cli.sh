@@ -347,7 +347,7 @@ install_qoder_cli() {
     temp_installer=$(mktemp)
 
     if curl -fsSL "$QODER_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
+        gum_info "İndirme" "İndirme başarılı, kuruluyor..."
 
         # Run installer
         if bash "$temp_installer"; then
@@ -405,7 +405,7 @@ install_kiro_cli() {
     temp_installer=$(mktemp)
 
     if curl -fsSL "$KIRO_INSTALL_URL" -o "$temp_installer" 2>/dev/null; then
-        echo -e "${GREEN}[[+]]${NC} İndirme başarılı, kuruluyor..."
+        gum_info "İndirme" "İndirme başarılı, kuruluyor..."
 
         # Run installer
         if bash "$temp_installer"; then

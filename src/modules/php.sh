@@ -110,10 +110,16 @@ install_composer() {
             version=$(composer --version 2>/dev/null | head -n1 | awk '{print $3}' || echo "unknown")
             gum_success "Başarılı" "Composer kurulumu tamamlandı: $version"
             
-            echo -e "\n${CYAN}[BİLGİ]${NC} Composer Kullanım İpuçları:"
-            echo -e "  ${GREEN}•${NC} Proje bağımlılıklarını kurma: ${GREEN}composer install${NC}"
-            echo -e "  ${GREEN}•${NC} Paket ekleme: ${GREEN}composer require paket/adi${NC}"
-            echo -e "  ${GREEN}•${NC} Laravel kurulumu: ${GREEN}composer global require laravel/installer${NC}"
+            echo ""
+            gum_header "COMPOSER KULLANIM İPUÇLARI"
+            local instructions="
+## 📌 Kullanım Örnekleri:
+
+*   **Proje bağımlılıklarını kurma:** \`composer install\`
+*   **Paket ekleme:** \`composer require paket/adi\`
+*   **Laravel kurulumu:** \`composer global require laravel/installer\`
+"
+            gum_markdown "$instructions"
             
             track_success "Composer" "$version"
             return 0

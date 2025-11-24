@@ -104,19 +104,27 @@ DOCKER_AUTOSTART
             echo ""
             gum_header "YAPILANDIRMA GEREKLİ" "Docker Kullanımı İçin Son Adımlar"
             
-            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-            echo -e "${CYAN}📋 ŞİMDİ NE YAPMANIZ GEREKİYOR:${NC}"
-            echo -e "\n${YELLOW}1️⃣  Grup yetkilerini aktifleştirin (iki seçenekten BİRİNİ):${NC}"
-            echo -e "   ${GREEN}A) Terminal'i KAPATIN ve YENİDEN AÇIN${NC} ${CYAN}(önerilen)${NC}"
-            echo -e "   ${GREEN}B) Bu komutu çalıştırın:${NC} ${CYAN}newgrp docker${NC}"
-            echo -e "\n${YELLOW}2️⃣  Test edin:${NC}"
-            echo -e "   ${GREEN}docker ps${NC}"
             
+            local instructions="
+## 📋 ŞİMDİ NE YAPMANIZ GEREKİYOR:
+
+### 1️⃣ Grup yetkilerini aktifleştirin (iki seçenekten BİRİNİ):
+   *   **A) Terminal'i KAPATIN ve YENİDEN AÇIN** _(önerilen)_
+   *   **B) Bu komutu çalıştırın:** \`newgrp docker\`
+
+### 2️⃣ Test edin:
+   \`\`\`bash
+   docker ps
+   \`\`\`
+"
             if grep -q "microsoft" /proc/version; then
-                echo -e "\n${CYAN}💡 WSL Kullanıcıları İçin:${NC}"
-                echo -e "   ${GREEN}✓${NC} Docker sonraki açılışlarda otomatik başlayacak."
+                instructions+="
+### 💡 WSL Kullanıcıları İçin:
+   ✓ Docker sonraki açılışlarda otomatik başlayacak.
+"
             fi
-            echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            
+            gum_markdown "$instructions"
             
             # Check daemon status
             if ! docker info &> /dev/null 2>&1; then
