@@ -529,8 +529,13 @@ execute_installation_plan() {
 run_quickstart_mode() {
     # Install Gum first for modern TUI (silently if possible)
     if ! has_gum; then
-    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum)..."
-        install_gum || gum_info "Uyarı" "Gum kurulamadı, klasik TUI kullanılacak"
+        echo ""
+        echo "  Modern TUI kuruluyor (Gum)..."
+        if install_gum; then
+            gum_info "Başarılı" "Modern TUI kuruldu!"
+        else
+            echo "  Gum kurulamadı, klasik TUI kullanılacak"
+        fi
     fi
 
     # Show welcome

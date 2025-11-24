@@ -135,8 +135,13 @@ show_advanced_menu() {
 _advanced_mode_init() {
     # Install Gum first for modern TUI (optional, skip if fails)
     if ! has_gum; then
-    gum_info "Bilgi" "\n Modern TUI kuruluyor (Gum - opsiyonel)..."
-        install_gum 2>/dev/null || gum_info "Uyarı" "Gum kurulumunu atlandı"
+        echo ""
+        echo "  Modern TUI kuruluyor (Gum - opsiyonel)..."
+        if install_gum 2>/dev/null; then
+            gum_info "Başarılı" "Modern TUI kuruldu!"
+        else
+            echo "  Gum kurulumu atlandı (klasik UI kullanılacak)"
+        fi
         sleep 1
     fi
 

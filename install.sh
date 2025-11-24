@@ -417,10 +417,14 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 main() {
     show_banner
 
+    # FIX: Install Gum FIRST before using any gum functions
+    # This ensures modern UI works from the start
+    install_gum_minimal
+
     # PRD: Use AI thinking state for initialization (FR-2.4)
     show_ai_thinking "init" 1
 
-    # PRD: Use gum_info wrapper instead of raw echo
+    # PRD: Use gum_info wrapper (Gum is now installed)
     echo ""
     gum_info "Başlatma" "1453.AI WSL Kurulum Betiği yükleniyor..."
     echo ""
@@ -442,9 +446,6 @@ main() {
         gum_warning "İpucu" "curl'ü kurmak için: sudo apt install curl"
         exit 1
     fi
-
-    # Install Gum EARLY to ensure modern UI during download phase
-    install_gum_minimal
 
     # Kurulum dizin yapısını oluştur
     # PRD: Use AI thinking while performing operation
