@@ -508,8 +508,8 @@ cleanup_shell_configs() {
     # FIX BUG-008: Validate marker integrity before cleanup
     # Count START and END markers to ensure they're balanced
     if [ -f ~/.bashrc ]; then
-    gum_style --foreground 251 "$BASHRC_MARKER_GENERIC_PATTERN" ~/.bashrc 2>/dev/null || echo "0"
-    gum_style --foreground 251 "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0"
+        local start_count=$(grep -c "$BASHRC_MARKER_GENERIC_PATTERN" ~/.bashrc 2>/dev/null || echo "0")
+        local end_count=$(grep -c "===== END:.*1453 WSL Setup =====" ~/.bashrc 2>/dev/null || echo "0")
 
         if [ "$start_count" -ne "$end_count" ]; then
     gum_alert "Uyarı" ".bashrc'de eşleşmeyen START/END marker'ları bulundu!"
