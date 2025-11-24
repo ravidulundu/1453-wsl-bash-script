@@ -31,7 +31,30 @@ fi
 #     exec 0</dev/tty 2>/dev/null || true
 # fi
 
-# Renkli çıktı için tanımlamalar
+# ==============================================================================
+# PRD: THEME CONFIGURATION (Crimson & Gold)
+# Based on: docs/reports/dev-kurulun-cli-prd.md Section 2.1
+# ==============================================================================
+
+# 24-bit TrueColor Support (PRD Requirement)
+COLOR_CRIMSON="#DC143C"      # Primary brand color
+COLOR_GOLD="#FFD700"         # Secondary borders/icons
+COLOR_TEXT="#F5F5F5"         # Off-white text
+COLOR_ERROR="#FF0000"        # Errors
+COLOR_SUCCESS="#008080"      # Teal - completed operations
+COLOR_WARNING="#FFA500"      # Orange - warnings
+COLOR_INFO="#1E90FF"         # Blue - information
+
+# ANSI Fallback Colors (8-bit terminals)
+COLOR_CRIMSON_FG="212"       # Approximate crimson
+COLOR_GOLD_FG="220"          # Approximate gold
+COLOR_TEXT_FG="255"          # White
+COLOR_ERROR_FG="196"         # Red
+COLOR_SUCCESS_FG="30"        # Teal
+COLOR_WARNING_FG="214"       # Orange
+COLOR_INFO_FG="33"           # Blue
+
+# Legacy color codes (backward compatibility)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -138,7 +161,7 @@ show_banner() {
 
             echo ""
 
-            # Title (CENTERED with margin)
+            # Title (CENTERED with margin) - PRD FR-1.2: Double border, Gold
             local title_width=70
             if [ "$TUI_WIDTH" -lt 90 ]; then
                 title_width=60
@@ -146,17 +169,22 @@ show_banner() {
             local title_margin=$(( (TUI_WIDTH - title_width) / 2 ))
             [ $title_margin -lt 0 ] && title_margin=0
 
+            # PRD FR-1.2: "1453 WSL Architect" başlığı, double border, gold renk
             gum style \
-                --foreground 212 --border rounded --align center \
+                --foreground "$COLOR_CRIMSON_FG" \
+                --border double \
+                --border-foreground "$COLOR_GOLD_FG" \
+                --align center \
                 --width "$title_width" --margin "0 $title_margin" --padding "1 2" \
-                "🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici"
+                --bold \
+                "1453 WSL ARCHITECT" "" "Hızlı Yükleyici v2.5"
 
             echo ""
         fi
     else
         # Traditional ASCII banner (fallback with padding)
         echo ""
-        echo -e "  ${CYAN}🚀 1453.AI WSL Kurulum Betiği - Hızlı Yükleyici${NC}"
+        echo -e "  ${CYAN}🚀 1453 WSL ARCHITECT - Hızlı Yükleyici${NC}"
         echo ""
     fi
 }
@@ -208,6 +236,114 @@ download_file() {
 # Check if Gum is available
 has_gum() {
     command -v gum &>/dev/null
+}
+
+# ==============================================================================
+# PRD: GUM WRAPPER FUNCTIONS (Section 4.3)
+# Inline minimal versions for install.sh
+# ==============================================================================
+
+# Info Box (Blue/Crimson Info Box)
+gum_info() {
+    local title="$1"
+    local message="$2"
+
+    if has_gum; then
+        gum style \
+            --foreground "$COLOR_INFO_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_INFO_FG" \
+            --padding "1 2" \
+            --margin "1 0" \
+            --align center \
+            "ℹ️  $title" "" "$message"
+    else
+        echo -e "${BLUE}[ℹ️  $title]${NC} $message"
+    fi
+}
+
+# Success Box (Teal Success Box)
+gum_success() {
+    local title="$1"
+    local message="$2"
+
+    if has_gum; then
+        gum style \
+            --foreground "$COLOR_SUCCESS_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_SUCCESS_FG" \
+            --padding "1 2" \
+            --margin "1 0" \
+            --align center \
+            "✅ $title" "" "$message"
+    else
+        echo -e "${GREEN}[✅ $title]${NC} $message"
+    fi
+}
+
+# Alert Box (Red Error Box)
+gum_alert() {
+    local title="$1"
+    local message="$2"
+
+    if has_gum; then
+        gum style \
+            --foreground "$COLOR_ERROR_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_ERROR_FG" \
+            --padding "1 2" \
+            --margin "1 0" \
+            --align center \
+            "❌ $title" "" "$message"
+    else
+        echo -e "${RED}[❌ $title]${NC} $message"
+    fi
+}
+
+# Warning Box (Orange Warning Box)
+gum_warning() {
+    local title="$1"
+    local message="$2"
+
+    if has_gum; then
+        gum style \
+            --foreground "$COLOR_WARNING_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_WARNING_FG" \
+            --padding "1 2" \
+            --margin "1 0" \
+            --align center \
+            "⚠️  $title" "" "$message"
+    else
+        echo -e "${YELLOW}[⚠️  $title]${NC} $message"
+    fi
+}
+
+# AI Thinking State (PRD Section 2.2)
+show_ai_thinking() {
+    local context="$1"
+    local duration="${2:-2}"
+
+    # AI Contextual Messages (PRD FR-2.4)
+    local message="⏳ İşlem devam ediyor..."
+    case "$context" in
+        init) message="🏗️  Ortam hazırlanıyor..." ;;
+        downloading) message="📦 Dosyalar indiriliyor..." ;;
+        installing) message="⚙️  Bileşenler yükleniyor..." ;;
+        verifying) message="✓  Doğrulama yapılıyor..." ;;
+        complete) message="🎉 İşlem tamamlandı!" ;;
+    esac
+
+    if has_gum; then
+        gum spin --spinner dot --title "$message" -- sleep "$duration"
+    else
+        echo -n "$message "
+        for ((i=0; i<duration; i++)); do
+            echo -n "."
+            sleep 1
+        done
+        echo " ✓"
+    fi
 }
 
 # Install Gum for modern TUI
@@ -281,50 +417,29 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 main() {
     show_banner
 
-    if has_gum; then
-        # Calculate margin for centering
-        local content_width=70
-        if [ "$TUI_WIDTH" -lt 90 ]; then
-            content_width=60
-        fi
-        local left_margin=$(( (TUI_WIDTH - content_width) / 2 ))
-        [ $left_margin -lt 0 ] && left_margin=0
+    # PRD: Use AI thinking state for initialization (FR-2.4)
+    show_ai_thinking "init" 1
 
+    # PRD: Use gum_info wrapper instead of raw echo
+    echo ""
+    gum_info "Başlatma" "1453.AI WSL Kurulum Betiği yükleniyor..."
+    echo ""
+
+    if has_gum; then
         gum style \
-            --foreground 51 \
-            --width "$content_width" --margin "0 $left_margin" \
-            "[BİLGİ] 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-        gum style \
-            --foreground 51 \
-            --width "$content_width" --margin "0 $left_margin" \
-            "[BİLGİ] Kurulum dizini: ${INSTALL_DIR}"
-        echo ""
+            --foreground "$COLOR_TEXT_FG" \
+            --align center \
+            "Kurulum Dizini: ${INSTALL_DIR}"
     else
-        echo -e "  ${CYAN}[BİLGİ]${NC} 1453.AI WSL Kurulum Betiği Yüklemesi Başlatılıyor..."
-        echo -e "  ${CYAN}[BİLGİ]${NC} Kurulum dizini: ${INSTALL_DIR}"
-        echo ""
+        echo -e "  Kurulum Dizini: ${INSTALL_DIR}"
     fi
+    echo ""
 
     # curl kontrolü
     if ! command -v curl &> /dev/null; then
-        if has_gum; then
-            # Calculate margin for centering
-            local msg_width=60
-            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
-            [ $msg_margin -lt 0 ] && msg_margin=0
-
-            gum style \
-                --foreground 196 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "[HATA] curl gerekli ama kurulu değil."
-            gum style \
-                --foreground 226 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "[İPUCU] curl'ü kurmak için: sudo apt install curl"
-        else
-            echo -e "  ${RED}[HATA]${NC} curl gerekli ama kurulu değil."
-            echo -e "  ${YELLOW}[İPUCU]${NC} curl'ü kurmak için: sudo apt install curl"
-        fi
+        gum_alert "Eksik Bağımlılık" "curl gerekli ama kurulu değil"
+        echo ""
+        gum_warning "İpucu" "curl'ü kurmak için: sudo apt install curl"
         exit 1
     fi
 
@@ -332,28 +447,19 @@ main() {
     install_gum_minimal
 
     # Kurulum dizin yapısını oluştur
+    # PRD: Use AI thinking while performing operation
     if has_gum; then
-        # Calculate margin for centering
-        local msg_width=60
-        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
-        [ $msg_margin -lt 0 ] && msg_margin=0
-
-        gum style \
-            --foreground 226 \
-            --width "$msg_width" --margin "0 $msg_margin" \
-            "[KURULUM] Dizin yapısı oluşturuluyor..."
-        mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
-        gum style \
-            --foreground 82 \
-            --width "$msg_width" --margin "0 $msg_margin" \
-            "[✓] Dizin yapısı oluşturuldu"
-        echo ""
+        gum spin --spinner dot --title "🏗️  Dizin yapısı oluşturuluyor..." -- \
+            mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
     else
-        echo -e "  ${YELLOW}[KURULUM]${NC} Dizin yapısı oluşturuluyor..."
+        echo "🏗️  Dizin yapısı oluşturuluyor..."
         mkdir -p "${INSTALL_DIR}/src"/{lib,config,modules} "${INSTALL_DIR}/templates"
-        echo -e "  ${GREEN}[✓]${NC} Dizin yapısı oluşturuldu"
-        echo ""
     fi
+
+    # PRD: Use gum_success wrapper
+    echo ""
+    gum_success "Hazırlık Tamamlandı" "Dizin yapısı oluşturuldu"
+    echo ""
 
     # İndirilecek dosyaların listesi
     declare -a files=(
@@ -395,22 +501,21 @@ main() {
     # Download all files with single-line progress
     local count=0
 
-    if has_gum; then
-        # Calculate margin for centering
-        local msg_width=70
-        if [ "$TUI_WIDTH" -lt 90 ]; then
-            msg_width=60
-        fi
-        local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
-        [ $msg_margin -lt 0 ] && msg_margin=0
+    # PRD: Use AI contextual message (FR-2.4)
+    echo ""
+    gum_info "İndirme Başlıyor" "$total_files dosya indirilecek"
+    echo ""
 
+    # PRD: Show AI thinking state while downloading
+    if has_gum; then
         gum style \
-            --foreground 51 \
-            --width "$msg_width" --margin "0 $msg_margin" \
-            "📦 Modüler bileşenler indiriliyor ($total_files dosya)..."
+            --foreground "$COLOR_GOLD_FG" \
+            --align center \
+            "📦 Modüler bileşenler hazırlanıyor..."
     else
-        echo -e "  ${CYAN}[BİLGİ]${NC} Modüler bileşenler indiriliyor ($total_files dosya)..."
+        echo "📦 Modüler bileşenler hazırlanıyor..."
     fi
+    echo ""
 
     # Temporarily disable strict error handling for download loop
     set +e
@@ -481,72 +586,52 @@ main() {
     printf "\r%*s\r" "$TUI_WIDTH" ""
     echo ""
 
-    # Show summary
+    # Show summary - PRD: Use wrapper functions
     if [ $failed -eq 0 ]; then
-        if has_gum; then
-            # Calculate margin for centering
-            local msg_width=70
-            if [ "$TUI_WIDTH" -lt 90 ]; then
-                msg_width=60
-            fi
-            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
-            [ $msg_margin -lt 0 ] && msg_margin=0
-
-            gum style \
-                --foreground 82 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "✅ Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
-        else
-            echo -e "  ${GREEN}[✓]${NC} Tüm dosyalar başarıyla indirildi ($total_files/$total_files)"
-        fi
+        # PRD: Show AI completion state
+        show_ai_thinking "complete" 1
+        echo ""
+        gum_success "İndirme Tamamlandı" "$total_files/$total_files dosya başarıyla indirildi"
         echo ""
     fi
 
     if [ $failed -gt 0 ]; then
-        if has_gum; then
-            # Calculate margin for centering
-            local msg_width=70
-            if [ "$TUI_WIDTH" -lt 90 ]; then
-                msg_width=60
-            fi
-            local msg_margin=$(( (TUI_WIDTH - msg_width) / 2 ))
-            [ $msg_margin -lt 0 ] && msg_margin=0
+        # PRD: Use gum_alert for errors
+        echo ""
+        gum_alert "İndirme Hatası" "$failed/$total_files dosya indirilemedi"
+        echo ""
 
+        # Show failed files list
+        if has_gum; then
             gum style \
-                --foreground 196 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "❌ $failed/$total_files dosya indirilemedi"
-            echo ""
-            gum style \
-                --foreground 226 \
-                --width "$msg_width" --margin "0 $msg_margin" \
+                --foreground "$COLOR_WARNING_FG" \
+                --align center \
                 "Başarısız dosyalar:"
+            echo ""
             for failed_file in "${failed_files[@]}"; do
                 gum style \
-                    --foreground 196 \
-                    --width "$msg_width" --margin "0 $msg_margin" \
+                    --foreground "$COLOR_ERROR_FG" \
                     "  • $failed_file"
             done
-            echo ""
-            gum style \
-                --foreground 226 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "[İPUCU] Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-            gum style \
-                --foreground 51 \
-                --width "$msg_width" --margin "0 $msg_margin" \
-                "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         else
-            echo -e "  ${RED}[HATA]${NC} $failed/$total_files dosya indirilemedi"
-            echo ""
-            echo -e "  ${YELLOW}Başarısız dosyalar:${NC}"
+            echo "Başarısız dosyalar:"
             for failed_file in "${failed_files[@]}"; do
-                echo -e "    ${RED}•${NC} $failed_file"
+                echo "  • $failed_file"
             done
-            echo ""
-            echo -e "  ${YELLOW}[İPUCU]${NC} Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz:"
-            echo -e "        git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
         fi
+
+        echo ""
+        gum_warning "İpucu" "Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz"
+        echo ""
+        if has_gum; then
+            gum style \
+                --foreground "$COLOR_INFO_FG" \
+                --align center \
+                "git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        else
+            echo "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
+        fi
+        echo ""
         exit 1
     fi
 
