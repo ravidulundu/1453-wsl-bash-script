@@ -47,34 +47,46 @@ show_quickstart_welcome() {
 }
 
 # Show preset selection
+# PRD FR-2.1: Multi-select support - Kullanıcı birden fazla paket seçebilir
 show_presets() {
     echo ""
-    
+
     gum_style --foreground "$COLOR_CRIMSON_FG" --bold "📦 Kurulum Paketleri"
     echo ""
-    gum_style --foreground "$COLOR_MUTED_FG" "Ne yapmak istiyorsunuz?"
+    gum_style --foreground "$COLOR_MUTED_FG" "🎯 Hangi paketleri kurmak istersiniz? (Birden fazla seçebilirsiniz)"
+    gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
     echo ""
 
-    local selection
-    selection=$(gum_choose \
+    local selections
+    selections=$(gum_multiselect "Paket seçin:" \
         "🌐 Web Geliştirme (Python + Node + PHP)" \
         "🤖 AI Geliştirme (Python + AI Tools)" \
         "⚙️  Backend Geliştirme (Python + Go + PHP)" \
-        "🚀 Her Şey (Full Stack + AI)" \
+        "🐳 Docker Ortamı" \
         "📱 Mobil + Web (Flutter + Node + PHP)")
 
-    case "$selection" in
-        *"Web Geliştirme"*) QUICKSTART_PRESET_CHOICE="web" ;;
-        *"AI Geliştirme"*) QUICKSTART_PRESET_CHOICE="ai" ;;
-        *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICE="backend" ;;
-        *"Her Şey"*) QUICKSTART_PRESET_CHOICE="everything" ;;
-        *"Mobil + Web"*) QUICKSTART_PRESET_CHOICE="mobile" ;;
-        *)
-    gum_alert "Uyarı" "\n Geçersiz seçim!"
-            sleep 1
-            show_presets
-            ;;
-    esac
+    # Check if any selection made
+    if [ -z "$selections" ]; then
+        gum_alert "Uyarı" "En az bir paket seçmelisiniz!"
+        sleep 1
+        show_presets
+        return
+    fi
+
+    # Store multi-select results as array
+    QUICKSTART_PRESET_CHOICES=()
+    while IFS= read -r line; do
+        case "$line" in
+            *"Web Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("web") ;;
+            *"AI Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("ai") ;;
+            *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("backend") ;;
+            *"Docker Ortamı"*) QUICKSTART_PRESET_CHOICES+=("docker") ;;
+            *"Mobil + Web"*) QUICKSTART_PRESET_CHOICES+=("mobile") ;;
+        esac
+    done <<< "$selections"
+
+    # Legacy compat: Set first choice as main
+    QUICKSTART_PRESET_CHOICE="${QUICKSTART_PRESET_CHOICES[0]}"
 }
 
 # Generate installation plan based on preset
@@ -526,18 +538,31 @@ run_quickstart_mode() {
         return 1
     fi
 
-    # Show preset selection
+    # Show preset selection (multi-select enabled)
     show_presets
-    local preset="$QUICKSTART_PRESET_CHOICE"
 
-    gum_info "Bilgi" "\n⚡ Bir saniye, başlıyorum..."
+    # PRD FR-2.1: Handle multiple preset selections
+    local -a all_tools=()
+
+    gum_info "Bilgi" "\n⚡ Bir saniye, kurulum planınız hazırlanıyor..."
     sleep 1
 
-    # Generate and show plan
-    local -a tools=($(generate_installation_plan "$preset"))
+    # Generate combined installation plan from all selected presets
+    for preset in "${QUICKSTART_PRESET_CHOICES[@]}"; do
+        local -a preset_tools=($(generate_installation_plan "$preset"))
+        all_tools+=("${preset_tools[@]}")
+    done
 
-    # Execute installation immediately
-    execute_installation_plan "${tools[@]}"
+    # Remove duplicates while preserving order
+    local -a unique_tools=()
+    for tool in "${all_tools[@]}"; do
+        if [[ ! " ${unique_tools[*]} " =~ " ${tool} " ]]; then
+            unique_tools+=("$tool")
+        fi
+    done
+
+    # Execute combined installation plan
+    execute_installation_plan "${unique_tools[@]}"
 
     # Ask if user wants more (using Gum if available)
     if has_gum; then

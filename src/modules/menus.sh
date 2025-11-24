@@ -179,6 +179,7 @@ run_advanced_mode() {
         local selection
         selection=$(gum_choose_enhanced "Kategoriler:" \
             "📦 Tam Kurulum (Tüm Araçlar)" \
+            "🎯 Çoklu Bileşen Seçimi (Multi-Select)" \
             "🔧 Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
             "🐍 Python Ekosistemi (pip, pipx, uv)" \
@@ -221,6 +222,63 @@ run_advanced_mode() {
                 install_go
                 echo ""
                 gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
+                sleep 2
+                ;;
+            "🎯 Çoklu Bileşen Seçimi"*)
+                # PRD FR-2.1: Multi-select installation
+                echo ""
+                gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
+                echo ""
+
+                local components
+                components=$(gum_multiselect "Kurulacak bileşenleri seçin:" \
+                    "🔧 Sistem Güncellemesi" \
+                    "🔧 Git Yapılandırması" \
+                    "🐍 Python Ekosistemi (Python + pip + pipx + uv)" \
+                    "🟢 Node.js (NVM)" \
+                    "⚡ Bun.js Runtime" \
+                    "🐘 PHP + Composer" \
+                    "🐹 Go Dili" \
+                    "🤖 AI CLI Araçları" \
+                    "🧠 AI Frameworks" \
+                    "🚀 Modern CLI Araçları" \
+                    "🐚 Shell Yapılandırması" \
+                    "🐳 Docker Ortamı")
+
+                if [ -z "$components" ]; then
+                    gum_alert "Uyarı" "Hiçbir bileşen seçilmedi!"
+                    continue
+                fi
+
+                echo ""
+                gum_info "Bilgi" "Seçilen bileşenler kuruluyor..."
+                sleep 1
+
+                # Process selections
+                while IFS= read -r component; do
+                    case "$component" in
+                        *"Sistem Güncellemesi"*) update_system ;;
+                        *"Git Yapılandırması"*) configure_git ;;
+                        *"Python Ekosistemi"*)
+                            install_python && PYTHON_INSTALLED=true
+                            install_pip
+                            install_pipx
+                            install_uv
+                            ;;
+                        *"Node.js"*) install_nvm && NVM_INSTALLED=true ;;
+                        *"Bun.js"*) install_bun ;;
+                        *"PHP"*) install_php_version_menu; install_composer ;;
+                        *"Go Dili"*) install_go_menu ;;
+                        *"AI CLI"*) install_ai_cli_tools_menu ;;
+                        *"AI Frameworks"*) install_ai_frameworks_menu ;;
+                        *"Modern CLI"*) install_modern_cli_tools ;;
+                        *"Shell"*) setup_custom_shell ;;
+                        *"Docker"*) install_docker_menu ;;
+                    esac
+                done <<< "$components"
+
+                echo ""
+                gum_success "Tamamlandı" "Seçilen tüm bileşenler kuruldu!"
                 sleep 2
                 ;;
             "🔧 Sistem Hazırlığı"*)

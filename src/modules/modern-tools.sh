@@ -122,7 +122,33 @@ install_modern_cli_tools() {
     if [ ${#already_installed[@]} -gt 0 ]; then
         gum_info "Mevcut Araçlar" "${already_installed[*]}"
     fi
-    gum_info "Kurulacak Araçlar" "${missing_tools[*]}"
+
+    # PRD FR-2.2: Use gum_filter_enhanced for tool selection
+    echo ""
+    gum_info "Bilgi" "Kurulacak ${#missing_tools[@]} araç bulundu"
+    gum_style --foreground "$COLOR_GOLD_FG" "   💡 Bazı araçları seçmek için aşağıdaki filtreyi kullanabilirsiniz"
+    echo ""
+
+    if gum_confirm "Hangi araçları kuracağınızı seçmek ister misiniz?"; then
+        # Use gum filter for fuzzy search
+        local selected_tools
+        selected_tools=$(printf '%s\n' "${missing_tools[@]}" | gum_filter_enhanced "Kurmak istediğiniz araçları seçin (Tab: Seç, Enter: Onayla)")
+
+        if [ -z "$selected_tools" ]; then
+            gum_alert "Uyarı" "Hiçbir araç seçilmedi!"
+            return 0
+        fi
+
+        # Update missing_tools to only selected ones
+        missing_tools=()
+        while IFS= read -r tool; do
+            missing_tools+=("$tool")
+        done <<< "$selected_tools"
+
+        gum_info "Seçilen Araçlar" "${missing_tools[*]}"
+    else
+        gum_info "Kurulacak Araçlar" "${missing_tools[*]}"
+    fi
     echo ""
 
     # Detect package manager
