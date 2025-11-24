@@ -225,7 +225,7 @@ EOF
     gum format < "$report_file"
     rm -f "$report_file"
     echo ""
-    gum_style --foreground 212 "Devam etmek için bir tuşa basın..."
+    gum_style --foreground 251 "Devam etmek için bir tuşa basın..."
     read -n 1 -s
 }
 
@@ -806,13 +806,13 @@ cleanup_full_reset() {
 
     gum_alert "Uyarı" "UYARI: Bu işlem GERİ ALINAMAZ!\n"
     gum_info "Bilgi" "Silinecekler:"
-    gum_style --foreground 212 "• Tüm kurulumlar (Python, Node, PHP, Go, Docker, etc.)"
-    gum_style --foreground 212 "• Tüm modern CLI tools (bat, eza, starship, zoxide, fzf, etc.)"
-    gum_style --foreground 212 "• Shell config değişiklikleri (.bashrc, .bash_aliases)"
-    gum_style --foreground 212 "• AI tools ve frameworks"
-    gum_style --foreground 212 "• Kurulum dizini (~/.1453-wsl-setup)"
-    gum_style --foreground 212 "• Kaynak kod dizini (~/1453-wsl-bash-script - eğer varsa)"
-    gum_style --foreground 212 "• Config dosyaları (starship, fzf, zoxide)"
+    gum_style --foreground 251 "• Tüm kurulumlar (Python, Node, PHP, Go, Docker, etc.)"
+    gum_style --foreground 251 "• Tüm modern CLI tools (bat, eza, starship, zoxide, fzf, etc.)"
+    gum_style --foreground 251 "• Shell config değişiklikleri (.bashrc, .bash_aliases)"
+    gum_style --foreground 251 "• AI tools ve frameworks"
+    gum_style --foreground 251 "• Kurulum dizini (~/.1453-wsl-setup)"
+    gum_style --foreground 251 "• Kaynak kod dizini (~/1453-wsl-bash-script - eğer varsa)"
+    gum_style --foreground 251 "• Config dosyaları (starship, fzf, zoxide)"
     echo ""
     gum_info "Bilgi" "WSL ilk kurulduğu haline gelecek!"
     echo ""
@@ -891,9 +891,9 @@ cleanup_full_reset() {
     echo ""
     gum_info "Bilgi" "WSL ilk kurulum haline getirildi."
     gum_info "Bilgi" "Değişikliklerin tam aktif olması için:"
-    gum_style --foreground 212 "1. Tüm terminal pencerelerini kapatın"
+    gum_style --foreground 251 "1. Tüm terminal pencerelerini kapatın"
     gum_info "Bilgi" "${RED}2. WSL'i yeniden başlatın: wsl --shutdown"
-    gum_style --foreground 212 "3. Yeni terminal açın"
+    gum_style --foreground 251 "3. Yeni terminal açın"
     echo ""
     gum_info "Bilgi" "Script'i tekrar çalıştırarak yeniden kurulum yapabilirsiniz."
 }

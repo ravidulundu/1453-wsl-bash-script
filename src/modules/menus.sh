@@ -16,8 +16,8 @@ configure_git() {
 
     if [ -n "$current_user" ] && [ -n "$current_email" ]; then
         gum_info "Bilgi" "Mevcut Git yapılandırması:"
-    gum_style --foreground 212 "Kullanıcı: $current_user"
-    gum_style --foreground 212 "E-posta: $current_email"
+    gum_style --foreground 251 "Kullanıcı: $current_user"
+    gum_style --foreground 251 "E-posta: $current_email"
         echo ""
 
         # Use Gum confirm if available
@@ -45,8 +45,8 @@ configure_git() {
     git config --global user.email "$git_email"
 
     gum_success "Başarılı" "Git yapılandırması tamamlandı!"
-    gum_style --foreground 212 "Kullanıcı: $git_user"
-    gum_style --foreground 212 "E-posta: $git_email"
+    gum_style --foreground 251 "Kullanıcı: $git_user"
+    gum_style --foreground 251 "E-posta: $git_email"
     track_success "Git Yapılandırması" "$git_user <$git_email>"
 }
 
@@ -113,7 +113,7 @@ show_mode_selection() {
                 break
                 ;;
             "🚪 Çıkış")
-    gum_style --foreground 212 "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
+    gum_style --foreground 251 "\n[BİLGİ] Kurulum scripti sonlandırılıyor..."
                 exit 0
                 ;;
             *)

@@ -78,17 +78,17 @@ generate_installation_plan() {
     if has_gum; then
         gum_style --foreground 82 --bold "=== KURULUM BAŞLIYOR!"
     else
-    gum_style --foreground 212 "=== KURULUM BAŞLIYOR!"
+    gum_style --foreground 251 "=== KURULUM BAŞLIYOR!"
     fi
     echo ""
 
     # Always install base tools
     gum_info "Bilgi" "[PACKAGE] İlk önce (tüm paketlerde):"
-    gum_style --foreground 212 "[+] Sistem güncellemeleri"
-    gum_style --foreground 212 "[+] Git yapılandırması"
-    gum_style --foreground 212 "[+] Python + pip + pipx + UV"
-    gum_style --foreground 212 "[+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
-    gum_style --foreground 212 "[+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
+    gum_style --foreground 251 "[+] Sistem güncellemeleri"
+    gum_style --foreground 251 "[+] Git yapılandırması"
+    gum_style --foreground 251 "[+] Python + pip + pipx + UV"
+    gum_style --foreground 251 "[+] Modern CLI araçları (bat, eza, starship, zoxide, fzf, lazygit, lazydocker)"
+    gum_style --foreground 251 "[+] Shell ortamı (62 alias, özel fonksiyonlar, bashrc ayarları)"
     echo ""
 
     # Build tool list based on preset
@@ -97,45 +97,45 @@ generate_installation_plan() {
     case $preset in
         "web")
             gum_info "Bilgi" "🌐 Web Development paketi:"
-    gum_style --foreground 212 "[+] Node.js (NVM)"
-    gum_style --foreground 212 "[+] Bun.js runtime"
-    gum_style --foreground 212 "[+] PHP + Composer"
+    gum_style --foreground 251 "[+] Node.js (NVM)"
+    gum_style --foreground 251 "[+] Bun.js runtime"
+    gum_style --foreground 251 "[+] PHP + Composer"
             tools+=("nvm" "node" "bun" "php" "composer")
             ;;
         "ai")
             gum_info "Bilgi" "[AI] AI Development paketi:"
-    gum_style --foreground 212 "[+] Node.js (AI araçları için)"
-    gum_style --foreground 212 "[+] AI CLI Tools (Claude, Gemini, etc.)"
-    gum_style --foreground 212 "[+] AI Frameworks (SuperClaude, etc.)"
+    gum_style --foreground 251 "[+] Node.js (AI araçları için)"
+    gum_style --foreground 251 "[+] AI CLI Tools (Claude, Gemini, etc.)"
+    gum_style --foreground 251 "[+] AI Frameworks (SuperClaude, etc.)"
             tools+=("nvm" "node" "ai_cli" "ai_frameworks")
             ;;
         "backend")
             gum_info "Bilgi" "[SETUP]  Backend Development paketi:"
-    gum_style --foreground 212 "[+] Go language"
-    gum_style --foreground 212 "[+] PHP + Composer"
+    gum_style --foreground 251 "[+] Go language"
+    gum_style --foreground 251 "[+] PHP + Composer"
             tools+=("go" "php" "composer")
             ;;
         "everything")
             gum_info "Bilgi" "=== EVERYTHING paketi:"
-    gum_style --foreground 212 "[+] Node.js + Bun.js"
-    gum_style --foreground 212 "[+] Go language"
-    gum_style --foreground 212 "[+] PHP + Composer"
-    gum_style --foreground 212 "[+] AI CLI Tools + Frameworks"
-    gum_style --foreground 212 "[+] GitHub CLI"
+    gum_style --foreground 251 "[+] Node.js + Bun.js"
+    gum_style --foreground 251 "[+] Go language"
+    gum_style --foreground 251 "[+] PHP + Composer"
+    gum_style --foreground 251 "[+] AI CLI Tools + Frameworks"
+    gum_style --foreground 251 "[+] GitHub CLI"
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
             gum_info "Bilgi" "📱 Mobile + Web paketi:"
-    gum_style --foreground 212 "[+] Node.js"
-    gum_style --foreground 212 "[+] PHP + Composer"
-    gum_style --foreground 212 "[+] Flutter araçları"
+    gum_style --foreground 251 "[+] Node.js"
+    gum_style --foreground 251 "[+] PHP + Composer"
+    gum_style --foreground 251 "[+] Flutter araçları"
             tools+=("nvm" "node" "php" "composer")
             ;;
     esac
 
     echo ""
     gum_info "Bilgi" "------------------------------------------------------------"
-    gum_style --foreground 212 "Toplam ${#tools[@]} araç kurulacak"
+    gum_style --foreground 251 "Toplam ${#tools[@]} araç kurulacak"
     echo ""
 
     # Return the tools array
@@ -154,11 +154,11 @@ _quickstart_show_welcome() {
     if has_gum; then
         gum_style --foreground 82 --bold "=== QUICK START MODE - KURULUM BAŞLIYOR"
     else
-    gum_style --foreground 212 "=== QUICK START MODE - KURULUM BAŞLIYOR"
+    gum_style --foreground 251 "=== QUICK START MODE - KURULUM BAŞLIYOR"
     fi
     echo ""
     gum_info "Bilgi" "Kurulum planınız hazırlanıyor..."
-    gum_style --foreground 212 "${#tools[@]} araç otomatik kurulacak"
+    gum_style --foreground 251 "${#tools[@]} araç otomatik kurulacak"
     echo ""
     gum_info "Bilgi" "Sürüm: v2.2.1 | Tarih: $(date '+%Y-%m-%d %H:%M')"
     echo ""
@@ -177,7 +177,7 @@ _quickstart_preflight_checks() {
     echo ""
 
     if ! run_preflight_checks; then
-    gum_style --foreground 212 "[[-]] Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
+    gum_style --foreground 251 "[[-]] Sistem gereksinimleri karşılanamadı! Kurulum iptal edildi."
         gum_info "Uyarı" "Lütfen yukarıdaki hataları düzeltin ve tekrar deneyin."
         return 1
     fi
@@ -315,7 +315,7 @@ execute_installation_plan() {
                 if has_gum; then
                     gum_style --foreground 82 --bold "🟢 NODE.JS KURULUYOR (NVM)"
                 else
-    gum_style --foreground 212 "🟢 NODE.JS KURULUYOR (NVM)"
+    gum_style --foreground 251 "🟢 NODE.JS KURULUYOR (NVM)"
                 fi
                 echo ""
                 show_install_status "NVM" "installing"
@@ -469,7 +469,7 @@ execute_installation_plan() {
     gum_success "Başarılı" "✅ KURULUM TAMAMLANDI!"
     fi
     echo ""
-    gum_style --foreground 212 "Tüm araçlar başarıyla kuruldu!"
+    gum_style --foreground 251 "Tüm araçlar başarıyla kuruldu!"
     echo ""
 
     # Show installation summary
@@ -484,25 +484,25 @@ execute_installation_plan() {
     echo ""
     gum_info "Bilgi" "[INFO] ŞİMDİ NE YAPACAKSINIZ?"
     echo ""
-    gum_style --foreground 212 "> ADIM 1: Terminal Ortamını Yenileyin"
-    gum_style --foreground 212 "Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
+    gum_style --foreground 226 "> ADIM 1: Terminal Ortamını Yenileyin"
+    gum_style --foreground 251 "Yeni kurulan araçların aktif olması için şu komutu çalıştırın:"
     gum_info "Bilgi" "→ ${GREEN}source ~/.bashrc"
     echo ""
     gum_info "Bilgi" "veya terminali kapatıp yeniden açın (daha garantili)"
     echo ""
-    gum_style --foreground 212 "> ADIM 2: Kurulumları Test Edin"
+    gum_style --foreground 226 "> ADIM 2: Kurulumları Test Edin"
     gum_info "Bilgi" "• Python: ${GREEN}python3 --version"
     gum_info "Bilgi" "• Node.js: ${GREEN}node --version"
     gum_info "Bilgi" "• NVM: ${GREEN}nvm --version"
     gum_info "Bilgi" "• Modern CLI: ${GREEN}bat --version, ${GREEN}eza --version"
     echo ""
-    gum_style --foreground 212 "> ADIM 3: Kodlamaya Başlayın!"
+    gum_style --foreground 226 "> ADIM 3: Kodlamaya Başlayın!"
     gum_info "Bilgi" "• Proje oluşturun: ${GREEN}mkdir my-project && cd my-project"
     gum_info "Bilgi" "• Python venv: ${GREEN}python3 -m venv venv"
     gum_info "Bilgi" "• Node proje: ${GREEN}npm init -y"
     echo ""
     gum_info "Bilgi" "[SETUP]  İleri düzey araçlar için:"
-    gum_style --foreground 212 "Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
+    gum_style --foreground 251 "Scripti tekrar çalıştırıp 'Advanced Mode' seçin"
     echo ""
 }
 
