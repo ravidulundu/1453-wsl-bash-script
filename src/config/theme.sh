@@ -52,14 +52,41 @@ export STYLE_BORDER_DOUBLE="double"
 export STYLE_BORDER_NORMAL="normal"
 
 # Icons
+# Core Icons
 export ICON_SUCCESS="✅"
 export ICON_ERROR="❌"
 export ICON_WARNING="⚠️"
 export ICON_INFO="ℹ️"
 export ICON_QUESTION="❓"
+
+# Action Icons
 export ICON_ROCKET="🚀"
 export ICON_GEAR="⚙️"
 export ICON_PACKAGE="📦"
+export ICON_TOOLS="🔧"
+export ICON_TRASH="🗑️"
+export ICON_BACK="🔙"
+export ICON_EXIT="🚪"
+export ICON_TARGET="🎯"
+export ICON_FIRE="🔥"
+export ICON_SPARKLES="✨"
+export ICON_LIGHT="💡"
+export ICON_BUILD="🏗️"
+export ICON_SEARCH="🔍"
+
+# Technology Icons
+export ICON_DOCKER="🐳"
+export ICON_AI="🤖"
+export ICON_BRAIN="🧠"
+export ICON_PYTHON="🐍"
+export ICON_NODE="🟢"
+export ICON_BUN="⚡"
+export ICON_PHP="🐘"
+export ICON_COMPOSER="🎼"
+export ICON_GO="🐹"
+export ICON_WEB="🌐"
+export ICON_MOBILE="📱"
+export ICON_SHELL="🐚"
 
 # ==============================================================================
 # ANSI ESCAPE CODES (For non-Gum fallback)

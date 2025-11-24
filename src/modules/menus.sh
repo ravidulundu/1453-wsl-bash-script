@@ -97,9 +97,9 @@ show_mode_selection() {
 
         local selection
         selection=$(gum_choose_enhanced "Bir mod seçin:" \
-            "🚀 Hızlı Başlangıç (Önerilen)" \
-            "🛠️  Gelişmiş Mod" \
-            "🚪 Çıkış")
+            "$ICON_ROCKET Hızlı Başlangıç (Önerilen)" \
+            "$ICON_GEAR Gelişmiş Mod" \
+            "$ICON_EXIT Çıkış")
 
         case "$selection" in
             "🚀 Hızlı Başlangıç (Önerilen)")
@@ -178,30 +178,30 @@ run_advanced_mode() {
         # Modern Gum menu
         local selection
         selection=$(gum_choose_enhanced "Kategoriler:" \
-            "📦 Tam Kurulum (Tüm Araçlar)" \
-            "🎯 Çoklu Bileşen Seçimi (Multi-Select)" \
-            "🔧 Sistem Hazırlığı (Update + Git)" \
+            "$ICON_PACKAGE Tam Kurulum (Tüm Araçlar)" \
+            "$ICON_TARGET Çoklu Bileşen Seçimi (Multi-Select)" \
+            "$ICON_TOOLS Sistem Hazırlığı (Update + Git)" \
             "━━━ Python & JavaScript ━━━" \
-            "🐍 Python Ekosistemi (pip, pipx, uv)" \
-            "🟢 Node.js (NVM)" \
-            "⚡ Bun.js Runtime" \
+            "$ICON_PYTHON Python Ekosistemi (pip, pipx, uv)" \
+            "$ICON_NODE Node.js (NVM)" \
+            "$ICON_BUN Bun.js Runtime" \
             "━━━ Backend & Languages ━━━" \
-            "🐘 PHP Kurulumu" \
-            "🎼 Composer" \
-            "🐹 Go Dili" \
+            "$ICON_PHP PHP Kurulumu" \
+            "$ICON_COMPOSER Composer" \
+            "$ICON_GO Go Dili" \
             "━━━ AI & Modern Tools ━━━" \
-            "🤖 AI CLI Araçları" \
-            "🧠 AI Frameworks" \
-            "🚀 Modern CLI Araçları" \
-            "🐚 Shell Yapılandırması" \
+            "$ICON_AI AI CLI Araçları" \
+            "$ICON_BRAIN AI Frameworks" \
+            "$ICON_ROCKET Modern CLI Araçları" \
+            "$ICON_SHELL Shell Yapılandırması" \
             "━━━ Docker & Utilities ━━━" \
-            "🐳 Docker Ortamı" \
+            "$ICON_DOCKER Docker Ortamı" \
             "━━━ Bakım & Onarım ━━━" \
-            "🗑️  AI Frameworks Kaldır" \
-            "⚠️  Temizleme ve Sıfırlama" \
+            "$ICON_TRASH AI Frameworks Kaldır" \
+            "$ICON_WARNING Temizleme ve Sıfırlama" \
             "━━━━━━━━━━━━━━━━━━━━━" \
-            "🔙 Ana Menüye Dön" \
-            "🚪 Çıkış")
+            "$ICON_BACK Ana Menüye Dön" \
+            "$ICON_EXIT Çıkış")
 
         case "$selection" in
             "📦 Tam Kurulum"*)
@@ -232,18 +232,18 @@ run_advanced_mode() {
 
                 local components
                 components=$(gum_multiselect "Kurulacak bileşenleri seçin:" \
-                    "🔧 Sistem Güncellemesi" \
-                    "🔧 Git Yapılandırması" \
-                    "🐍 Python Ekosistemi (Python + pip + pipx + uv)" \
-                    "🟢 Node.js (NVM)" \
-                    "⚡ Bun.js Runtime" \
-                    "🐘 PHP + Composer" \
-                    "🐹 Go Dili" \
-                    "🤖 AI CLI Araçları" \
-                    "🧠 AI Frameworks" \
-                    "🚀 Modern CLI Araçları" \
-                    "🐚 Shell Yapılandırması" \
-                    "🐳 Docker Ortamı")
+                    "$ICON_TOOLS Sistem Güncellemesi" \
+                    "$ICON_TOOLS Git Yapılandırması" \
+                    "$ICON_PYTHON Python Ekosistemi (Python + pip + pipx + uv)" \
+                    "$ICON_NODE Node.js (NVM)" \
+                    "$ICON_BUN Bun.js Runtime" \
+                    "$ICON_PHP PHP + Composer" \
+                    "$ICON_GO Go Dili" \
+                    "$ICON_AI AI CLI Araçları" \
+                    "$ICON_BRAIN AI Frameworks" \
+                    "$ICON_ROCKET Modern CLI Araçları" \
+                    "$ICON_SHELL Shell Yapılandırması" \
+                    "$ICON_DOCKER Docker Ortamı")
 
                 if [ -z "$components" ]; then
                     gum_alert "Uyarı" "Hiçbir bileşen seçilmedi!"

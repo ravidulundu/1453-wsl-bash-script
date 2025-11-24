@@ -9,10 +9,10 @@ show_quickstart_welcome() {
     
     # PRD: Streaming Text - Welcome mesajı daktilo ile
     if command -v typewriter_effect &>/dev/null; then
-        typewriter_effect "🚀 1453 WSL Architect - Hızlı Başlangıç Modu" 0.04
+        typewriter_effect "$ICON_ROCKET 1453 WSL Architect - Hızlı Başlangıç Modu" 0.04
         echo ""
     else
-        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "🚀 HIZLI BAŞLANGIÇ MODU"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_ROCKET HIZLI BAŞLANGIÇ MODU"
         echo ""
     fi
     
@@ -26,7 +26,7 @@ show_quickstart_welcome() {
     gum_style --foreground "$COLOR_TEXT_FG" "  3. Hemen kod yazmaya başlayın!"
     echo ""
     
-    gum_style --foreground "$COLOR_TEXT_FG" "🎯 Sonunda elde edeceğiniz:"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_TARGET Sonunda elde edeceğiniz:"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Tüm geliştirici araçları"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Hazır ortam"
     gum_style --foreground "$COLOR_TEXT_FG" "  ✓ Modern CLI tools"
@@ -53,17 +53,17 @@ show_presets() {
 
     gum_style --foreground "$COLOR_CRIMSON_FG" --bold "📦 Kurulum Paketleri"
     echo ""
-    gum_style --foreground "$COLOR_MUTED_FG" "🎯 Hangi paketleri kurmak istersiniz? (Birden fazla seçebilirsiniz)"
+    gum_style --foreground "$COLOR_MUTED_FG" "$ICON_TARGET Hangi paketleri kurmak istersiniz? (Birden fazla seçebilirsiniz)"
     gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
     echo ""
 
     local selections
     selections=$(gum_multiselect "Paket seçin:" \
-        "🌐 Web Geliştirme (Python + Node + PHP)" \
-        "🤖 AI Geliştirme (Python + AI Tools)" \
-        "⚙️  Backend Geliştirme (Python + Go + PHP)" \
-        "🐳 Docker Ortamı" \
-        "📱 Mobil + Web (Flutter + Node + PHP)")
+        "$ICON_WEB Web Geliştirme (Python + Node + PHP)" \
+        "$ICON_AI AI Geliştirme (Python + AI Tools)" \
+        "$ICON_GEAR Backend Geliştirme (Python + Go + PHP)" \
+        "$ICON_DOCKER Docker Ortamı" \
+        "$ICON_MOBILE Mobil + Web (Flutter + Node + PHP)")
 
     # Check if any selection made
     if [ -z "$selections" ]; then
@@ -115,7 +115,7 @@ generate_installation_plan() {
 
     case $preset in
         "web")
-            gum_info "Bilgi" "🌐 Web Development paketi:"
+            gum_info "Bilgi" "$ICON_WEB Web Development paketi:"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js (NVM)"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Bun.js runtime"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
@@ -144,7 +144,7 @@ generate_installation_plan() {
             tools+=("nvm" "node" "bun" "go" "php" "composer" "ai_cli" "ai_frameworks" "github_cli")
             ;;
         "mobile")
-            gum_info "Bilgi" "📱 Mobile + Web paketi:"
+            gum_info "Bilgi" "$ICON_MOBILE Mobile + Web paketi:"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Node.js"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] PHP + Composer"
             gum_style --foreground "$COLOR_TEXT_FG" "[+] Flutter araçları"
@@ -225,9 +225,9 @@ _quickstart_configure_git() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_GOLD_FG" --bold "🔧 GIT YAPILANDIRMASI"
+        gum_style --foreground "$COLOR_GOLD_FG" --bold "$ICON_TOOLS GIT YAPILANDIRMASI"
     else
-        gum_info "Bilgi" "🔧 GIT YAPILANDIRMASI"
+        gum_info "Bilgi" "$ICON_TOOLS GIT YAPILANDIRMASI"
     fi
     echo ""
     show_install_status "Git Configuration" "installing"
@@ -268,9 +268,9 @@ _quickstart_install_modern_tools() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+        gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_BUN MODERN CLI ARAÇLARI KURULUYOR"
     else
-        gum_info "Bilgi" "⚡ MODERN CLI ARAÇLARI KURULUYOR"
+        gum_info "Bilgi" "$ICON_BUN MODERN CLI ARAÇLARI KURULUYOR"
     fi
     echo ""
     show_install_status "Modern CLI Tools" "installing"
@@ -283,9 +283,9 @@ _quickstart_setup_shell() {
     # Banner shown at script start, don't redraw
     echo ""
     if has_gum; then
-        gum_style --foreground "$COLOR_INFO_FG" --bold "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+        gum_style --foreground "$COLOR_INFO_FG" --bold "$ICON_SHELL SHELL ORTAMI YAPILANDIRILIYOR"
     else
-    gum_info "Bilgi" "🐚 SHELL ORTAMI YAPILANDIRILIYOR"
+    gum_info "Bilgi" "$ICON_SHELL SHELL ORTAMI YAPILANDIRILIYOR"
     fi
     echo ""
     show_install_status "Shell Setup" "installing"
@@ -332,9 +332,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_SUCCESS_FG" --bold "🟢 NODE.JS KURULUYOR (NVM)"
+                    gum_style --foreground "$COLOR_SUCCESS_FG" --bold "$ICON_NODE NODE.JS KURULUYOR (NVM)"
                 else
-    gum_style --foreground "$COLOR_TEXT_FG" "🟢 NODE.JS KURULUYOR (NVM)"
+    gum_style --foreground "$COLOR_TEXT_FG" "$ICON_NODE NODE.JS KURULUYOR (NVM)"
                 fi
                 echo ""
                 show_install_status "NVM" "installing"
@@ -354,9 +354,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "⚡ BUN.JS KURULUYOR"
+                    gum_style --foreground "$COLOR_CRIMSON_FG" --bold "$ICON_BUN BUN.JS KURULUYOR"
                 else
-                    gum_info "Bilgi" "⚡ BUN.JS KURULUYOR"
+                    gum_info "Bilgi" "$ICON_BUN BUN.JS KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Bun.js" "installing"
@@ -394,9 +394,9 @@ execute_installation_plan() {
                 # Banner shown at script start, don't redraw
                 echo ""
                 if has_gum; then
-                    gum_style --foreground "$COLOR_GOLD_FG" --bold "🎼 COMPOSER KURULUYOR"
+                    gum_style --foreground "$COLOR_GOLD_FG" --bold "$ICON_COMPOSER COMPOSER KURULUYOR"
                 else
-                    gum_info "Bilgi" "🎼 COMPOSER KURULUYOR"
+                    gum_info "Bilgi" "$ICON_COMPOSER COMPOSER KURULUYOR"
                 fi
                 echo ""
                 show_install_status "Composer" "installing"
