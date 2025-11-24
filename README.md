@@ -194,9 +194,21 @@ Ana menüden **"🛠️ Gelişmiş Mod"** seçeneğini seçin.
 
 ---
 
-## 👨‍💻 Geliştirici
+## 👨‍💻 Proje Ekibi
 
-**Ravid Ulundu** - [@ravidulundu](https://github.com/ravidulundu)
+### 🎨 Proje Yaratıcısı
+**Alper Tunga** - Vizyon ve Konsept
+
+### 💻 Geliştirici
+**Tamer KARACA (A.K.A THE KING)** - Lead Developer
+
+### 🤝 Katkıda Bulunanlar
+- **FitzGPT** - AI Asistan
+- **Tuğser OKUR** - Contribu tor
+- **Ravi DULUNDU** - Developer
+
+### 📌 Versiyon
+**v2.5.0** - AI & UX Devrimi
 
 **Proje Linki:** [https://github.com/ravidulundu/1453-wsl-bash-script](https://github.com/ravidulundu/1453-wsl-bash-script)
 
