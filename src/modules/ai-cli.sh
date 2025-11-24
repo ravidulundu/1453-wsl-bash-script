@@ -200,7 +200,7 @@ install_copilot_cli() {
         version=$(npm list -g @githubnext/github-copilot-cli 2>/dev/null | grep github-copilot-cli | awk '{print $2}' || echo "unknown")
         gum_success "Başarılı" "GitHub Copilot CLI kurulumu tamamlandı!"
         gum_info "İpucu" "GitHub hesabınızla oturum açmak için:"
-        echo "  github-copilot-cli auth"
+        gum_info "Bilgi" "  github-copilot-cli auth"
         track_success "GitHub Copilot CLI" "$version"
         return 0
     else
@@ -285,7 +285,7 @@ install_github_cli() {
 # AI CLI Tools installation menu
 install_ai_cli_tools_menu() {
     echo ""
-    gum_style --foreground 212 --bold "[AI] AI CLI Araçları Kurulumu"
+    gum_style --foreground "$COLOR_TEXT_FG" --bold "[AI] AI CLI Araçları Kurulumu"
     echo ""
 
     local selection

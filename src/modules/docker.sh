@@ -7,6 +7,10 @@
 # Install Docker Engine
 # Install Docker Engine
 install_docker_engine() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "DOCKER ENGINE" "Konteyner Altyapısı Kurulumu"
 
@@ -132,6 +136,10 @@ DOCKER_AUTOSTART
 
 # Install Docker Compose (standalone - if needed)
 install_docker_compose() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     # Check if docker compose plugin is available
     if docker compose version &> /dev/null; then
         # Silent return if already installed as plugin (standard now)
@@ -146,6 +154,10 @@ install_docker_compose() {
 
 # Install lazydocker
 install_lazydocker_tool() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "LAZYDOCKER" "Docker Terminal UI"
 
@@ -198,6 +210,10 @@ install_lazydocker_tool() {
 
 # Docker installation menu
 install_docker_menu() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "DOCKER MENÜSÜ" "Konteyner Yönetim Araçları"
 

@@ -5,6 +5,10 @@
 
 # Install NVM (Node Version Manager)
 install_nvm() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+    
     echo ""
     gum_header "NVM KURULUMU" "Node.js Sürüm Yöneticisi"
 
@@ -110,6 +114,10 @@ END_NVM_CONFIG
 
 # Install Bun.js
 install_bun() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+    
     echo ""
     gum_header "BUN.JS KURULUMU" "Modern JavaScript Runtime"
 

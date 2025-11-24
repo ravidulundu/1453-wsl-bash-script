@@ -156,6 +156,41 @@ docker --version
 - **Gum UI:** Gelişmiş terminal UI bileşenleri kullanılabilir
 - **GitHub CLI:** \`gh\` komutu ile GitHub işlemleri
 
+---
+
+## 🤖 AI-Powered Öneriler
+
+EOF
+        # AI-like personalized suggestions based on what was installed
+        if [[ " ${SUCCESSFUL_INSTALLATIONS[*]} " =~ " Python " ]]; then
+            echo "- **Python Geliştirme:** \`uv\` ile ultra-hızlı paket yönetimi deneyin" >> "$report_file"
+            echo "- **Virtual Environment:** Her proje için \`python3 -m venv venv\` kullanın" >> "$report_file"
+        fi
+        
+        if [[ " ${SUCCESSFUL_INSTALLATIONS[*]} " =~ " Node" ]] || [[ " ${SUCCESSFUL_INSTALLATIONS[*]} " =~ " NVM" ]]; then
+            echo "- **Node.js Versiyonları:** \`nvm ls\` ile kurulu sürümleri görün" >> "$report_file"
+            echo "- **Paket Yöneticisi:** \`bun\` Node.js'ten 20x daha hızlı!" >> "$report_file"
+        fi
+        
+        if [[ " ${SUCCESSFUL_INSTALLATIONS[*]} " =~ " Docker" ]]; then
+            echo "- **Docker UI:** \`lazydocker\` ile container yönetimi kolaylaştı" >> "$report_file"
+            echo "- **Compose:** \`docker compose\` komutu artık hazır" >> "$report_file"
+        fi
+        
+        cat >> "$report_file" << EOF
+
+---
+
+## 📈 Performans Bilgisi
+
+**Kurulum Süresi:** Yaklaşık $(( $(date +%s) - ${INSTALL_START_TIME:-$(date +%s)} )) saniye  
+**Sistem:** $(uname -s) $(uname -m)  
+**WSL Sürümü:** $(grep -oP '(?<=WSL_DISTRO_NAME=).*' /proc/sys/kernel/osrelease 2>/dev/null || echo "N/A")
+
+---
+
+**🎉 Kurulum tamamlandı! Mutlu kodlamalar!**
+
 EOF
     fi
 

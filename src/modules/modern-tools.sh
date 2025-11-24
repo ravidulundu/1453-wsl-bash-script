@@ -5,6 +5,10 @@
 
 # Install Charm Gum - Modern TUI framework for shell scripts
 install_gum() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     # Check if already installed
     if command -v gum &>/dev/null; then
         local version
@@ -82,6 +86,10 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 
 # Install modern CLI tools (batcat, ripgrep, fd-find, eza, etc.)
 install_modern_cli_tools() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "MODERN CLI ARAÇLARI" "Kurulum ve Yapılandırma"
 
@@ -302,6 +310,10 @@ _apt_install_lazydocker() {
 
 # REFACTOR O-5: Main APT installation function
 install_modern_tools_apt() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     gum_info "Paket Yöneticisi" "APT kullanılıyor..."
 
     # Install core tools from APT repositories
@@ -324,6 +336,10 @@ install_modern_tools_apt() {
 
 # Install modern tools for DNF/YUM (Fedora/RHEL)
 install_modern_tools_dnf() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     gum_info "Paket Yöneticisi" "DNF/YUM kullanılıyor..."
     gum_spin_run "Temel araçlar kuruluyor..." "sudo $PKG_MANAGER install -y bat ripgrep fd-find fzf tree"
     fix_bat_fd_symlinks
@@ -336,6 +352,10 @@ install_modern_tools_dnf() {
 
 # Install modern tools for Pacman (Arch)
 install_modern_tools_pacman() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     gum_info "Paket Yöneticisi" "Pacman kullanılıyor..."
     gum_spin_run "Araçlar kuruluyor..." "sudo pacman -S --noconfirm bat ripgrep fd fzf eza starship zoxide tree"
     install_lazygit_generic
@@ -345,24 +365,40 @@ install_modern_tools_pacman() {
 
 # Generic installer functions (using centralized versions from config/tool-versions.sh)
 install_starship_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v starship &> /dev/null; then
         gum_spin_run "Starship kuruluyor..." "curl -sS https://starship.rs/install.sh | sh -s -- -y"
     fi
 }
 
 install_zoxide_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v zoxide &> /dev/null; then
         gum_spin_run "Zoxide kuruluyor..." "curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash"
     fi
 }
 
 install_lazygit_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v lazygit &> /dev/null; then
         _apt_install_lazygit # Reuse the same logic
     fi
 }
 
 install_lazydocker_generic() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     if ! command -v lazydocker &> /dev/null; then
         _apt_install_lazydocker # Reuse the same logic
     fi

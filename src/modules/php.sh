@@ -64,6 +64,10 @@ ensure_php_repository() {
 
 # Install Composer
 install_composer() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "COMPOSER KURULUMU" "PHP Paket Yöneticisi"
 
@@ -127,6 +131,10 @@ install_composer() {
 
 # Install a specific PHP version with extensions
 install_php_version() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     local version="$1"
     echo ""
     gum_header "PHP ${version} KURULUMU" "Web Geliştirme Dili"
@@ -207,6 +215,10 @@ install_php_version() {
 
 # Menu for PHP version selection
 install_php_version_menu() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "PHP MENÜSÜ" "Sürüm Yönetimi"
 

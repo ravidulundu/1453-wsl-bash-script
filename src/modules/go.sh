@@ -42,6 +42,10 @@ configure_go_env() {
 
 # Install Go using official binary
 install_go_official() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "GO KURULUMU" "Resmi Binary Yöntemi"
 
@@ -141,6 +145,10 @@ install_go_official() {
 
 # Install Go using package manager
 install_go_package() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "GO KURULUMU" "Paket Yöneticisi Yöntemi"
 
@@ -180,6 +188,10 @@ install_go_package() {
 
 # Main Go installation function (intelligent selection)
 install_go() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "GO DİLİ" "Kurulum Yöneticisi"
 
@@ -212,6 +224,10 @@ install_go() {
 
 # Interactive Go installation menu
 install_go_menu() {
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "building" 1
+    fi
+
     echo ""
     gum_header "GO MENÜSÜ" "Go Dili Yönetimi"
 

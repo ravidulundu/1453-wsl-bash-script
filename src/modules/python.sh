@@ -5,6 +5,11 @@
 
 # Install Python3
 install_python() {
+    # PRD FR-2.4: AI thinking state
+    if command -v show_ai_thinking &>/dev/null; then
+        show_ai_thinking "analyzing" 1
+    fi
+    
     echo ""
     gum_header "PYTHON KURULUMU" "Python Geliştirme Ortamı"
 

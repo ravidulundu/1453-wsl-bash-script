@@ -30,10 +30,15 @@ show_banner() {
         fi
         
         # Display system info in muted color
-        gum style \
-            --foreground "$COLOR_MUTED_FG" \
-            --align center \
-            "System: $wsl_info | User: $USER | Date: $(date '+%Y-%m-%d')"
+        if command -v typewriter_effect &>/dev/null; then
+            # PRD: Streaming Text - Daktilo efekti ile göster
+            typewriter_effect "System: $wsl_info | User: $USER | Date: $(date '+%Y-%m-%d')" 0.02
+        else
+            gum style \
+                --foreground "$COLOR_MUTED_FG" \
+                --align center \
+                "System: $wsl_info | User: $USER | Date: $(date '+%Y-%m-%d')"
+        fi
             
         echo ""
     elif command -v gum &> /dev/null; then

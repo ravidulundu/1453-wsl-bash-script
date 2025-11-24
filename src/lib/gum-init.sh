@@ -174,3 +174,142 @@ gum_spin_run() {
         return 1
     fi
 }
+
+# ==============================================================================
+# ADDITIONAL WRAPPERS (PRD Compliance)
+# ==============================================================================
+
+# Warning Box (Orange Warning Box)
+# PRD Requirement: Contextual warnings with proper styling
+gum_warning() {
+    local title="$1"
+    local message="$2"
+    
+    gum style \
+        --foreground "$COLOR_WARNING_FG" \
+        --border "$STYLE_BORDER_ROUNDED" \
+        --border-foreground "$COLOR_WARNING_FG" \
+        --padding "1 2" \
+        --margin "1 0" \
+        --align center \
+        "$ICON_WARNING $title" "" "$message"
+}
+
+# Thinking State Animation
+# PRD Requirement: FR-2.4 - Never leave user with blank cursor
+# Usage: gum_thinking "Analyzing system..." [duration]
+gum_thinking() {
+    local message="$1"
+    local duration="${2:-2}"
+    
+    gum spin --spinner dots --title "$message" -- sleep "$duration"
+}
+
+# Enhanced Spin with better error handling
+# PRD Requirement: FR-3.2 - Error management with user options
+# Usage: gum_spin_enhanced "title" "command"
+# Returns: 0 on success, prompts user on failure
+gum_spin_enhanced() {
+    local title="$1"
+    local command="$2"
+    local log_file="/tmp/1453-install-$(date +%s).log"
+    
+    # Run command with spinner
+    if gum spin --spinner dot --title "$title" -- bash -c "$command > $log_file 2>&1"; then
+        # Success - cleanup log
+        rm -f "$log_file"
+        return 0
+    else
+        # Failure - show alert with options
+        gum_alert "İşlem Başarısız" "$title sırasında hata oluştu"
+        
+        echo ""
+        local choice=$(gum choose "Logları Göster" "Yeniden Dene" "Atla" --header "Ne yapmak istersiniz?")
+        
+        case "$choice" in
+            "Logları Göster")
+                echo ""
+                gum format --type markdown "## 📋 Hata Logları"
+                echo ""
+                cat "$log_file"
+                echo ""
+                rm -f "$log_file"
+                
+                # Ask again after showing logs
+                if gum confirm "Yeniden denemek ister misiniz?"; then
+                    gum_spin_enhanced "$title" "$command"
+                    return $?
+                fi
+                return 1
+                ;;
+            "Yeniden Dene")
+                rm -f "$log_file"
+                gum_spin_enhanced "$title" "$command"
+                return $?
+                ;;
+            "Atla")
+                rm -f "$log_file"
+                return 1
+                ;;
+        esac
+    fi
+}
+
+# Markdown render wrapper
+# PRD Requirement: Use gum format instead of raw echo
+# Usage: gum_markdown "## Title\n\nContent"
+gum_markdown() {
+    local content="$1"
+    echo "$content" | gum format --type markdown
+}
+
+# Multi-select with enhanced styling
+# Usage: gum_multiselect "header" "option1" "option2" "option3"
+gum_multiselect() {
+    local header="$1"
+    shift
+    
+    gum choose --no-limit \
+        --header "$header" \
+        --cursor.foreground "$COLOR_CRIMSON_FG" \
+        --item.foreground "$COLOR_TEXT_FG" \
+        --selected.foreground "$COLOR_GOLD_FG" \
+        "$@"
+}
+
+# Fuzzy filter with styling
+# PRD Requirement: FR-2.2 - Fuzzy search for file selection
+# Usage: echo -e "opt1\nopt2\nopt3" | gum_filter_enhanced "placeholder"
+gum_filter_enhanced() {
+    local placeholder="${1:-Arama yapın...}"
+    
+    gum filter \
+        --placeholder "$placeholder" \
+        --indicator "▶" \
+        --indicator.foreground "$COLOR_CRIMSON_FG" \
+        --match.foreground "$COLOR_GOLD_FG"
+}
+
+# Export new functions
+export -f gum_warning
+export -f gum_thinking
+export -f gum_spin_enhanced
+export -f gum_markdown
+export -f gum_multiselect
+export -f gum_filter_enhanced
+
+# Standard Confirm Wrapper (Alias for enhanced)
+gum_confirm() {
+    gum_confirm_enhanced "$@"
+}
+
+# Input Wrapper
+gum_input() {
+    gum input \
+        --cursor.foreground "$COLOR_CRIMSON_FG" \
+        --prompt.foreground "$COLOR_GOLD_FG" \
+        "$@"
+}
+
+export -f gum_confirm
+export -f gum_input

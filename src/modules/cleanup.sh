@@ -58,36 +58,17 @@ cleanup_old_backups() {
 confirm_cleanup() {
     local item="$1"
 
-    if has_gum; then
-        echo ""
-        gum_style --foreground 196 --bold "⚠️  UYARI: Bu işlem GERİ ALINAMAZ!"
-        gum_style --foreground 226 "Şunlar silinecek: $item"
-        echo ""
-        
-        if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
-            backup_configs
-        fi
-        
-        echo ""
-        gum_style --foreground 196 "Silme işlemini onaylamak için 'evet' yazın:"
-        confirm=$(gum input --placeholder "evet")
-    else
-        echo ""
-        gum_alert "Uyarı" "UYARI: Bu işlem GERİ ALINAMAZ!"
-        gum_info "Bilgi" "Şunlar silinecek: $item"
-        echo ""
-
-        # Backup option
-        gum_info "Soru" "Devam etmeden önce yedek oluşturulsun mu? (e/h): "
-        read -r backup
-        if [[ "$backup" =~ ^[Ee]$ ]]; then
-            backup_configs
-        fi
-
-        echo ""
-        gum_alert "Onay" "Silme işlemine devam edilsin mi? (evet yazın): "
-        read -r confirm
+    echo ""
+    gum_warning "UYARI: Bu işlem GERİ ALINAMAZ!" "Şunlar silinecek: $item"
+    echo ""
+    
+    if gum_confirm "Devam etmeden önce yedek oluşturulsun mu?"; then
+        backup_configs
     fi
+    
+    echo ""
+    gum_info "Onay" "Silme işlemini onaylamak için 'evet' yazın:"
+    confirm=$(gum_input --placeholder "evet")
 
     if [[ "$confirm" != "evet" ]]; then
         gum_info "Bilgi" "İptal edildi."
@@ -225,8 +206,7 @@ EOF
     gum format < "$report_file"
     rm -f "$report_file"
     echo ""
-    gum_style --foreground 251 "Devam etmek için bir tuşa basın..."
-    read -n 1 -s
+    gum_input --placeholder "Devam etmek için Enter'a basın..." --password > /dev/null
 }
 
 # Cleanup System Packages (installed by update_system())
@@ -901,7 +881,7 @@ cleanup_full_reset() {
 # Individual cleanup menu
 show_individual_cleanup_menu() {
     echo ""
-    gum_style --foreground 226 --bold "[PACKAGE] Tek Tek Temizleme Menüsü"
+    gum_style --foreground "$COLOR_GOLD_FG" --bold "[PACKAGE] Tek Tek Temizleme Menüsü"
     echo ""
 
     local selection
@@ -976,7 +956,7 @@ show_individual_cleanup_menu() {
 # Main cleanup menu
 show_cleanup_menu() {
     echo ""
-    gum_style --foreground 196 --bold "[DELETE]  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
+    gum_style --foreground "$COLOR_ERROR_FG" --bold "[DELETE]  TEMİZLEME VE SIFIRLAMA MENÜSÜ"
     echo ""
 
     local selection
@@ -992,7 +972,7 @@ show_cleanup_menu() {
     case "$selection" in
         *"TAM SIFIRLAMA"*)
             echo ""
-            gum_style --foreground 196 --border rounded --padding "1 2" \
+            gum_style --foreground "$COLOR_ERROR_FG" --border rounded --padding "1 2" \
                 "[WARNING]  UYARI: TÜM KURULUMLAR VE AYARLAR SİLİNECEK!" \
                 "Bu işlem geri alınamaz!"
             echo ""
