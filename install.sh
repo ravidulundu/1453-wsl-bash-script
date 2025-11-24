@@ -189,19 +189,21 @@ show_banner() {
     fi
 }
 
-# Dosya indirme fonksiyonu (sessiz mod için)
-download_file_silent() {
-    local url="$1"
-    local dest="$2"
-
-    # Add GitHub token if available (prevents rate limiting)
-    # DRY: Prepare curl options dynamically
-    local curl_opts=(-fsSL)
+# Helper function to prepare curl options with retry logic
+# Returns curl options as array via nameref
+prepare_curl_opts() {
+    local -n opts_ref=$1
+    opts_ref=(
+        -fsSL
+        --connect-timeout 10
+        --max-time 30
+        --retry 3
+        --retry-delay 2
+        --retry-max-time 60
+    )
     if [ -n "$GITHUB_TOKEN" ]; then
-        curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
+        opts_ref+=(-H "Authorization: token $GITHUB_TOKEN")
     fi
-
-    curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null
 }
 
 # Dosya indirme fonksiyonu (verbose mod)
@@ -569,11 +571,9 @@ main() {
         printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
 
         # Download file silently (with GitHub token if available)
-        # DRY: Prepare curl options dynamically
-        local curl_opts=(-fsSL)
-        if [ -n "$GITHUB_TOKEN" ]; then
-            curl_opts+=(-H "Authorization: token $GITHUB_TOKEN")
-        fi
+        # DRY: Use shared curl options helper
+        local curl_opts=()
+        prepare_curl_opts curl_opts
 
         if ! curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null; then
             failed=$((failed + 1))
