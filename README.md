@@ -110,6 +110,34 @@ bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-scr
 3. ✅ `~/.1453-wsl-setup/` dizini oluşturur.
 4. ✅ Başlatıcı script hazırlar (`1453-setup`).
 
+### ⚡ GitHub Rate Limit'i Önleme (Önerilen)
+
+Script, araç versiyonlarını GitHub API'den çeker. **Rate limit'e takılmamak için:**
+
+**Seçenek 1: GitHub CLI (Önerilen)**
+```bash
+# GitHub CLI'yi kurun ve giriş yapın
+sudo apt install gh
+gh auth login  # Tarayıcıda giriş yapın
+```
+✅ **5000 istek/saat** limitine yükselir (unauthenticated: 60/saat)
+
+**Seçenek 2: GitHub Token**
+```bash
+# 1. GitHub'da Personal Access Token oluşturun:
+#    https://github.com/settings/tokens
+#    Scope: public_repo (okuma yetkisi yeterli)
+
+# 2. Token'ı environment variable olarak ekleyin:
+export GITHUB_TOKEN="ghp_your_token_here"
+
+# 3. Kalıcı yapmak için ~/.bashrc'ye ekleyin:
+echo 'export GITHUB_TOKEN="ghp_your_token_here"' >> ~/.bashrc
+```
+
+**Not:** Token olmadan da kurulum yapılabilir. Script akıllı önbellekleme kullanır ve versiyonları 1 saat boyunca cache'ler.
+
+
 ### Kurulum Sonrası Dizin Yapısı
 
 ```
