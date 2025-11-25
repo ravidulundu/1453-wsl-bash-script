@@ -49,14 +49,20 @@ gpgkey=https://repo.charm.sh/yum/gpg.key' | sudo tee /etc/yum.repos.d/charm.repo
 # ==============================================================================
 
 # Alert Box (Red Error Box)
+# PRD: Responsive design with centered layout
 gum_alert() {
     local title="$1"
     local message="$2"
-    
+
+    # Responsive width calculation
+    local term_width=$(tput cols 2>/dev/null || echo 80)
+    local box_width=$((term_width > 70 ? 70 : term_width - 4))
+
     gum style \
         --foreground "$COLOR_ERROR_FG" \
         --border "$STYLE_BORDER_ROUNDED" \
         --border-foreground "$COLOR_ERROR_FG" \
+        --width "$box_width" \
         --padding "1 2" \
         --margin "1 0" \
         --align center \
@@ -64,14 +70,20 @@ gum_alert() {
 }
 
 # Success Box (Green Info Box)
+# PRD: Responsive design with centered layout
 gum_success() {
     local title="$1"
     local message="$2"
-    
+
+    # Responsive width calculation
+    local term_width=$(tput cols 2>/dev/null || echo 80)
+    local box_width=$((term_width > 70 ? 70 : term_width - 4))
+
     gum style \
         --foreground "$COLOR_SUCCESS_FG" \
         --border "$STYLE_BORDER_ROUNDED" \
         --border-foreground "$COLOR_SUCCESS_FG" \
+        --width "$box_width" \
         --padding "1 2" \
         --margin "1 0" \
         --align center \
@@ -79,14 +91,20 @@ gum_success() {
 }
 
 # Info Box (Blue/Crimson Info Box)
+# PRD: Responsive design with centered layout
 gum_info() {
     local title="$1"
     local message="$2"
-    
+
+    # Responsive width calculation
+    local term_width=$(tput cols 2>/dev/null || echo 80)
+    local box_width=$((term_width > 70 ? 70 : term_width - 4))
+
     gum style \
         --foreground "$COLOR_INFO_FG" \
         --border "$STYLE_BORDER_ROUNDED" \
         --border-foreground "$COLOR_INFO_FG" \
+        --width "$box_width" \
         --padding "1 2" \
         --margin "1 0" \
         --align center \
@@ -100,15 +118,21 @@ gum_password() {
 }
 
 # Header (Crimson Brand Header)
+# PRD: Responsive design - adjusts to terminal width
 gum_header() {
     local title="$1"
     local subtitle="${2:-}"
-    
+
+    # Get terminal width and calculate responsive box width
+    local term_width=$(tput cols 2>/dev/null || echo 80)
+    local box_width=$((term_width > 80 ? 80 : term_width - 4))
+
     if [ -n "$subtitle" ]; then
         gum style \
             --foreground "$COLOR_CRIMSON_FG" \
             --border "$STYLE_BORDER_DOUBLE" \
             --border-foreground "$COLOR_GOLD_FG" \
+            --width "$box_width" \
             --padding "1 4" \
             --margin "1 0" \
             --align center \
@@ -119,6 +143,7 @@ gum_header() {
             --foreground "$COLOR_CRIMSON_FG" \
             --border "$STYLE_BORDER_DOUBLE" \
             --border-foreground "$COLOR_GOLD_FG" \
+            --width "$box_width" \
             --padding "1 4" \
             --margin "1 0" \
             --align center \
@@ -180,15 +205,20 @@ gum_spin_run() {
 # ==============================================================================
 
 # Warning Box (Orange Warning Box)
-# PRD Requirement: Contextual warnings with proper styling
+# PRD Requirement: Contextual warnings with proper styling + responsive design
 gum_warning() {
     local title="$1"
     local message="$2"
-    
+
+    # Responsive width calculation
+    local term_width=$(tput cols 2>/dev/null || echo 80)
+    local box_width=$((term_width > 70 ? 70 : term_width - 4))
+
     gum style \
         --foreground "$COLOR_WARNING_FG" \
         --border "$STYLE_BORDER_ROUNDED" \
         --border-foreground "$COLOR_WARNING_FG" \
+        --width "$box_width" \
         --padding "1 2" \
         --margin "1 0" \
         --align center \

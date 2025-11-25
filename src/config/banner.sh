@@ -8,11 +8,14 @@ BANNER_SHOWN=0
 
 # Function to display the banner (Architect Style)
 show_banner() {
-    # ONLY clear screen on first call (prevents flicker)
-    if [ "$BANNER_SHOWN" -eq 0 ]; then
-        clear
-        BANNER_SHOWN=1
+    # Show banner ONLY once (PRD compliance - clean AI Agent experience)
+    if [ "$BANNER_SHOWN" -eq 1 ]; then
+        return 0
     fi
+
+    # Clear screen and mark as shown
+    clear
+    BANNER_SHOWN=1
 
     # Check if gum-init functions are available (via linux-ai-setup-script.sh)
     if command -v gum_header &> /dev/null; then
