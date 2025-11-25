@@ -236,11 +236,14 @@ E: Package 'docker-ce' has no installation candidate
 ### Hızlı Başlangıç
 
 ```bash
-# Tek komut
-bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+# Önerilen (kısa link)
+curl -fsSL https://wsl.dulundu.dev | bash
 
-# Alternatif (wget)
-bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+# Alternatif (wget ile)
+wget -qO- https://wsl.dulundu.dev | bash
+
+# Manuel (tam GitHub linki)
+bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 ```
 
 **Ne kurulur?**

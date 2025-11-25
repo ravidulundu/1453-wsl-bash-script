@@ -5,11 +5,11 @@
 #
 # USAGE:
 #   Basic (rate limit: 60 req/hour):
-#     bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+#     curl -fsSL https://wsl.dulundu.dev | bash
 #
 #   With GitHub token (rate limit: 5000 req/hour):
 #     export GITHUB_TOKEN="ghp_xxxxx"
-#     bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+#     curl -fsSL https://wsl.dulundu.dev | bash
 #
 #   Get token: https://github.com/settings/tokens (select 'repo' scope)
 

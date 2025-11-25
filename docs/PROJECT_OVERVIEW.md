@@ -52,7 +52,7 @@ The project has been refactored from a **2,331-line monolithic script** into a c
 
 ### Quick Installation (Recommended)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://wsl.dulundu.dev | bash
 ```
 
 This single command:
@@ -292,7 +292,7 @@ shellcheck src/linux-ai-setup-script.sh src/{lib,config,modules}/*.sh
 ### Full Installation
 ```bash
 # Option 1: One-liner installer
-curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://wsl.dulundu.dev | bash
 
 # Option 2: Manual
 git clone https://github.com/ravidulundu/1453-wsl-bash-script.git

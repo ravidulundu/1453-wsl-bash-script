@@ -117,7 +117,7 @@ Welcome to the comprehensive documentation for the 1453 WSL Bash Script project.
 
 **Installing the script:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh | bash
+curl -fsSL https://wsl.dulundu.dev | bash
 ```
 
 **Running after installation:**

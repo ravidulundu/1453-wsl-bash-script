@@ -45,11 +45,11 @@ This is a WSL (Windows Subsystem for Linux) automated setup script designed for 
 One-line installation that downloads all components and sets up everything:
 
 ```bash
-# Using curl (process substitution - prevents stdin issues)
-bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+# Using curl
+curl -fsSL https://wsl.dulundu.dev | bash
 
 # Or using wget
-bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+wget -qO- https://wsl.dulundu.dev | bash
 ```
 
 **Important**: We use process substitution `bash <(curl ...)` instead of piping `curl | bash` to ensure interactive prompts work correctly by keeping stdin connected to the terminal.
