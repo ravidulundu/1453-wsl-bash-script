@@ -14,7 +14,7 @@
 
 **Soğuk ve mekanik kurulum scriptlerini geride bırakın.**
 **Claude Code ve Gemini CLI'da gördüğünüz o "AI Agent" estetiğini terminalinize getirin.**
-**Modern geliştirici deneyimini, Osmanlı'nın Crimson & Gold temasıyla buluşturun.**
+**Modern geliştirici deneyimini, Premium Crimson & Gold temasıyla buluşturun.**
 
 </div>
 
@@ -194,7 +194,7 @@ The following NEW packages will be installed:
 
 ### 🎨 6. CRIMSON & GOLD TEMA
 
-Osmanlı'nın iki ikonik rengi ile tasarlanmış **24-bit TrueColor** paleti:
+Özel olarak tasarlanmış **24-bit TrueColor** paleti:
 
 | Renk | Hex | Kullanım |
 |------|-----|----------|
