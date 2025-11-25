@@ -510,181 +510,85 @@ main() {
     gum_success "Hazırlık Tamamlandı" "Dizin yapısı oluşturuldu"
     echo ""
 
-    # İndirilecek dosyaların listesi
-    declare -a files=(
-        "src/linux-ai-setup-script.sh:Ana betik"
-        "src/lib/init.sh:Başlatma modülü"
-        "src/lib/ai-text.sh:AI metin efektleri"
-        "src/lib/gum-init.sh:Gum wrapper'ları"
-        "src/lib/common.sh:Ortak araçlar"
-        "src/lib/package-manager.sh:Paket yöneticisi tespiti"
-        "src/lib/installation-tracker.sh:Kurulum takip sistemi"
-        "src/lib/system-restart.sh:Sistem yeniden başlatma"
-        "src/lib/tui.sh:TUI sistem modülü"
-        "src/config/theme.sh:Tema tanımlamaları (Crimson & Gold)"
-        "src/config/colors.sh:Renk tanımlamaları (eski)"
-        "src/config/constants.sh:Global sabitler (CRITICAL)"
-        "src/config/tool-versions.sh:Araç versiyonları"
-        "src/config/php-versions.sh:PHP yapılandırması"
-        "src/config/banner.sh:Banner gösterimi"
-        "src/modules/python.sh:Python ekosistemi"
-        "src/modules/javascript.sh:JavaScript ekosistemi"
-        "src/modules/php.sh:PHP ekosistemi"
-        "src/modules/go.sh:Go kurulum modülü"
-        "src/modules/docker.sh:Docker kurulum modülü"
-        "src/modules/modern-tools.sh:Modern CLI araçları"
-        "src/modules/shell-setup.sh:Shell ortamı yapılandırma"
-        "src/modules/ai-cli.sh:AI CLI araçları"
-        "src/modules/ai-frameworks.sh:AI framework'leri"
-        "src/modules/quickstart.sh:Quick Start modu"
-        "src/modules/cleanup.sh:Temizleme ve sıfırlama"
-        "src/modules/menus.sh:Menü sistemi"
-        "templates/starship.toml:Starship TOML config"
-    )
-
-    # Tüm dosyaları indir
-    local total_files=${#files[@]}
-    local failed=0
-    local failed_files=()
-
-    # Download all files with single-line progress
-    local count=0
+    # ==============================================================================
+    # ZIP DOWNLOAD STRATEGY (Rate Limit Bypass)
+    # ==============================================================================
+    
+    # Ensure unzip is installed
+    if ! command -v unzip &>/dev/null; then
+        gum_info "Hazırlık" "Arşiv açıcı (unzip) kuruluyor..."
+        if command -v apt &>/dev/null; then
+            sudo apt update -qq >/dev/null 2>&1
+            sudo apt install -y unzip >/dev/null 2>&1
+        elif command -v dnf &>/dev/null; then
+            sudo dnf install -y unzip >/dev/null 2>&1
+        elif command -v pacman &>/dev/null; then
+            sudo pacman -S --noconfirm unzip >/dev/null 2>&1
+        fi
+    fi
 
     # PRD: Use AI contextual message (FR-2.4)
     echo ""
-    gum_info "İndirme Başlıyor" "$total_files dosya indirilecek"
+    gum_info "İndirme Başlıyor" "Tüm proje tek paket olarak indiriliyor..."
     echo ""
+
+    # Download ZIP archive
+    local zip_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/${BRANCH}.zip"
+    local temp_zip="/tmp/1453-wsl.zip"
+    local temp_dir="/tmp/1453-wsl-extracted"
+
+    # Clean previous temp files
+    rm -rf "$temp_zip" "$temp_dir"
 
     # PRD: Show AI thinking state while downloading
     if has_gum; then
-        gum style \
-            --foreground "$COLOR_GOLD_FG" \
-            --align center \
-            "📦 Modüler bileşenler hazırlanıyor..."
+        gum spin --spinner dot --title "📦 Proje arşivi indiriliyor..." -- \
+            curl -fsSL "$zip_url" -o "$temp_zip"
     else
-        echo "📦 Modüler bileşenler hazırlanıyor..."
+        echo "📦 Proje arşivi indiriliyor..."
+        curl -fsSL "$zip_url" -o "$temp_zip"
     fi
-    echo ""
 
-    # Temporarily disable strict error handling for download loop
-    set +e
+    if [ ! -f "$temp_zip" ]; then
+        gum_alert "İndirme Hatası" "Proje arşivi indirilemedi. İnternet bağlantınızı kontrol edin."
+        exit 1
+    fi
 
-    # Hide cursor for cleaner UI (PRD AC-1)
-    tput civis
+    # Extract ZIP
+    if has_gum; then
+        gum spin --spinner dot --title "📂 Arşiv açılıyor ve yerleştiriliyor..." -- \
+            unzip -q "$temp_zip" -d "$temp_dir"
+    else
+        echo "📂 Arşiv açılıyor ve yerleştiriliyor..."
+        unzip -q "$temp_zip" -d "$temp_dir"
+    fi
 
-    for file_info in "${files[@]}"; do
-        IFS=':' read -r file_path description <<< "$file_info"
+    # Move files to INSTALL_DIR
+    # The zip extracts to a folder named REPO-BRANCH (e.g., 1453-wsl-bash-script-master)
+    # We need to find it dynamically
+    local extracted_root
+    extracted_root=$(find "$temp_dir" -maxdepth 1 -type d -name "${REPO_NAME}-*" | head -n 1)
 
-        # Safety check for parsed values
-        if [ -z "${file_path:-}" ] || [ -z "${description:-}" ]; then
-            continue
-        fi
-
-        local url="${BASE_URL}/${file_path}"
-        local dest="${INSTALL_DIR}/${file_path}"
-        count=$((count + 1))
-
-        # Calculate progress percentage
-        local percent=$((count * 100 / total_files))
-
-        # Re-detect terminal width
-        TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
-
-        # Prepare status message
-        # Format: [ 45% ] İndiriliyor: Dosya Açıklaması...
-        local prefix="[${percent}%]"
-        local status_msg="📦 İndiriliyor: ${description}"
+    if [ -d "$extracted_root" ]; then
+        # Copy src, templates, and docs
+        cp -r "${extracted_root}/src" "${INSTALL_DIR}/"
+        cp -r "${extracted_root}/templates" "${INSTALL_DIR}/"
         
-        # Truncate description if too long to prevent wrapping
-        local max_len=$((TUI_WIDTH - 15))
-        if [ ${#status_msg} -gt $max_len ]; then
-            status_msg="${status_msg:0:$((max_len-3))}..."
-        fi
-
-        # Combine
-        local full_msg="${prefix} ${status_msg}"
+        # Cleanup
+        rm -rf "$temp_zip" "$temp_dir"
         
-        # Calculate centering
-        local msg_len=${#full_msg}
-        local margin=$(( (TUI_WIDTH - msg_len) / 2 ))
-        [ $margin -lt 0 ] && margin=0
-
-        # Print with carriage return (overwrite line)
-        # Use \033[K (Clear to end of line) to remove artifacts
-        printf "\r%*s%s\033[K" "$margin" "" "$full_msg"
-
-        # Download file silently (with GitHub token if available)
-        # DRY: Use shared curl options helper
-        local curl_opts=()
-        prepare_curl_opts curl_opts
-
-        if ! curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null; then
-            failed=$((failed + 1))
-            failed_files+=("$description")
-        fi
-        
-        # Small delay for visual smoothness (Agentic feel)
-        sleep 0.1
-    done
-
-    # Restore cursor
-    tput cnorm
-
-    # Re-enable strict error handling
-    set -e
-
-    # Clear the progress line completely
-    printf "\r%*s\r" "$TUI_WIDTH" ""
-    echo ""
-
-    # Show summary - PRD: Use wrapper functions
-    if [ $failed -eq 0 ]; then
         # PRD: Show AI completion state
         show_ai_thinking "complete" 1
         echo ""
-        gum_success "İndirme Tamamlandı" "$total_files/$total_files dosya başarıyla indirildi"
+        gum_success "İndirme Tamamlandı" "Tüm dosyalar başarıyla kuruldu"
         echo ""
-    fi
-
-    if [ $failed -gt 0 ]; then
-        # PRD: Use gum_alert for errors
-        echo ""
-        gum_alert "İndirme Hatası" "$failed/$total_files dosya indirilemedi"
-        echo ""
-
-        # Show failed files list
-        if has_gum; then
-            gum style \
-                --foreground "$COLOR_WARNING_FG" \
-                --align center \
-                "Başarısız dosyalar:"
-            echo ""
-            for failed_file in "${failed_files[@]}"; do
-                gum style \
-                    --foreground "$COLOR_ERROR_FG" \
-                    "  • $failed_file"
-            done
-        else
-            echo "Başarısız dosyalar:"
-            for failed_file in "${failed_files[@]}"; do
-                echo "  • $failed_file"
-            done
-        fi
-
-        echo ""
-        gum_warning "İpucu" "Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz"
-        echo ""
-        if has_gum; then
-            gum style \
-                --foreground "$COLOR_INFO_FG" \
-                --align center \
-                "git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
-        else
-            echo "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
-        fi
-        echo ""
+    else
+        gum_alert "Kurulum Hatası" "Arşiv içeriği hatalı veya boş."
         exit 1
     fi
+
+    # Skip the old file loop logic since we downloaded everything
+    failed=0
 
     # Ana betiği çalıştırılabilir yap
     chmod +x "${INSTALL_DIR}/src/linux-ai-setup-script.sh"
