@@ -430,7 +430,51 @@ main() {
 
     # PRD: Use gum_info wrapper (Gum is now installed)
     echo ""
-    gum_info "Başlatma" "1453.AI WSL Kurulum Betiği yükleniyor..."
+    
+    # PRD FR-1.3: System Analysis
+    if has_gum; then
+        # Analyze system
+        local wsl_version="WSL 2" # Default assumption
+        if [ -n "${WSL_DISTRO_NAME:-}" ]; then
+            # Try to detect version if possible, otherwise stick to default
+            if grep -q "WSL2" /proc/version 2>/dev/null; then
+                wsl_version="WSL 2"
+            fi
+        fi
+        
+        local distro_name="${WSL_DISTRO_NAME:-Linux}"
+        if [ "$distro_name" = "Linux" ] && [ -f /etc/os-release ]; then
+            distro_name=$(grep ^PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
+        fi
+
+        # Show analysis spinner
+        gum spin --spinner dot --title "Sistem analiz ediliyor..." -- sleep 1.5
+        
+        # Show system info card
+        gum style \
+            --foreground "$COLOR_INFO_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_GOLD_FG" \
+            --padding "0 1" \
+            --margin "1 0" \
+            --align center \
+            "💻 Sistem: $distro_name" "🚀 Ortam: $wsl_version"
+            
+        echo ""
+    fi
+
+    # PRD Section 2.2: Streaming Text (Typewriter Effect)
+    local welcome_msg="1453.AI WSL Kurulum Betiği yükleniyor..."
+    if has_gum; then
+        # Simulate typing effect
+        for (( i=0; i<${#welcome_msg}; i++ )); do
+            echo -n "${welcome_msg:$i:1}"
+            sleep 0.03
+        done
+        echo ""
+    else
+        gum_info "Başlatma" "$welcome_msg"
+    fi
     echo ""
 
     if has_gum; then
@@ -525,16 +569,8 @@ main() {
     # Temporarily disable strict error handling for download loop
     set +e
 
-    # Re-detect terminal width for responsive progress
-    TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
-
-    # Calculate margin for centering progress (if using gum)
-    local progress_width=70
-    if [ "$TUI_WIDTH" -lt 90 ]; then
-        progress_width=60
-    fi
-    local progress_margin=$(( (TUI_WIDTH - progress_width) / 2 ))
-    [ $progress_margin -lt 0 ] && progress_margin=0
+    # Hide cursor for cleaner UI (PRD AC-1)
+    tput civis
 
     for file_info in "${files[@]}"; do
         IFS=':' read -r file_path description <<< "$file_info"
@@ -551,24 +587,31 @@ main() {
         # Calculate progress percentage
         local percent=$((count * 100 / total_files))
 
-        # Responsive description width (terminal width - progress info - padding)
-        local desc_width=$((TUI_WIDTH - 25))
-        [ "$desc_width" -lt 20 ] && desc_width=20
-        [ "$desc_width" -gt 50 ] && desc_width=50
+        # Re-detect terminal width
+        TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
-        # Truncate description if needed
-        local short_desc="$description"
-        if [ ${#description} -gt $desc_width ]; then
-            short_desc="${description:0:$((desc_width-3))}..."
+        # Prepare status message
+        # Format: [ 45% ] İndiriliyor: Dosya Açıklaması...
+        local prefix="[${percent}%]"
+        local status_msg="📦 İndiriliyor: ${description}"
+        
+        # Truncate description if too long to prevent wrapping
+        local max_len=$((TUI_WIDTH - 15))
+        if [ ${#status_msg} -gt $max_len ]; then
+            status_msg="${status_msg:0:$((max_len-3))}..."
         fi
 
-        # Show progress on same line (overwrite with \r - NO CLEAR!)
-        # Add left margin for centering
-        local spaces=""
-        for ((i=0; i<progress_margin; i++)); do
-            spaces="$spaces "
-        done
-        printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
+        # Combine
+        local full_msg="${prefix} ${status_msg}"
+        
+        # Calculate centering
+        local msg_len=${#full_msg}
+        local margin=$(( (TUI_WIDTH - msg_len) / 2 ))
+        [ $margin -lt 0 ] && margin=0
+
+        # Print with carriage return (overwrite line)
+        # Use \033[K (Clear to end of line) to remove artifacts
+        printf "\r%*s%s\033[K" "$margin" "" "$full_msg"
 
         # Download file silently (with GitHub token if available)
         # DRY: Use shared curl options helper
@@ -579,12 +622,18 @@ main() {
             failed=$((failed + 1))
             failed_files+=("$description")
         fi
+        
+        # Small delay for visual smoothness (Agentic feel)
+        sleep 0.1
     done
+
+    # Restore cursor
+    tput cnorm
 
     # Re-enable strict error handling
     set -e
 
-    # Clear the progress line (use terminal width, not hardcoded 120)
+    # Clear the progress line completely
     printf "\r%*s\r" "$TUI_WIDTH" ""
     echo ""
 
@@ -688,6 +737,53 @@ END_OF_LAUNCHER_SCRIPT
 
     # Install Gum for modern TUI (Already installed at start, check again just in case)
     # install_gum_minimal
+
+    # PRD FR-3.3: Windows Interop - Nerd Font Check
+    # Since we cannot easily check Windows fonts from WSL, we perform a visual test
+    if grep -q "Microsoft" /proc/version 2>/dev/null && has_gum; then
+        echo ""
+        gum_info "Font Kontrolü" "İkonların düzgün görünmesi için Nerd Font gereklidir"
+        
+        # Display test icons
+        echo ""
+        gum style \
+            --border rounded \
+            --border-foreground "$COLOR_GOLD_FG" \
+            --align center \
+            --margin "0 2" \
+            --padding "1 2" \
+            "        🚀  📦" \
+            "" \
+            "Yukarıdaki ikonları görebiliyor musunuz?"
+            
+        if ! gum confirm "İkonlar düzgün görünüyor mu?"; then
+            echo ""
+            gum_warning "Eksik Font Tespit Edildi" "Görünüşe göre Nerd Font yüklü değil veya terminal ayarlı değil."
+            
+            echo ""
+            gum style \
+                --foreground "$COLOR_INFO_FG" \
+                --align center \
+                "Windows Terminal (PowerShell) üzerinde şu komutu çalıştırarak yükleyebilirsiniz:"
+            
+            echo ""
+            gum style \
+                --border normal \
+                --border-foreground "$COLOR_CRIMSON_FG" \
+                --padding "1 2" \
+                --align center \
+                "winget install -e --id RyanLlamas.MesloLGM_NF"
+                
+            echo ""
+            gum style --foreground "$COLOR_MUTED_FG" "Not: Yüklemeden sonra Windows Terminal ayarlarından fontu seçmeyi unutmayın."
+            
+            echo ""
+            gum input --placeholder "Okudum, devam etmek için Enter'a basın..." --password >/dev/null
+        else
+            echo ""
+            gum_success "Font Doğrulandı" "Terminal ortamınız kullanıma hazır"
+        fi
+    fi
 
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""
