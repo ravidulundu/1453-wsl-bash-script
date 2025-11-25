@@ -94,14 +94,16 @@
 
 ## 🚀 Kurulum
 
-### Tek Satır Kurulum (Önerilen)
-
+### Hızlı Kurulum (Yeni!)
 ```bash
-# curl ile (önerilen)
-bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+# 🚀 Hızlı Kurulum (Yeni!)
+curl -fsSL https://wsl.dulundu.dev | bash
 
-# veya wget ile
-bash <(wget -qO- https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
+# Alternatif (Wget)
+wget -qO- https://wsl.dulundu.dev | bash
+
+# Alternatif (GitHub Raw)
+bash <(curl -fsSL https://raw.githubusercontent.com/ravidulundu/1453-wsl-bash-script/master/install.sh)
 ```
 
 **Kurulum ne yapar:**
