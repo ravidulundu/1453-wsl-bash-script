@@ -63,7 +63,8 @@ show_presets() {
         "$ICON_AI AI Geliştirme (Python + AI Tools)" \
         "$ICON_GEAR Backend Geliştirme (Python + Go + PHP)" \
         "$ICON_DOCKER Docker Ortamı" \
-        "$ICON_MOBILE Mobil + Web (Flutter + Node + PHP)")
+        "$ICON_MOBILE Mobil + Web (Flutter + Node + PHP)" \
+        "$ICON_ROCKET Tam Kurulum (Everything - Tüm Paketler)")
 
     # Check if any selection made
     if [ -z "$selections" ]; then
@@ -82,6 +83,7 @@ show_presets() {
             *"Backend Geliştirme"*) QUICKSTART_PRESET_CHOICES+=("backend") ;;
             *"Docker Ortamı"*) QUICKSTART_PRESET_CHOICES+=("docker") ;;
             *"Mobil + Web"*) QUICKSTART_PRESET_CHOICES+=("mobile") ;;
+            *"Tam Kurulum"*) QUICKSTART_PRESET_CHOICES+=("everything") ;;
         esac
     done <<< "$selections"
 
