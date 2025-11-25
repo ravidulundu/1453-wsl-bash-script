@@ -102,12 +102,12 @@ show_mode_selection() {
             "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "*Hızlı Başlangıç"*)
+            *"Hızlı Başlangıç"*)
                 echo ""
                 run_quickstart_mode
                 continue
                 ;;
-            "🛠️  Gelişmiş Mod")
+            *"Gelişmiş Mod"*)
                 echo ""
                 run_advanced_mode
                 break
@@ -201,6 +201,9 @@ run_advanced_mode() {
             "$ICON_SHELL Shell Yapılandırması" \
             "━━━ Docker & Utilities ━━━" \
             "$ICON_DOCKER Docker Ortamı" \
+            "━━━ PRD Özel Özellikler ━━━" \
+            "$ICON_SEARCH Dotfiles Yöneticisi (Fuzzy Search)" \
+            "$ICON_WEB Windows Font Kontrolü (WSL)" \
             "━━━ Bakım & Onarım ━━━" \
             "$ICON_TRASH AI Frameworks Kaldır" \
             "$ICON_WARNING Temizleme ve Sıfırlama" \
@@ -209,7 +212,7 @@ run_advanced_mode() {
             "$ICON_EXIT Çıkış")
 
         case "$selection" in
-            "*Tam Kurulum"*)
+            *"Tam Kurulum"*)
                 echo ""
                 gum_info "Bilgi" "Tam kurulum başlatılıyor..."
                 sleep 1
@@ -226,10 +229,15 @@ run_advanced_mode() {
                 install_github_cli
                 install_go
                 echo ""
+
+                # PRD FR-4.1: Markdown report at end of installation
+                show_installation_summary
+
+                echo ""
                 gum_success "Tamamlandı" "Tam kurulum başarıyla tamamlandı!"
                 sleep 2
                 ;;
-            "*Çoklu Bileşen"*)
+            *"Çoklu Bileşen"*)
                 # PRD FR-2.1: Multi-select installation
                 echo ""
                 gum_style --foreground "$COLOR_GOLD_FG" "   ⏎ Space ile seçim yapın, Enter ile onaylayın"
@@ -283,10 +291,15 @@ run_advanced_mode() {
                 done <<< "$components"
 
                 echo ""
+
+                # PRD FR-4.1: Markdown report at end of installation
+                show_installation_summary
+
+                echo ""
                 gum_success "Tamamlandı" "Seçilen tüm bileşenler kuruldu!"
                 sleep 2
                 ;;
-            "*Sistem Hazırlığı"*)
+            *"Sistem Hazırlığı"*)
                 prepare_and_configure_git
                 ;;
             *"Python Ekosistemi"*)
@@ -324,6 +337,12 @@ run_advanced_mode() {
                 ;;
             *"Docker"*)
                 install_docker_menu
+                ;;
+            *"Dotfiles Yöneticisi"*)
+                manage_dotfiles_menu
+                ;;
+            *"Windows Font Kontrolü"*)
+                manage_windows_fonts
                 ;;
             *"AI Frameworks Kaldır"*)
                 remove_ai_frameworks_menu

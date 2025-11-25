@@ -55,6 +55,13 @@ source "${SCRIPT_DIR}/lib/installation-tracker.sh"
 # shellcheck source=lib/tui.sh
 source "${SCRIPT_DIR}/lib/tui.sh"
 
+# shellcheck source=lib/system-restart.sh
+source "${SCRIPT_DIR}/lib/system-restart.sh"
+
+# PRD FR-3.3: Windows Interop for font management
+# shellcheck source=lib/windows-interop.sh
+source "${SCRIPT_DIR}/lib/windows-interop.sh"
+
 # Phase 4: Load feature modules
 # shellcheck source=modules/python.sh
 source "${SCRIPT_DIR}/modules/python.sh"
@@ -88,6 +95,10 @@ source "${SCRIPT_DIR}/modules/quickstart.sh"
 
 # shellcheck source=modules/cleanup.sh
 source "${SCRIPT_DIR}/modules/cleanup.sh"
+
+# PRD FR-2.2: Dotfiles manager with fuzzy search
+# shellcheck source=modules/dotfiles.sh
+source "${SCRIPT_DIR}/modules/dotfiles.sh"
 
 # shellcheck source=modules/menus.sh
 source "${SCRIPT_DIR}/modules/menus.sh"

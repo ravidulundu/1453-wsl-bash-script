@@ -42,20 +42,55 @@ prompt_system_restart() {
     echo ""
     
     if gum_confirm "Şimdi yeniden başlatmak ister misiniz?"; then
-        gum_info "Geri Sayım" "Sistem 10 saniye içinde yeniden başlatılacak..."
-        
-        # Countdown with gum spinner
+        echo ""
+        gum_warning "Geri Sayım Başladı" "İptal etmek için Ctrl+C'ye basın"
+        echo ""
+
+        # PRD FR-4.2: Visual countdown with AI-like streaming
+        # "10...9...8..." style countdown
         local countdown=10
         while [ $countdown -gt 0 ]; do
-            echo -ne "\r  Yeniden başlatma: $countdown saniye... "
+            # Create progress bar
+            local filled=$((10 - countdown))
+            local empty=$countdown
+
+            # Responsive terminal width
+            local term_width=$(tput cols 2>/dev/null || echo 80)
+            local box_width=$((term_width > 60 ? 60 : term_width - 4))
+
+            # Color coding: Red (countdown > 5), Yellow (3-5), Green (1-2)
+            local color_fg="$COLOR_ERROR_FG"
+            local icon="🔴"
+            if [ $countdown -le 5 ] && [ $countdown -gt 2 ]; then
+                color_fg="$COLOR_WARNING_FG"
+                icon="🟡"
+            elif [ $countdown -le 2 ]; then
+                color_fg="$COLOR_SUCCESS_FG"
+                icon="🟢"
+            fi
+
+            # Show countdown with gum style box
+            gum style \
+                --foreground "$color_fg" \
+                --border rounded \
+                --border-foreground "$color_fg" \
+                --width "$box_width" \
+                --padding "1 2" \
+                --align center \
+                --bold \
+                "$icon Yeniden Başlatma: $countdown saniye"
+
             sleep 1
             ((countdown--))
+
+            # Clear previous box (move cursor up and clear)
+            [ $countdown -gt 0 ] && tput cuu1 && tput cuu1 && tput cuu1 && tput cuu1 && tput cuu1
         done
+
         echo ""
-        
-        gum_success "Başlatma" "Sistem yeniden başlatılıyor..."
+        gum_success "Başlatılıyor" "Sistem yeniden başlatılıyor... ♻️"
         sleep 1
-        
+
         # Perform restart
         sudo reboot
     else
