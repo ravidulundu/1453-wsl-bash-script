@@ -430,7 +430,51 @@ main() {
 
     # PRD: Use gum_info wrapper (Gum is now installed)
     echo ""
-    gum_info "Başlatma" "1453.AI WSL Kurulum Betiği yükleniyor..."
+    
+    # PRD FR-1.3: System Analysis
+    if has_gum; then
+        # Analyze system
+        local wsl_version="WSL 2" # Default assumption
+        if [ -n "${WSL_DISTRO_NAME:-}" ]; then
+            # Try to detect version if possible, otherwise stick to default
+            if grep -qi "WSL2" /proc/version 2>/dev/null; then
+                wsl_version="WSL 2"
+            fi
+        fi
+        
+        local distro_name="${WSL_DISTRO_NAME:-Linux}"
+        if [ "$distro_name" = "Linux" ] && [ -f /etc/os-release ]; then
+            distro_name=$(grep ^PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
+        fi
+
+        # Show analysis spinner
+        gum spin --spinner dot --title "Sistem analiz ediliyor..." -- sleep 1.5
+        
+        # Show system info card
+        gum style \
+            --foreground "$COLOR_INFO_FG" \
+            --border rounded \
+            --border-foreground "$COLOR_GOLD_FG" \
+            --padding "0 1" \
+            --margin "1 0" \
+            --align center \
+            "💻 Sistem: $distro_name" "🚀 Ortam: $wsl_version"
+            
+        echo ""
+    fi
+
+    # PRD Section 2.2: Streaming Text (Typewriter Effect)
+    local welcome_msg="1453.AI WSL Kurulum Betiği yükleniyor..."
+    if has_gum; then
+        # Simulate typing effect
+        for (( i=0; i<${#welcome_msg}; i++ )); do
+            echo -n "${welcome_msg:$i:1}"
+            sleep 0.03
+        done
+        echo ""
+    else
+        gum_info "Başlatma" "$welcome_msg"
+    fi
     echo ""
 
     if has_gum; then
@@ -466,176 +510,93 @@ main() {
     gum_success "Hazırlık Tamamlandı" "Dizin yapısı oluşturuldu"
     echo ""
 
-    # İndirilecek dosyaların listesi
-    declare -a files=(
-        "src/linux-ai-setup-script.sh:Ana betik"
-        "src/lib/init.sh:Başlatma modülü"
-        "src/lib/ai-text.sh:AI metin efektleri"
-        "src/lib/gum-init.sh:Gum wrapper'ları"
-        "src/lib/common.sh:Ortak araçlar"
-        "src/lib/package-manager.sh:Paket yöneticisi tespiti"
-        "src/lib/installation-tracker.sh:Kurulum takip sistemi"
-        "src/lib/system-restart.sh:Sistem yeniden başlatma"
-        "src/lib/tui.sh:TUI sistem modülü"
-        "src/config/theme.sh:Tema tanımlamaları (Crimson & Gold)"
-        "src/config/colors.sh:Renk tanımlamaları (eski)"
-        "src/config/constants.sh:Global sabitler (CRITICAL)"
-        "src/config/tool-versions.sh:Araç versiyonları"
-        "src/config/php-versions.sh:PHP yapılandırması"
-        "src/config/banner.sh:Banner gösterimi"
-        "src/modules/python.sh:Python ekosistemi"
-        "src/modules/javascript.sh:JavaScript ekosistemi"
-        "src/modules/php.sh:PHP ekosistemi"
-        "src/modules/go.sh:Go kurulum modülü"
-        "src/modules/docker.sh:Docker kurulum modülü"
-        "src/modules/modern-tools.sh:Modern CLI araçları"
-        "src/modules/shell-setup.sh:Shell ortamı yapılandırma"
-        "src/modules/ai-cli.sh:AI CLI araçları"
-        "src/modules/ai-frameworks.sh:AI framework'leri"
-        "src/modules/quickstart.sh:Quick Start modu"
-        "src/modules/cleanup.sh:Temizleme ve sıfırlama"
-        "src/modules/menus.sh:Menü sistemi"
-        "templates/starship.toml:Starship TOML config"
-    )
+    # ==============================================================================
+    # ZIP DOWNLOAD STRATEGY (Rate Limit Bypass)
+    # ==============================================================================
+    
+    # Ensure unzip is installed
+    if ! command -v unzip &>/dev/null; then
+        local install_cmd=""
+        if command -v apt &>/dev/null; then
+            install_cmd="sudo apt update -qq >/dev/null 2>&1 && sudo apt install -y unzip >/dev/null 2>&1"
+        elif command -v dnf &>/dev/null; then
+            install_cmd="sudo dnf install -y unzip >/dev/null 2>&1"
+        elif command -v pacman &>/dev/null; then
+            install_cmd="sudo pacman -S --noconfirm unzip >/dev/null 2>&1"
+        fi
 
-    # Tüm dosyaları indir
-    local total_files=${#files[@]}
-    local failed=0
-    local failed_files=()
-
-    # Download all files with single-line progress
-    local count=0
+        if [ -n "$install_cmd" ]; then
+            if has_gum; then
+                gum spin --spinner dot --title "Arşiv açıcı (unzip) kuruluyor..." -- bash -c "$install_cmd"
+            else
+                gum_info "Hazırlık" "Arşiv açıcı (unzip) kuruluyor..."
+                eval "$install_cmd"
+            fi
+        fi
+    fi
 
     # PRD: Use AI contextual message (FR-2.4)
     echo ""
-    gum_info "İndirme Başlıyor" "$total_files dosya indirilecek"
+    gum_info "İndirme Başlıyor" "Tüm proje tek paket olarak indiriliyor..."
     echo ""
+
+    # Download ZIP archive
+    local zip_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/${BRANCH}.zip"
+    local temp_zip="/tmp/1453-wsl.zip"
+    local temp_dir="/tmp/1453-wsl-extracted"
+
+    # Clean previous temp files
+    rm -rf "$temp_zip" "$temp_dir"
 
     # PRD: Show AI thinking state while downloading
     if has_gum; then
-        gum style \
-            --foreground "$COLOR_GOLD_FG" \
-            --align center \
-            "📦 Modüler bileşenler hazırlanıyor..."
+        gum spin --spinner dot --title "📦 Proje arşivi indiriliyor..." -- \
+            curl -fsSL "$zip_url" -o "$temp_zip"
     else
-        echo "📦 Modüler bileşenler hazırlanıyor..."
+        echo "📦 Proje arşivi indiriliyor..."
+        curl -fsSL "$zip_url" -o "$temp_zip"
     fi
-    echo ""
 
-    # Temporarily disable strict error handling for download loop
-    set +e
-
-    # Re-detect terminal width for responsive progress
-    TUI_WIDTH=$(tput cols 2>/dev/null || echo 80)
-
-    # Calculate margin for centering progress (if using gum)
-    local progress_width=70
-    if [ "$TUI_WIDTH" -lt 90 ]; then
-        progress_width=60
+    if [ ! -f "$temp_zip" ]; then
+        gum_alert "İndirme Hatası" "Proje arşivi indirilemedi. İnternet bağlantınızı kontrol edin."
+        exit 1
     fi
-    local progress_margin=$(( (TUI_WIDTH - progress_width) / 2 ))
-    [ $progress_margin -lt 0 ] && progress_margin=0
 
-    for file_info in "${files[@]}"; do
-        IFS=':' read -r file_path description <<< "$file_info"
+    # Extract ZIP
+    if has_gum; then
+        gum spin --spinner dot --title "📂 Arşiv açılıyor ve yerleştiriliyor..." -- \
+            unzip -q "$temp_zip" -d "$temp_dir"
+    else
+        echo "📂 Arşiv açılıyor ve yerleştiriliyor..."
+        unzip -q "$temp_zip" -d "$temp_dir"
+    fi
 
-        # Safety check for parsed values
-        if [ -z "${file_path:-}" ] || [ -z "${description:-}" ]; then
-            continue
-        fi
+    # Move files to INSTALL_DIR
+    # The zip extracts to a folder named REPO-BRANCH (e.g., 1453-wsl-bash-script-master)
+    # We need to find it dynamically
+    local extracted_root
+    extracted_root=$(find "$temp_dir" -maxdepth 1 -type d -name "${REPO_NAME}-*" | head -n 1)
 
-        local url="${BASE_URL}/${file_path}"
-        local dest="${INSTALL_DIR}/${file_path}"
-        count=$((count + 1))
-
-        # Calculate progress percentage
-        local percent=$((count * 100 / total_files))
-
-        # Responsive description width (terminal width - progress info - padding)
-        local desc_width=$((TUI_WIDTH - 25))
-        [ "$desc_width" -lt 20 ] && desc_width=20
-        [ "$desc_width" -gt 50 ] && desc_width=50
-
-        # Truncate description if needed
-        local short_desc="$description"
-        if [ ${#description} -gt $desc_width ]; then
-            short_desc="${description:0:$((desc_width-3))}..."
-        fi
-
-        # Show progress on same line (overwrite with \r - NO CLEAR!)
-        # Add left margin for centering
-        local spaces=""
-        for ((i=0; i<progress_margin; i++)); do
-            spaces="$spaces "
-        done
-        printf "\r%s[%d/%d - %%%d] %-${desc_width}s" "$spaces" "$count" "$total_files" "$percent" "$short_desc"
-
-        # Download file silently (with GitHub token if available)
-        # DRY: Use shared curl options helper
-        local curl_opts=()
-        prepare_curl_opts curl_opts
-
-        if ! curl "${curl_opts[@]}" "$url" -o "$dest" 2>/dev/null; then
-            failed=$((failed + 1))
-            failed_files+=("$description")
-        fi
-    done
-
-    # Re-enable strict error handling
-    set -e
-
-    # Clear the progress line (use terminal width, not hardcoded 120)
-    printf "\r%*s\r" "$TUI_WIDTH" ""
-    echo ""
-
-    # Show summary - PRD: Use wrapper functions
-    if [ $failed -eq 0 ]; then
+    if [ -d "$extracted_root" ]; then
+        # Copy src, templates, and docs
+        cp -r "${extracted_root}/src" "${INSTALL_DIR}/"
+        cp -r "${extracted_root}/templates" "${INSTALL_DIR}/"
+        
+        # Cleanup
+        rm -rf "$temp_zip" "$temp_dir"
+        
         # PRD: Show AI completion state
         show_ai_thinking "complete" 1
         echo ""
-        gum_success "İndirme Tamamlandı" "$total_files/$total_files dosya başarıyla indirildi"
+        gum_success "İndirme Tamamlandı" "Tüm dosyalar başarıyla kuruldu"
         echo ""
-    fi
-
-    if [ $failed -gt 0 ]; then
-        # PRD: Use gum_alert for errors
-        echo ""
-        gum_alert "İndirme Hatası" "$failed/$total_files dosya indirilemedi"
-        echo ""
-
-        # Show failed files list
-        if has_gum; then
-            gum style \
-                --foreground "$COLOR_WARNING_FG" \
-                --align center \
-                "Başarısız dosyalar:"
-            echo ""
-            for failed_file in "${failed_files[@]}"; do
-                gum style \
-                    --foreground "$COLOR_ERROR_FG" \
-                    "  • $failed_file"
-            done
-        else
-            echo "Başarısız dosyalar:"
-            for failed_file in "${failed_files[@]}"; do
-                echo "  • $failed_file"
-            done
-        fi
-
-        echo ""
-        gum_warning "İpucu" "Tekrar deneyebilir veya depoyu doğrudan klonlayabilirsiniz"
-        echo ""
-        if has_gum; then
-            gum style \
-                --foreground "$COLOR_INFO_FG" \
-                --align center \
-                "git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
-        else
-            echo "  git clone https://github.com/${REPO_OWNER}/${REPO_NAME}.git"
-        fi
-        echo ""
+    else
+        gum_alert "Kurulum Hatası" "Arşiv içeriği hatalı veya boş."
         exit 1
     fi
+
+    # Skip the old file loop logic since we downloaded everything
+    failed=0
 
     # Ana betiği çalıştırılabilir yap
     chmod +x "${INSTALL_DIR}/src/linux-ai-setup-script.sh"
@@ -688,6 +649,53 @@ END_OF_LAUNCHER_SCRIPT
 
     # Install Gum for modern TUI (Already installed at start, check again just in case)
     # install_gum_minimal
+
+    # PRD FR-3.3: Windows Interop - Nerd Font Check
+    # Since we cannot easily check Windows fonts from WSL, we perform a visual test
+    if grep -q "Microsoft" /proc/version 2>/dev/null && has_gum; then
+        echo ""
+        gum_info "Font Kontrolü" "İkonların düzgün görünmesi için Nerd Font gereklidir"
+        
+        # Display test icons
+        echo ""
+        gum style \
+            --border rounded \
+            --border-foreground "$COLOR_GOLD_FG" \
+            --align center \
+            --margin "0 2" \
+            --padding "1 2" \
+            "        🚀  📦" \
+            "" \
+            "Yukarıdaki ikonları görebiliyor musunuz?"
+            
+        if ! gum confirm "İkonlar düzgün görünüyor mu?"; then
+            echo ""
+            gum_warning "Eksik Font Tespit Edildi" "Görünüşe göre Nerd Font yüklü değil veya terminal ayarlı değil."
+            
+            echo ""
+            gum style \
+                --foreground "$COLOR_INFO_FG" \
+                --align center \
+                "Windows Terminal (PowerShell) üzerinde şu komutu çalıştırarak yükleyebilirsiniz:"
+            
+            echo ""
+            gum style \
+                --border normal \
+                --border-foreground "$COLOR_CRIMSON_FG" \
+                --padding "1 2" \
+                --align center \
+                "winget install -e --id RyanLlamas.MesloLGM_NF"
+                
+            echo ""
+            gum style --foreground "$COLOR_MUTED_FG" "Not: Yüklemeden sonra Windows Terminal ayarlarından fontu seçmeyi unutmayın."
+            
+            echo ""
+            gum input --placeholder "Okudum, devam etmek için Enter'a basın..." --password >/dev/null
+        else
+            echo ""
+            gum_success "Font Doğrulandı" "Terminal ortamınız kullanıma hazır"
+        fi
+    fi
 
     # Kurulum başarılı mesajı (with Gum if available)
     echo ""

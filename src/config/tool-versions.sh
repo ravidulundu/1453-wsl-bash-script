@@ -83,9 +83,21 @@ fetch_github_version() {
 
     local version=""
 
+    # Strategy 0: Custom Proxy API (Rate Limit Bypass)
+    # This is the preferred method as it avoids GitHub rate limits entirely
+    local proxy_url="https://api.dulundu.dev/version?repo=${repo}"
+    
+    # Try proxy first (fast timeout)
+    version=$(curl -s --connect-timeout 3 "$proxy_url" 2>/dev/null)
+    
+    # Validate proxy response (must be a valid version number, not error html/json)
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        version=""
+    fi
+
     # Strategy 1: Try GitHub CLI (gh) if available and authenticated
     # This has a much higher rate limit (5000/hr)
-    if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+    if [ -z "$version" ] && command -v gh &>/dev/null && gh auth status &>/dev/null; then
         version=$(gh api "repos/${repo}/releases/latest" --jq .tag_name 2>/dev/null | sed 's/^v//')
     fi
 
