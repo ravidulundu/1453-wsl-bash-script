@@ -123,3 +123,6 @@ ANALYSIS_QUICK_START.md
 # Archive
 docs/archive/
 wsl-proxy/
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
