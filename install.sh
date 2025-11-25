@@ -437,7 +437,7 @@ main() {
         local wsl_version="WSL 2" # Default assumption
         if [ -n "${WSL_DISTRO_NAME:-}" ]; then
             # Try to detect version if possible, otherwise stick to default
-            if grep -q "WSL2" /proc/version 2>/dev/null; then
+            if grep -qi "WSL2" /proc/version 2>/dev/null; then
                 wsl_version="WSL 2"
             fi
         fi
@@ -516,14 +516,22 @@ main() {
     
     # Ensure unzip is installed
     if ! command -v unzip &>/dev/null; then
-        gum_info "Hazırlık" "Arşiv açıcı (unzip) kuruluyor..."
+        local install_cmd=""
         if command -v apt &>/dev/null; then
-            sudo apt update -qq >/dev/null 2>&1
-            sudo apt install -y unzip >/dev/null 2>&1
+            install_cmd="sudo apt update -qq >/dev/null 2>&1 && sudo apt install -y unzip >/dev/null 2>&1"
         elif command -v dnf &>/dev/null; then
-            sudo dnf install -y unzip >/dev/null 2>&1
+            install_cmd="sudo dnf install -y unzip >/dev/null 2>&1"
         elif command -v pacman &>/dev/null; then
-            sudo pacman -S --noconfirm unzip >/dev/null 2>&1
+            install_cmd="sudo pacman -S --noconfirm unzip >/dev/null 2>&1"
+        fi
+
+        if [ -n "$install_cmd" ]; then
+            if has_gum; then
+                gum spin --spinner dot --title "Arşiv açıcı (unzip) kuruluyor..." -- bash -c "$install_cmd"
+            else
+                gum_info "Hazırlık" "Arşiv açıcı (unzip) kuruluyor..."
+                eval "$install_cmd"
+            fi
         fi
     fi
 
